@@ -39,7 +39,7 @@ class GenePatternMagic(Magics):
     def get_job(self, line):
         args = line.split(" ")          # Server URL, username, password, job number
         if len(args) != 4:
-            return "Incorrect number of args. Need 2."
+            return "Incorrect number of args. Need 4."
 
         server = ServerData(args[0], args[1], args[2])
         job = GPJob(args[0] + "/rest/v1/jobs/" + args[3])
