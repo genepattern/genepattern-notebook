@@ -82,7 +82,10 @@ gp.tasks = function(pObj) {
         return $.ajax({
                 url: gp.server() + REST_ENDPOINT + includeHidden,
                 type: 'GET',
-                dataType: 'json'
+                dataType: 'json',
+                headers: {
+                    'Authorization': 'tabor:'
+                }
             })
             .done(function(response) {
                 // Create the new _tasks list and iterate over returned JSON list, creating Task objects
@@ -497,7 +500,7 @@ gp.Job = function(jobJson) {
             this._logFiles = jobJson.logFiles;
             this._outputFiles = jobJson.outputFiles;
             this._numOutputFiles = typeof jobJson.numOutputFiles === 'string' ? parseInt(jobJson.numOutputFiles) : jobJson.numOutputFiles;
-            this._task = gp.task(this._taskLsid);
+            //this._task = gp.task(this._taskLsid);
         }
     };
     this._init_();

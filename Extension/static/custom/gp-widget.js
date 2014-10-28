@@ -1110,15 +1110,16 @@ $.widget("gp.runTask", {
                     var uiInput = uiParam.find(".task-widget-param-input");
                     var uiValue = widget._getInputValue(uiInput);
 
-                    var objParam = jobInput.params()[i];
-                    objParam.values([uiValue]);
+                    if (uiValue !== null) {
+                        var objParam = jobInput.params()[i];
+                        objParam.values([uiValue]);
+                    }
                 }
 
                 // Submit the job input
                 jobInput.submit({
                     success: function(response, jobNumber) {
-                        // TODO: Implement
-                        alert("SUCCESS");
+                        widget.successMessage("Job successfully submitted! Job ID: " + jobNumber);
                     },
                     error: function(exception) {
                         widget.errorMessage("Error submitting job: " + exception.statusText);
@@ -1184,7 +1185,9 @@ $.widget("gp.runTask", {
  */
 $.widget("gp.jobResults", {
     options: {
-        jobNumber: null
+        jobNumber: null,    // The job number
+        poll: true,         // Poll to refresh running jobs
+        json: null          // JSON to load from
     },
 
     /**
@@ -1193,7 +1196,36 @@ $.widget("gp.jobResults", {
      * @private
      */
     _create: function() {
-        //TODO: Implement
+        // Ensure the job number is defined
+        if (typeof this.options.jobNumber !== 'number') {
+            throw "The job number is not correctly defined, cannot create job results widget";
+        }
+
+        // Add class and child elements
+        this.element.addClass("job-widget");
+        this.element.append(
+            $("<div></div>")
+                .addClass("job-widget-header")
+                .append(
+                    $("<div></div>")
+                        .addClass("job-widget-status")
+                )
+                .append(
+                    $("<div></div>")
+                        .addClass("job-widget-task")
+                )
+                .append(
+                    $("<div></div>")
+                        .addClass("job-widget-submitted")
+                )
+        );
+        this.element.append(
+            $("<div></div>")
+                .addClass("job-widget-outputs")
+        );
+
+        // Load job status
+        this._loadJobStatus();
     },
 
     /**
@@ -1202,7 +1234,8 @@ $.widget("gp.jobResults", {
      * @private
      */
     _destroy: function() {
-        //TODO: Implement
+        this.element.removeClass("job-widget-widget");
+        this.element.empty();
     },
 
     /**
@@ -1212,7 +1245,8 @@ $.widget("gp.jobResults", {
      * @private
      */
     _setOptions: function(options) {
-        //TODO: Implement
+        this._superApply(arguments);
+        this._loadJobStatus();
     },
 
     /**
@@ -1223,6 +1257,162 @@ $.widget("gp.jobResults", {
      * @private
      */
     _setOption: function(key, value) {
-        //TODO: Implement
+        this._super(key, value);
+    },
+
+    /**
+     * Initialize polling as appropriate for options and status
+     *
+     * @param statusObj
+     * @private
+     */
+    _initPoll: function(statusObj) {
+        var running = !statusObj["hasError"] && !statusObj["completedInGp"];
+        var widget = this;
+
+        // If polling is turned on, attach the event
+        if (this.options.poll && running) {
+            setTimeout(function() {
+                widget._loadJobStatus();
+            }, 10000);
+        }
+    },
+
+    /**
+     * Make a quest to the server to update the job status, and then update the UI
+     *
+     * @private
+     */
+    _loadJobStatus: function() {
+        // If JSON already loaded
+        if (this.options.json) {
+            var jsonObj = JSON.parse(this.options.json);
+            var job = new gp.Job(jsonObj);
+            this._displayJob(job);
+        }
+        // If we need to load the JSON from the server
+        else {
+            var widget = this;
+
+            gp.job({
+                jobNumber: this.options.jobNumber,
+                forceRefresh: true,
+                success: function(response, job) {
+                    widget._displayJob(job);
+                },
+                error: function() {
+                    // Clean the old data
+                    widget._clean();
+
+                    // Display the error
+                    widget.element.find(".job-widget-task").text("Error loading job: " + widget.options.jobNumber);
+                }
+            });
+        }
+    },
+
+    /**
+     * Display the widget from the job object
+     *
+     * @param job
+     * @private
+     */
+    _displayJob: function(job) {
+        // Clean the old data
+        this._clean();
+
+        // Display the job number and task name
+        var taskText = job.jobNumber() + ". " + job.taskName();
+        this.element.find(".job-widget-task").text(taskText);
+
+        // Display the user and date submitted
+        var submittedText = "Submitted by " + job.userId() + " on " + job.dateSubmitted();
+        this.element.find(".job-widget-submitted").text(submittedText);
+
+        // Display the status
+        var statusText = widget._statusText(job.status());
+        this.element.find(".job-widget-status").text(statusText);
+
+        // Display the job results
+        var outputsList = widget._outputsList(job.outputFiles());
+        this.element.find(".job-widget-outputs").append(outputsList);
+
+        // Display the log files
+        var logList = widget._outputsList(job.logFiles());
+        this.element.find(".job-widget-outputs").append(logList);
+
+        // Initialize status polling
+        this._initPoll(job.status());
+    },
+
+    /**
+     * Return the display of the job's status
+     *
+     * @param statusObj - The status object returned by the server
+     * @returns {string} - Display text of the status
+     * @private
+     */
+    _statusText: function(statusObj) {
+        if (statusObj["hasError"]) {                // Error
+            return "Error";
+        }
+        else if (statusObj["completedInGp"]) {      // Complete
+            return "Completed"
+        }
+        else if (statusObj["isPending"]) {          // Pending
+            return "Pending";
+        }
+        else {                                      // Running
+            return "Running";
+        }
+    },
+
+    /**
+     * Return a div containing the file outputs formatted for display
+     *
+     * @param outputs
+     * @returns {*|jQuery|HTMLElement}
+     * @private
+     */
+    _outputsList: function(outputs) {
+        var outputsList = $("<div></div>")
+            .addClass("job-widget-outputs-list");
+
+        if (outputs) {
+            for (var i = 0; i < outputs.length; i++) {
+                var output = outputs[i];
+                $("<a></a>")
+                    .text(output["link"]["name"])
+                    .attr("href", output["link"]["href"])
+                    .attr("target", "_blank")
+                    .appendTo(outputsList);
+            }
+        }
+        else {
+            outputsList.text("No output files.");
+        }
+
+        return outputsList;
+    },
+
+    /**
+     * Remove the display data from the widget
+     *
+     * @private
+     */
+    _clean: function() {
+        this.element.find(".job-widget-task").empty();
+        this.element.find(".job-widget-submitted").empty();
+        this.element.find(".job-widget-status").empty();
+        this.element.find(".job-widget-outputs").empty();
+    },
+
+    /**
+     * Getter for the associated job number
+     *
+     * @returns {null|number}
+     */
+    jobNumber: function() {
+        return this.options.jobNumber;
     }
 });
