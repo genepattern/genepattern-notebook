@@ -9,7 +9,7 @@ from contextlib import closing
 # This API contains:
 #
 # * Classes that correspond to resources on the server (files and jobs) and
-#   (for jobs) store locally a copy the state associated with these resources.
+# (for jobs) store locally a copy the state associated with these resources.
 #
 # * Functions for uploading a file, and running a job, that make calls to the
 #   server, and return resources.
@@ -17,29 +17,24 @@ from contextlib import closing
 # * A class, JobSpec, that encapsulates the data that specifies a request to
 #   run a job on a GenePattern server.
 
+
 class ServerData(object):
-    """Wrapper for data needed to make server calls.
+    """
+    Wrapper for data needed to make server calls.
     
     Wraps the server url, username and password, and provides helper function
-    to construct the authorization header."""
-    
+    to construct the authorization header.
+    """
+
     def __init__(self, url, username, password):
-        self.url = url;
+        self.url = url
         self.username = username
         self.password = password
-        authString = base64.encodestring('%s:%s' % (self.username, self.password))[:-1] 
-        self.authHeader = "Basic %s" % authString
-        
-    def authorizationHeader(self):
+        auth_string = base64.encodestring('%s:%s' % (self.username, self.password))[:-1]
+        self.authHeader = "Basic %s" % auth_string
+
+    def authorization_header(self):
         return self.authHeader
-
-
-_server_data = None
-
-
-def SetServerData(server_data):
-    global _server_data
-    _server_data = server_data
 
 
 class GPResource(object):
@@ -49,43 +44,42 @@ class GPResource(object):
     defined by a URI.  Subclasses can implement custom logic appropriate for
     that resources such as downloading a file or info for a running or completed
     job."""
-    
+
     def __init__(self, uri):
         self.uri = uri
-        
+
+
 class GPFile(GPResource):
-    """A file on a Gene Pattern server.
+    """
+    A file on a Gene Pattern server.
     
-    Wraps the URI of the file, and contains methods to download the file."""
-    
+    Wraps the URI of the file, and contains methods to download the file.
+    """
+
     # TODO: fix this.
-    def open(self, serverData=None):
-        if serverData is None:
-            serverData = _server_data
+    def open(self, server_data):
         request = urllib2.Request(self.uri)
-        request.add_header('Authorization', serverData.authorizationHeader())
+        request.add_header('Authorization', server_data.authorizationHeader())
         request.add_header('User-Agent', 'GenePatternRest')
         return urllib2.urlopen(request)
-    
-    def read(self, serverData=None):
-        if serverData is None:
-            serverData = _server_data
-        data = None
-        with closing(self.open(serverData)) as f:
+
+    def read(self, server_data):
+        with closing(self.open(server_data)) as f:
             data = f.read()
-        return data
-    
+        return data or None
+
+
 class GPJob(GPResource):
-    """A running or completed job on a Gene Pattern server.
+    """
+    A running or completed job on a Gene Pattern server.
     
     Contains methods to get the info of the job, and to wait on a running job by
-    polling the server until the job is completed."""
-    
-    def getInfo(self, serverData=None):
-        if serverData is None:
-            serverData = _server_data
+    polling the server until the job is completed.
+    """
+
+    def getInfo(self, server_data):
         request = urllib2.Request(self.uri)
-        request.add_header('Authorization', serverData.authorizationHeader())
+        request.add_header('Authorization', server_data.authorizationHeader())
         request.add_header('User-Agent', 'GenePatternRest')
         response = urllib2.urlopen(request)
         self.info = json.loads(response.read())
@@ -104,7 +98,7 @@ class GPJob(GPResource):
 
     def getStatusMessage(self):
         return self.info['status']['statusMessage']
-        
+
     def getOutputFiles(self, serverData=None):
 
         # the following is to address a bug server side bug where there are
@@ -114,26 +108,23 @@ class GPJob(GPResource):
         while self.info['outputFiles'] == [] and wait <= 32:
             time.sleep(wait)
             self.getInfo(serverData)
-            wait = min(wait*2)
+            wait = min(wait * 2)
 
         return [GPFile(f['link']['href']) for f in self.info['outputFiles']]
-    
+
     def waitUntilDone(self, serverData=None):
-        if serverData is None:
-            serverData = _server_data
         wait = 1
         while True:
             time.sleep(wait)
             self.getInfo(serverData)
             if self.info['status']['isFinished']:
                 break
-	    # implements a crude exponential backoff
-            wait = min(wait*2, 60)
+            # implements a crude exponential backoff
+            wait = min(wait * 2, 60)
 
     def getJobStatusPageUrl(self, serverData=None):
-        if serverData is None:
-            serverData = _server_data
         return serverData.url + "pages/index.jsf?jobid=" + self.uri.split("/")[-1]
+
 
 class JobSpec(object):
     """Data needed to make a request to perform a job on a Gene Pattern server
@@ -141,17 +132,18 @@ class JobSpec(object):
     Encapsulates the data needed to make a server call to run a job.  This
     includes the LSID of the job, and the parameters.  Helper methods set
     the LSID and parameters."""
-    
+
     def __init__(self):
-        self.params = [];
-    
+        self.params = []
+
     def setLSID(self, lsid):
         self.lsid = lsid
-        
+
     def setParameter(self, name, values):
         if not isinstance(values, list):
             values = [values]
         self.params.append({'name': name, 'values': values})
+
 
 class GPCategory(object):
     """Enapsulates element of task category list.
@@ -173,6 +165,7 @@ class GPCategory(object):
     def getTags(self):
         return self.dto['tags']
 
+
 class GPTaskListElement(object):
     """Encapsulates element of task list.
     
@@ -189,7 +182,7 @@ class GPTaskListElement(object):
 
     def getName(self):
         return self.dto['name']
-    
+
     def getLSID(self):
         return self.dto['lsid']
 
@@ -198,7 +191,7 @@ class GPTaskListElement(object):
 
         If task has no description, throws GenePatternException.
         """
-        
+
         if (not self.dto.has_key('description')):
             raise GenePatternException('no task description')
         return self.dto['description']
@@ -228,6 +221,7 @@ class GPTaskListElement(object):
     def getSuites(self):
         return self.dto['suites']
 
+
 class GPTask(GPResource):
     """Describes a GenePattern task (module or pipeline).
 
@@ -237,10 +231,8 @@ class GPTask(GPResource):
     components.
 
     """
-    
+
     def __init__(self, lsid, serverData=None):
-        if serverData is None:
-            serverData = _server_data
         GPResource.__init__(self, lsid)
         request = urllib2.Request(serverData.url + 'rest/RunTask/load?lsid=' + lsid)
         request.add_header('Authorization', serverData.authorizationHeader())
@@ -268,7 +260,7 @@ class GPTask(GPResource):
 
         If task has no description, throws GenePatternException.
         """
-        
+
         if (not self.dto['module'].has_key('description')):
             raise GenePatternException('no task description')
         return self.dto['module']['description']
@@ -282,6 +274,7 @@ class GPTask(GPResource):
     def getInitialValues(self):
         return self.dto['initialValues']
 
+
 class GPTaskParameter(object):
     """Encapsulates single parameter information.
 
@@ -289,10 +282,10 @@ class GPTaskParameter(object):
     associated with a single task parameter (i.e., element from list
     returned by GPTask.getParameters)
     """
-    
+
     def __init__(self, dto):
         self.dto = dto
-        
+
     def getDTO(self):
         return self.dto
 
@@ -301,7 +294,7 @@ class GPTaskParameter(object):
 
     def isOptional(self):
         if ((self.dto.has_key('optional') and bool(self.dto['optional'].strip())) and
-            (self.dto.has_key('minValue') and self.dto['minValue'] == 0)):
+                (self.dto.has_key('minValue') and self.dto['minValue'] == 0)):
             return True
         else:
             return False
@@ -341,14 +334,14 @@ class GPTaskParameter(object):
     def allowMultiple(self):
         # note that maxValue means "max number of values", and is an integer, not a string
         if ((not self.dto.has_key('maxValue')) or
-            (self.dto['maxValue'] > 1)):
+                (self.dto['maxValue'] > 1)):
             return True
         else:
             return False
 
     def getDefaultValue(self):
         if (self.dto.has_key('default_value') and
-            bool(self.dto['default_value'].strip())):
+                bool(self.dto['default_value'].strip())):
             return self.dto['default_value']
         else:
             return None
@@ -402,14 +395,13 @@ class GPTaskParameter(object):
         is what is written into JobSpec.
 
         """
-        
+
         if (not self.dto.has_key('choiceInfo')):
             raise GenePatternException('not a choice parameter')
         if (self.getChoiceStatus()[1] == "NOT_INITIALIZED"):
             print self.getChoiceStatus()
             print "choice status not initialized"
-            if serverData is None:
-                serverData = _server_data
+
             request = urllib2.Request(self.getChoiceHref())
             request.add_header('Authorization', serverData.authorizationHeader())
             request.add_header('User-Agent', 'GenePatternRest')
@@ -421,17 +413,18 @@ class GPTaskParameter(object):
     # can have alternate names and alternate descriptions
     def getAltName(self):
         if (self.dto.has_key('altName') and
-            bool(self.dto['altName'].strip())):
+                bool(self.dto['altName'].strip())):
             return self.dto['altName']
         else:
             return None
 
     def getAltDescription(self):
         if (self.dto.has_key('altDescription') and
-            bool(self.dto['altDescription'].strip())):
+                bool(self.dto['altDescription'].strip())):
             return self.dto['altDescription']
         else:
             return None
+
 
 class GenePatternException(Exception):
     def __init__(self, value):
@@ -440,10 +433,11 @@ class GenePatternException(Exception):
     def __str__(self):
         return repr(self.value)
 
+
 class BooleanString(str):
     def __nonzero__(self):
         return self.lower() in ('on', 'yes', 'true')
-    
+
 
 def uploadFile(filename, filepath, serverData=None):
     """Upload a file to a server
@@ -460,13 +454,12 @@ def uploadFile(filename, filepath, serverData=None):
         A GPFile object that wraps the URI of the uploaded file, or None if the
         upload fails.
     """
-    if serverData is None:
-        serverData = _server_data
+
     request = urllib2.Request(serverData.url + 'rest/v1/data/upload/job_input?name=' + filename)
     request.add_header('Authorization', serverData.authorizationHeader())
     request.add_header('User-Agent', 'GenePatternRest')
     data = open(filepath, 'rb').read()
-        
+
     try:
         response = urllib2.urlopen(request, data)
     except IOError, e:
@@ -476,8 +469,9 @@ def uploadFile(filename, filepath, serverData=None):
     if response.getcode() != 201:
         print "file upload failed, status code = %i" % response.getcode()
         return None
-            
+
     return GPFile(response.info().getheader('Location'))
+
 
 def runJob(jobspec, serverData=None, waitUntilDone=True):
     """Runs a job defined by jobspec, optionally non-blocking.
@@ -498,9 +492,7 @@ def runJob(jobspec, serverData=None, waitUntilDone=True):
         synchronously, this object will contain the info associated with the
         completed job.  Otherwise, it will just wrap the URI of the running job.
     """
-    
-    if serverData is None:
-        serverData = _server_data
+
     # names should be a list of names,
     # values should be a list of **lists** of values
     jsonString = json.dumps({'lsid': jobspec.lsid, 'params': jobspec.params})
@@ -517,8 +509,8 @@ def runJob(jobspec, serverData=None, waitUntilDone=True):
         job.waitUntilDone(serverData)
     return job
 
-def getTaskListOld(serverData=_server_data):
 
+def getTaskListOld(serverData):
     """Get list of tasks (modules and pipelines) installed on GenePattern server.
 
     Args:
@@ -532,26 +524,24 @@ def getTaskListOld(serverData=_server_data):
     f.close()
     return taskList
 
-def getTaskList(serverData=None):
-    if serverData is None:
-       serverData = _server_data
 
+def getTaskList(serverData=None):
     request = urllib2.Request(serverData.url + 'rest/v1/tasks/all.json')
     request.add_header('Authorization', serverData.authorizationHeader())
     request.add_header('User-Agent', 'GenePatternRest')
     response = urllib2.urlopen(request)
     categoryAndTaskLists = json.loads(response.read())
     return categoryAndTaskLists['all_modules']
-        
-def pollMultipleJobs(jobList):
 
+
+def pollMultipleJobs(jobList):
     complete = [False] * len(jobList)
     wait = 1
     while not all(complete):
         time.sleep(wait)
-        for i, job in enumerate(jobList) :
+        for i, job in enumerate(jobList):
             if not complete[i]:
                 complete[i] = job.isFinished()
                 if not complete[i]:
                     break
-        wait = min(wait*2, 10)  
+        wait = min(wait * 2, 10)
