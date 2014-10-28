@@ -4,7 +4,7 @@ import json
 import time
 from contextlib import closing
 from IPython.html import widgets
-from IPython.utils.traitlets import Unicode, List
+from IPython.utils.traitlets import Unicode, List, Integer
 
 # API for GenePattern server.
 
@@ -78,10 +78,17 @@ class GPJob(GPResource, widgets.DOMWidget):
     Contains methods to get the info of the job, and to wait on a running job by
     polling the server until the job is completed.
     """
-    _view_name = Unicode('JobWidgetView', sync=True)
-    json = Unicode(sync=True)
+    _view_name = Unicode('JobWidgetView', sync=True)        # Define the widget's view
+    json = Unicode(sync=True)                               # Define the backing JSON string
+    task_name = Unicode(sync=True)
+    task_lsid = Unicode(sync=True)
+    user_id = Unicode(sync=True)
+    job_number = Integer(sync=True)
     status = Unicode(sync=True)
-    outputs = List(sync=True)
+    date_submitted = Unicode(sync=True)
+    log_files = List(sync=True)
+    output_files = List(sync=True)
+    num_output_files = Integer(sync=True)
 
     def __init__(self, uri, **kwargs):
         super(GPJob, self).__init__(uri)
@@ -110,9 +117,18 @@ class GPJob(GPResource, widgets.DOMWidget):
         request.add_header('User-Agent', 'GenePatternRest')
         response = urllib2.urlopen(request)
 
-        # FIXME: Replace self.status with response.read()
         self.json = response.read()
         self.info = json.loads(self.json)
+
+        self.task_name = self.info['taskName']
+        self.task_lsid = self.info['taskLsid']
+        self.user_id = self.info['userId']
+        self.job_number = int(self.info['jobId'])
+        self.status = self.get_status_message()
+        self.date_submitted = self.info['dateSubmitted']
+        self.log_files = self.info['logFiles']
+        self.output_files = self.info['outputFiles']
+        self.num_output_files = self.info['numOutputFiles']
 
         self.status = self.get_status_message()
 
