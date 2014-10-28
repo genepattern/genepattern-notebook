@@ -1,6 +1,5 @@
 from IPython.core.magic import Magics, magics_class, line_magic
-
-from ipython.extensions.client import *
+from client import *
 
 
 
@@ -38,7 +37,13 @@ class GenePatternMagic(Magics):
 
     @line_magic
     def get_job(self, line):
-        job = GPJob(line)
+        args = line.split(" ")          # Server URL, username, password, job number
+        if len(args) != 4:
+            return "Incorrect number of args. Need 2."
+
+        server = ServerData(args[0], args[1], args[2])
+        job = GPJob(args[0] + "/rest/v1/jobs/" + args[3])
+        job.get_info(server)
         return job
 
     # @line_magic
