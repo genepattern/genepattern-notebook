@@ -48,12 +48,14 @@
  * @static
  */
 
-jQuery.getScript("http://127.0.0.1:8080/gp/libraries/javascript/gp.js").done(function() {
+jQuery.getScript("/static/custom/gp.js").done(function() {
     gp.setServer("http://127.0.0.1:8080/gp");
-    gp.tasks();
+    gp.tasks({});
 });
-jQuery.getScript("http://127.0.0.1:8080/gp/libraries/javascript/gp-widget.js");
-$('head').append($('<link rel="stylesheet" type="text/css" />').attr('href', 'http://127.0.0.1:8080/gp/libraries/javascript/gp-widget.css'));
+jQuery.getScript("/static/custom/gp-widget.js");
+$('head')
+    .append($('<link rel="stylesheet" type="text/css" />')
+    .attr('href', '/static/custom/gp-widget.css'));
 
 require(["widgets/js/widget"], function (WidgetManager) {
 
