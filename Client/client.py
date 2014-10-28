@@ -3,6 +3,8 @@ import base64
 import json
 import time
 from contextlib import closing
+from IPython.html import widgets
+from IPython.utils.traitlets import Unicode, List
 
 # API for GenePattern server.
 
@@ -31,10 +33,10 @@ class ServerData(object):
         self.username = username
         self.password = password
         auth_string = base64.encodestring('%s:%s' % (self.username, self.password))[:-1]
-        self.authHeader = "Basic %s" % auth_string
+        self.auth_header = "Basic %s" % auth_string
 
     def authorization_header(self):
-        return self.authHeader
+        return self.auth_header
 
 
 class GPResource(object):
@@ -59,7 +61,7 @@ class GPFile(GPResource):
     # TODO: fix this.
     def open(self, server_data):
         request = urllib2.Request(self.uri)
-        request.add_header('Authorization', server_data.authorizationHeader())
+        request.add_header('Authorization', server_data.authorization_header())
         request.add_header('User-Agent', 'GenePatternRest')
         return urllib2.urlopen(request)
 
@@ -69,60 +71,88 @@ class GPFile(GPResource):
         return data or None
 
 
-class GPJob(GPResource):
+class GPJob(GPResource, widgets.DOMWidget):
     """
     A running or completed job on a Gene Pattern server.
     
     Contains methods to get the info of the job, and to wait on a running job by
     polling the server until the job is completed.
     """
+    _view_name = Unicode('JobWidgetView', sync=True)
+    json = Unicode(sync=True)
+    status = Unicode(sync=True)
+    outputs = List(sync=True)
 
-    def getInfo(self, server_data):
+    def __init__(self, uri, **kwargs):
+        super(GPJob, self).__init__(uri)
+        widgets.DOMWidget.__init__(self, **kwargs)
+        self.info = None
+
+        self.errors = widgets.CallbackDispatcher(accepted_nargs=[0, 1])
+        self.on_msg(self._handle_custom_msg)
+
+    def _handle_custom_msg(self, content):
+        """
+        Handle a msg from the front-end.
+
+        Parameters
+        ----------
+        content: dict
+        Content of the msg.
+        """
+        if 'event' in content and content['event'] == 'error':
+            self.errors()
+            self.errors(self)
+
+    def get_info(self, server_data):
         request = urllib2.Request(self.uri)
-        request.add_header('Authorization', server_data.authorizationHeader())
+        request.add_header('Authorization', server_data.authorization_header())
         request.add_header('User-Agent', 'GenePatternRest')
         response = urllib2.urlopen(request)
-        self.info = json.loads(response.read())
 
-    def isFinished(self, server_data):
+        # FIXME: Replace self.status with response.read()
+        self.json = response.read()
+        self.info = json.loads(self.json)
 
-        self.getInfo(server_data)
-        done = False
-        try:
-            if self.info['status']['isFinished']:
-                done = True
-        except AttributeError:
-            pass
+        self.status = self.get_status_message()
+
+    def is_finished(self, server_data):
+
+        self.get_info(server_data)
+
+        if not 'status' in self.info:
+            return False
+        if not 'isFinished' in self.info['status']:
+            return False
 
         return self.info['status']['isFinished']
 
-    def getStatusMessage(self):
+    def get_status_message(self):
         return self.info['status']['statusMessage']
 
-    def getOutputFiles(self, server_data):
-
+    def get_output_files(self, server_data):
         # the following is to address a bug server side bug where there are
         # delays is recording the list of job output files.  It should be fixed
         # in GP v3.9.0
         wait = 1
         while self.info['outputFiles'] == [] and wait <= 32:
             time.sleep(wait)
-            self.getInfo(server_data)
+            self.get_info(server_data)
             wait = min(wait * 2)
 
         return [GPFile(f['link']['href']) for f in self.info['outputFiles']]
 
-    def waitUntilDone(self, server_data):
+    def wait_until_done(self, server_data):
         wait = 1
         while True:
             time.sleep(wait)
-            self.getInfo(server_data)
+            self.get_info(server_data)
             if self.info['status']['isFinished']:
                 break
             # implements a crude exponential backoff
             wait = min(wait * 2, 60)
 
-    def getJobStatusPageUrl(self, server_data):
+    def get_job_status_url(self, server_data):
         return server_data.url + "pages/index.jsf?jobid=" + self.uri.split("/")[-1]
 
 
@@ -237,7 +267,7 @@ class GPTask(GPResource):
     def __init__(self, lsid, server_data):
         GPResource.__init__(self, lsid)
         request = urllib2.Request(server_data.url + 'rest/RunTask/load?lsid=' + lsid)
-        request.add_header('Authorization', server_data.authorizationHeader())
+        request.add_header('Authorization', server_data.authorization_header())
         request.add_header('User-Agent', 'GenePatternRest')
         response = urllib2.urlopen(request)
         self.dto = json.loads(response.read())
@@ -407,7 +437,7 @@ class GPTaskParameter(object):
             print "choice status not initialized"
 
             request = urllib2.Request(self.getChoiceHref())
-            request.add_header('Authorization', server_data.authorizationHeader())
+            request.add_header('Authorization', server_data.authorization_header())
             request.add_header('User-Agent', 'GenePatternRest')
             response = urllib2.urlopen(request)
             self.dto['choiceInfo'] = json.loads(response.read())
@@ -461,7 +491,7 @@ def uploadFile(filename, filepath, server_data):
     """
 
     request = urllib2.Request(server_data.url + 'rest/v1/data/upload/job_input?name=' + filename)
-    request.add_header('Authorization', server_data.authorizationHeader())
+    request.add_header('Authorization', server_data.authorization_header())
     request.add_header('User-Agent', 'GenePatternRest')
     data = open(filepath, 'rb').read()
 
@@ -503,7 +533,7 @@ def runJob(jobspec, server_data, waitUntilDone=True):
     # values should be a list of **lists** of values
     jsonString = json.dumps({'lsid': jobspec.lsid, 'params': jobspec.params})
     request = urllib2.Request(server_data.url + 'rest/v1/jobs')
-    request.add_header('Authorization', server_data.authorizationHeader())
+    request.add_header('Authorization', server_data.authorization_header())
     request.add_header('Content-Type', 'application/json')
     request.add_header('User-Agent', 'GenePatternRest')
     response = urllib2.urlopen(request, jsonString)
@@ -512,7 +542,7 @@ def runJob(jobspec, server_data, waitUntilDone=True):
         return None
     job = GPJob(response.info().getheader('Location'))
     if waitUntilDone:
-        job.waitUntilDone(server_data)
+        job.wait_until_done(server_data)
     return job
 
 
@@ -534,7 +564,7 @@ def getTaskListOld(server_data):
 
 def getTaskList(server_data):
     request = urllib2.Request(server_data.url + 'rest/v1/tasks/all.json')
-    request.add_header('Authorization', server_data.authorizationHeader())
+    request.add_header('Authorization', server_data.authorization_header())
     request.add_header('User-Agent', 'GenePatternRest')
     response = urllib2.urlopen(request)
     categoryAndTaskLists = json.loads(response.read())
@@ -548,7 +578,7 @@ def pollMultipleJobs(jobList):
         time.sleep(wait)
         for i, job in enumerate(jobList):
             if not complete[i]:
-                complete[i] = job.isFinished()
+                complete[i] = job.is_finished()
                 if not complete[i]:
                     break
         wait = min(wait * 2, 10)
