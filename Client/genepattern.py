@@ -84,9 +84,9 @@ class GPJob(GPResource):
         response = urllib2.urlopen(request)
         self.info = json.loads(response.read())
 
-    def isFinished(self, serverData=None):
+    def isFinished(self, server_data):
 
-        self.getInfo(serverData)
+        self.getInfo(server_data)
         done = False
         try:
             if self.info['status']['isFinished']:
@@ -99,7 +99,7 @@ class GPJob(GPResource):
     def getStatusMessage(self):
         return self.info['status']['statusMessage']
 
-    def getOutputFiles(self, serverData=None):
+    def getOutputFiles(self, server_data):
 
         # the following is to address a bug server side bug where there are
         # delays is recording the list of job output files.  It should be fixed
@@ -107,31 +107,33 @@ class GPJob(GPResource):
         wait = 1
         while self.info['outputFiles'] == [] and wait <= 32:
             time.sleep(wait)
-            self.getInfo(serverData)
+            self.getInfo(server_data)
             wait = min(wait * 2)
 
         return [GPFile(f['link']['href']) for f in self.info['outputFiles']]
 
-    def waitUntilDone(self, serverData=None):
+    def waitUntilDone(self, server_data):
         wait = 1
         while True:
             time.sleep(wait)
-            self.getInfo(serverData)
+            self.getInfo(server_data)
             if self.info['status']['isFinished']:
                 break
             # implements a crude exponential backoff
             wait = min(wait * 2, 60)
 
-    def getJobStatusPageUrl(self, serverData=None):
-        return serverData.url + "pages/index.jsf?jobid=" + self.uri.split("/")[-1]
+    def getJobStatusPageUrl(self, server_data):
+        return server_data.url + "pages/index.jsf?jobid=" + self.uri.split("/")[-1]
 
 
 class JobSpec(object):
-    """Data needed to make a request to perform a job on a Gene Pattern server
+    """
+    Data needed to make a request to perform a job on a Gene Pattern server
     
     Encapsulates the data needed to make a server call to run a job.  This
     includes the LSID of the job, and the parameters.  Helper methods set
-    the LSID and parameters."""
+    the LSID and parameters.
+    """
 
     def __init__(self):
         self.params = []
@@ -232,10 +234,10 @@ class GPTask(GPResource):
 
     """
 
-    def __init__(self, lsid, serverData=None):
+    def __init__(self, lsid, server_data):
         GPResource.__init__(self, lsid)
-        request = urllib2.Request(serverData.url + 'rest/RunTask/load?lsid=' + lsid)
-        request.add_header('Authorization', serverData.authorizationHeader())
+        request = urllib2.Request(server_data.url + 'rest/RunTask/load?lsid=' + lsid)
+        request.add_header('Authorization', server_data.authorizationHeader())
         request.add_header('User-Agent', 'GenePatternRest')
         response = urllib2.urlopen(request)
         self.dto = json.loads(response.read())
@@ -377,7 +379,8 @@ class GPTaskParameter(object):
             return None
 
     def choiceAllowCustomValue(self):
-        """Returns boolean indicating whether choice parameter supports custom value.
+        """
+        Returns boolean indicating whether choice parameter supports custom value.
 
         If choice parameter supports custom value, user can provide parameter value
         other than those provided in choice list.
@@ -387,8 +390,9 @@ class GPTaskParameter(object):
         return bool(BooleanString(self.dto['choiceInfo']['choiceAllowCustom']))
 
     # this needs additional work - some kind of limited polling to give server time to assemble list
-    def getChoices(self, serverData=None):
-        """ returns a list of dictionary objects, one dictionary object per choice.
+    def getChoices(self, server_data):
+        """
+        Returns a list of dictionary objects, one dictionary object per choice.
 
         Each object has two keys defined: 'value', 'label'.
         The 'label' entry is what should be displayed on the UI, the 'value' entry
@@ -403,7 +407,7 @@ class GPTaskParameter(object):
             print "choice status not initialized"
 
             request = urllib2.Request(self.getChoiceHref())
-            request.add_header('Authorization', serverData.authorizationHeader())
+            request.add_header('Authorization', server_data.authorizationHeader())
             request.add_header('User-Agent', 'GenePatternRest')
             response = urllib2.urlopen(request)
             self.dto['choiceInfo'] = json.loads(response.read())
@@ -439,8 +443,9 @@ class BooleanString(str):
         return self.lower() in ('on', 'yes', 'true')
 
 
-def uploadFile(filename, filepath, serverData=None):
-    """Upload a file to a server
+def uploadFile(filename, filepath, server_data):
+    """
+    Upload a file to a server
     
     Attempts to upload a local file with path filepath, to the server, where it
     will be named filename.
@@ -448,15 +453,15 @@ def uploadFile(filename, filepath, serverData=None):
     Args:
         filename: The name that the uploaded file will be called on the server.
         filepath: The path of the local file to upload.
-        serverData: ServerData object used to make the server call.
+        server_data: ServerData object used to make the server call.
     
     Returns:
         A GPFile object that wraps the URI of the uploaded file, or None if the
         upload fails.
     """
 
-    request = urllib2.Request(serverData.url + 'rest/v1/data/upload/job_input?name=' + filename)
-    request.add_header('Authorization', serverData.authorizationHeader())
+    request = urllib2.Request(server_data.url + 'rest/v1/data/upload/job_input?name=' + filename)
+    request.add_header('Authorization', server_data.authorizationHeader())
     request.add_header('User-Agent', 'GenePatternRest')
     data = open(filepath, 'rb').read()
 
@@ -473,8 +478,9 @@ def uploadFile(filename, filepath, serverData=None):
     return GPFile(response.info().getheader('Location'))
 
 
-def runJob(jobspec, serverData=None, waitUntilDone=True):
-    """Runs a job defined by jobspec, optionally non-blocking.
+def runJob(jobspec, server_data, waitUntilDone=True):
+    """
+    Runs a job defined by jobspec, optionally non-blocking.
     
     Takes a JobSpec object that defines a request to run a job, and makes the
     request to the server.  By default blocks until the job is finished by
@@ -483,7 +489,7 @@ def runJob(jobspec, serverData=None, waitUntilDone=True):
     Args:
         jobspec: A JobSpec object that contains the data defining the job to be
             run.
-        serverData: ServerData object used to make the server call.
+        server_data: ServerData object used to make the server call.
         waitUntilDone: Whether to wait until the job is finished before
             returning.
     
@@ -496,8 +502,8 @@ def runJob(jobspec, serverData=None, waitUntilDone=True):
     # names should be a list of names,
     # values should be a list of **lists** of values
     jsonString = json.dumps({'lsid': jobspec.lsid, 'params': jobspec.params})
-    request = urllib2.Request(serverData.url + 'rest/v1/jobs')
-    request.add_header('Authorization', serverData.authorizationHeader())
+    request = urllib2.Request(server_data.url + 'rest/v1/jobs')
+    request.add_header('Authorization', server_data.authorizationHeader())
     request.add_header('Content-Type', 'application/json')
     request.add_header('User-Agent', 'GenePatternRest')
     response = urllib2.urlopen(request, jsonString)
@@ -506,15 +512,16 @@ def runJob(jobspec, serverData=None, waitUntilDone=True):
         return None
     job = GPJob(response.info().getheader('Location'))
     if waitUntilDone:
-        job.waitUntilDone(serverData)
+        job.waitUntilDone(server_data)
     return job
 
 
-def getTaskListOld(serverData):
-    """Get list of tasks (modules and pipelines) installed on GenePattern server.
+def getTaskListOld(server_data):
+    """
+    Get list of tasks (modules and pipelines) installed on GenePattern server.
 
     Args:
-        serverData: ServerData object used to make the server call.
+        server_data: ServerData object used to make the server call.
 
     Returns:
         A list of dictionary objects, one per task
@@ -525,9 +532,9 @@ def getTaskListOld(serverData):
     return taskList
 
 
-def getTaskList(serverData=None):
-    request = urllib2.Request(serverData.url + 'rest/v1/tasks/all.json')
-    request.add_header('Authorization', serverData.authorizationHeader())
+def getTaskList(server_data):
+    request = urllib2.Request(server_data.url + 'rest/v1/tasks/all.json')
+    request.add_header('Authorization', server_data.authorizationHeader())
     request.add_header('User-Agent', 'GenePatternRest')
     response = urllib2.urlopen(request)
     categoryAndTaskLists = json.loads(response.read())
