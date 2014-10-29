@@ -19,10 +19,15 @@ class GenePatternMagic(Magics):
         job.get_info(server)
         return job
 
-    # @line_magic
-    # def get_task(self, line):
-    #     task = GPTask(line)
-    #     return task
+    @line_magic
+    def get_task(self, line):
+        args = line.split(" ")          # Server URL, username, password, task name or lsid
+        if len(args) != 4:
+            return "Incorrect number of args. Need 4."
+
+        server = ServerData(args[0], args[1], args[2])
+        task = GPTask(args[3], server)
+        return task
 
 
 def load_ipython_extension(ipython):
