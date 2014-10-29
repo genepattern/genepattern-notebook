@@ -79,10 +79,36 @@ require(["widgets/js/widget"], function (WidgetManager) {
         },
 
         handle_click: function (evt) {
-            alert("Clicked!");
+            console.log("Clicked!");
         }
     });
 
     // Register the JobWidgetView with the widget manager.
     WidgetManager.register_widget_view('JobWidgetView', JobWidgetView);
+});
+
+require(["widgets/js/widget"], function (WidgetManager) {
+
+    var TaskWidgetView = IPython.WidgetView.extend({
+        render: function () {
+            // Render the view.
+            this.setElement($('<div/></div>'));
+            var json = this.model.get('json');
+            this.$el.runTask({
+                json: json
+            });
+        },
+
+        events: {
+            // List of events and their handlers.
+            'click': 'handle_click'
+        },
+
+        handle_click: function (evt) {
+            console.log("Clicked!");
+        }
+    });
+
+    // Register the TaskWidgetView with the widget manager.
+    WidgetManager.register_widget_view('TaskWidgetView', TaskWidgetView);
 });

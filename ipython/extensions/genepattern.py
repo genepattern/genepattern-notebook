@@ -2,33 +2,6 @@ from IPython.core.magic import Magics, magics_class, line_magic
 from client import *
 
 
-
-# class GPJob(object):
-#     def __init__(self, job_number):
-#         self.job_number = job_number
-#
-#     def _repr_html_(self):
-#         to_return = '<script type="text/javascript">gp.setServer("http://127.0.0.1:8080/gp");</script>'
-#         to_return = to_return + '<div class="gp-embed" name="' + self.job_number + '"></div>'
-#         to_return = to_return + '<script type="text/javascript">var w = $(".gp-embed[name=' + self.job_number + ']");</script>'
-#         to_return = to_return + '<script type="text/javascript">gp.tasks({ success: function() { w.jobResults({ jobNumber: ' + self.job_number + ' }); } });</script>'
-#
-#         return to_return
-#
-#
-# class GPTask(object):
-#     def __init__(self, name):
-#         self.name = name
-#
-#     def _repr_html_(self):
-#         to_return = '<script type="text/javascript">gp.setServer("http://127.0.0.1:8080/gp");</script>'
-#         to_return = to_return + '<div class="gp-embed" name=' + self.name + '></div>'
-#         to_return = to_return + '<script type="text/javascript">var w = $(\'.gp-embed[name=' + self.name + ']\');</script>'
-#         to_return = to_return + '<script type="text/javascript">gp.tasks({ success: function() { w.runTask({ name: ' + self.name + ' }); } });</script>'
-#
-#         return to_return
-
-
 @magics_class
 class GenePatternMagic(Magics):
     """

@@ -6,7 +6,7 @@ from contextlib import closing
 from IPython.html import widgets
 from IPython.utils.traitlets import Unicode, List, Integer
 
-# API for GenePattern server.
+# API for GenePattern server
 
 # This API contains:
 #
@@ -355,7 +355,7 @@ class GPTaskListElement(object):
         return self.dto['suites']
 
 
-class GPTask(GPResource):
+class GPTask(GPResource, widgets.DOMWidget):
     """Describes a GenePattern task (module or pipeline).
 
     The constructor retrieves data transfer object (DTO) describing task from GenePattern server.
@@ -364,14 +364,35 @@ class GPTask(GPResource):
     components.
 
     """
+    _view_name = Unicode('TaskWidgetView', sync=True)  # Define the widget's view
+    json = Unicode(sync=True)  # Define the backing JSON string
 
-    def __init__(self, lsid, server_data):
+    def __init__(self, lsid, server_data, **kwargs):
         GPResource.__init__(self, lsid)
-        request = urllib2.Request(server_data.url + 'rest/RunTask/load?lsid=' + lsid)
+        widgets.DOMWidget.__init__(self, **kwargs)
+
+        request = urllib2.Request(server_data.url + '/rest/RunTask/load?lsid=' + lsid)
         request.add_header('Authorization', server_data.authorization_header())
         request.add_header('User-Agent', 'GenePatternRest')
         response = urllib2.urlopen(request)
-        self.dto = json.loads(response.read())
+        self.json = response.read()
+        self.dto = json.loads(self.json)
+
+        self.errors = widgets.CallbackDispatcher(accepted_nargs=[0, 1])
+        self.on_msg(self._handle_custom_msg)
+
+    def _handle_custom_msg(self, content):
+        """
+        Handle a msg from the front-end.
+
+        Parameters
+        ----------
+        content: dict
+        Content of the msg.
+        """
+        if 'event' in content and content['event'] == 'error':
+            self.errors()
+            self.errors(self)
 
     def get_dto(self):
         return self.dto
