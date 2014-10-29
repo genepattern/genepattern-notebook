@@ -97,7 +97,7 @@ class ServerData(object):
         # names should be a list of names,
         # values should be a list of **lists** of values
         json_string = json.dumps({'lsid': jobspec.lsid, 'params': jobspec.params})
-        request = urllib2.Request(self.url + 'rest/v1/jobs')
+        request = urllib2.Request(self.url + '/rest/v1/jobs')
         request.add_header('Authorization', self.authorization_header())
         request.add_header('Content-Type', 'application/json')
         request.add_header('User-Agent', 'GenePatternRest')
@@ -374,6 +374,10 @@ class GPTask(GPResource, widgets.DOMWidget):
     version = Unicode(sync=True)
     params = List(sync=True)
 
+    submit_json = Unicode(sync=True)
+    job_spec = None
+    job = None
+
     def __init__(self, name_or_lsid, server_data, **kwargs):
         GPResource.__init__(self, name_or_lsid)
         widgets.DOMWidget.__init__(self, **kwargs)
@@ -384,6 +388,7 @@ class GPTask(GPResource, widgets.DOMWidget):
         response = urllib2.urlopen(request)
         self.json = response.read()
         self.dto = json.loads(self.json)
+        self.server_data = server_data
 
         self.description = self.dto['description']
         self.name = self.dto['name']
@@ -394,6 +399,16 @@ class GPTask(GPResource, widgets.DOMWidget):
 
         self.errors = widgets.CallbackDispatcher(accepted_nargs=[0, 1])
         self.on_msg(self._handle_custom_msg)
+
+    def _submit_json_changed(self):
+        submit_dto = json.loads(self.submit_json)
+        self.job_spec = JobSpec()
+        self.job_spec.lsid = submit_dto['lsid']
+        for p in submit_dto['params']:
+            name = p['name']
+            value = p['values']
+            self.job_spec.set_parameter(name, value)
+        self.job = self.server_data.run_job(self.job_spec, False)
 
     def _handle_custom_msg(self, content):
         """
@@ -422,10 +437,10 @@ class GPTask(GPResource, widgets.DOMWidget):
 
         If task has no description, throws GenePatternException.
         """
-        return "DESCRIPTION NOT YET SUPPORTED"
+        return self.dto['description']
 
     def get_version_comment(self):
-        return "VERSION NOT YET SUPPORTED"
+        return self.dto['version']
 
     def get_parameters(self):
         return self.dto['params']

@@ -752,7 +752,8 @@ $.widget("gp.runTask", {
     options: {
         lsid: null,
         name: null,
-        json: null
+        json: null,
+        view: null
     },
 
     /**
@@ -1111,35 +1112,55 @@ $.widget("gp.runTask", {
         var jobInput = this._task.jobInput();
         var widget = this;
 
-        this.uploadAll({
-            success: function() {
-                // Assign values from the inputs to the job input
-                var uiParams = widget.element.find(".task-widget-param");
-                for (var i = 0; i < uiParams.length; i++) {
-                    var uiParam = $(uiParams[i]);
-                    var uiInput = uiParam.find(".task-widget-param-input");
-                    var uiValue = widget._getInputValue(uiInput);
+        if (this.options.view) {
+            var uiParams = widget.element.find(".task-widget-param");
+            for (var i = 0; i < uiParams.length; i++) {
+                var uiParam = $(uiParams[i]);
+                var uiInput = uiParam.find(".task-widget-param-input");
+                var uiValue = widget._getInputValue(uiInput);
 
-                    if (uiValue !== null) {
-                        var objParam = jobInput.params()[i];
-                        objParam.values([uiValue]);
-                    }
+                if (uiValue !== null) {
+                    var objParam = jobInput.params()[i];
+                    objParam.values([uiValue]);
                 }
-
-                // Submit the job input
-                jobInput.submit({
-                    success: function(response, jobNumber) {
-                        widget.successMessage("Job successfully submitted! Job ID: " + jobNumber);
-                    },
-                    error: function(exception) {
-                        widget.errorMessage("Error submitting job: " + exception.statusText);
-                    }
-                });
-            },
-            error: function(exception) {
-                widget.errorMessage("Error uploading in preparation of job submission: " + exception.statusText);
             }
-        });
+
+            this.options.view.model.set('submit_json', JSON.stringify(jobInput._submitJson_()));
+            this.options.view.touch();
+            var jobNumber = this.options.view.model.get('job_number');
+            this.successMessage("Job successfully submitted! Job ID: " + jobNumber);
+        }
+        else {
+            this.uploadAll({
+                success: function() {
+                    // Assign values from the inputs to the job input
+                    var uiParams = widget.element.find(".task-widget-param");
+                    for (var i = 0; i < uiParams.length; i++) {
+                        var uiParam = $(uiParams[i]);
+                        var uiInput = uiParam.find(".task-widget-param-input");
+                        var uiValue = widget._getInputValue(uiInput);
+
+                        if (uiValue !== null) {
+                            var objParam = jobInput.params()[i];
+                            objParam.values([uiValue]);
+                        }
+                    }
+
+                    // Submit the job input
+                    jobInput.submit({
+                        success: function(response, jobNumber) {
+                            widget.successMessage("Job successfully submitted! Job ID: " + jobNumber);
+                        },
+                        error: function(exception) {
+                            widget.errorMessage("Error submitting job: " + exception.statusText);
+                        }
+                    });
+                },
+                error: function(exception) {
+                    widget.errorMessage("Error uploading in preparation of job submission: " + exception.statusText);
+                }
+            });
+        }
     },
 
     /**

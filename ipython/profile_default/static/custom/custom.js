@@ -98,7 +98,8 @@ require(["widgets/js/widget"], function (WidgetManager) {
             this.setElement($('<div/></div>'));
             var json = this.model.get('json');
             this.$el.runTask({
-                json: json
+                json: json,
+                view: this
             });
         },
 
