@@ -73,7 +73,7 @@ class ServerData(object):
 
         return GPFile(response.info().getheader('Location'))
 
-    def run_job(self, jobspec, wait_until_done=True):
+    def run_job(self, job_spec, wait_until_done=True):
         """
         Runs a job defined by jobspec, optionally non-blocking.
 
@@ -96,7 +96,7 @@ class ServerData(object):
 
         # names should be a list of names,
         # values should be a list of **lists** of values
-        json_string = json.dumps({'lsid': jobspec.lsid, 'params': jobspec.params})
+        json_string = json.dumps({'lsid': job_spec.lsid, 'params': job_spec.params})
         request = urllib2.Request(self.url + '/rest/v1/jobs')
         request.add_header('Authorization', self.authorization_header())
         request.add_header('Content-Type', 'application/json')
@@ -106,6 +106,7 @@ class ServerData(object):
             print " job POST failed, status code = %i" % response.getcode()
             return None
         job = GPJob(response.info().getheader('Location'))
+        job.get_info(job_spec.server_data)
         if wait_until_done:
             job.wait_until_done(self)
         return job
@@ -268,6 +269,10 @@ class JobSpec(object):
     def __init__(self):
         self.params = []
         self.lsid = None
+        self.server_data = None
+
+    def set_server_data(self, server):
+        self.server_data = server
 
     def set_lsid(self, lsid):
         self.lsid = lsid
@@ -403,6 +408,7 @@ class GPTask(GPResource, widgets.DOMWidget):
     def _submit_json_changed(self):
         submit_dto = json.loads(self.submit_json)
         self.job_spec = JobSpec()
+        self.job_spec.set_server_data(self.server_data)
         self.job_spec.lsid = submit_dto['lsid']
         for p in submit_dto['params']:
             name = p['name']

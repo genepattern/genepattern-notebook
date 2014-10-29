@@ -1127,8 +1127,7 @@ $.widget("gp.runTask", {
 
             this.options.view.model.set('submit_json', JSON.stringify(jobInput._submitJson_()));
             this.options.view.touch();
-            var jobNumber = this.options.view.model.get('job_number');
-            this.successMessage("Job successfully submitted! Job ID: " + jobNumber);
+            this.successMessage("Job successfully submitted!");
         }
         else {
             this.uploadAll({
