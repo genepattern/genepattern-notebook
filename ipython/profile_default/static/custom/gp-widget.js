@@ -751,7 +751,8 @@ $.widget("gp.choiceInput", {
 $.widget("gp.runTask", {
     options: {
         lsid: null,
-        name: null
+        name: null,
+        json: null
     },
 
     /**
@@ -887,7 +888,8 @@ $.widget("gp.runTask", {
      */
     _getIdentifier: function() {
         if (this.options.lsid) { return this.options.lsid; }
-        else if (this.options.name) { return this.options.name }
+        else if (this.options.name) { return this.options.name; }
+        else if (this.options.json) { return this.options.json['lsid']; }
         else {
             throw "Error creating Run Task widget! No LSID or name!";
         }
@@ -901,7 +903,15 @@ $.widget("gp.runTask", {
      * @private
      */
     _loadTask: function(identifier) {
-        return gp.task(identifier);
+        // If JSON set
+        if (this.options.json) {
+            var jsonObj = JSON.parse(this.options.json);
+            return new gp.Task(jsonObj);
+        }
+        // If JSON not set
+        else {
+            return gp.task(identifier);
+        }
     },
 
     /**
@@ -1197,7 +1207,7 @@ $.widget("gp.jobResults", {
      */
     _create: function() {
         // Ensure the job number is defined
-        if (typeof this.options.jobNumber !== 'number') {
+        if (typeof this.options.jobNumber !== 'number' && !this.options.json) {
             throw "The job number is not correctly defined, cannot create job results widget";
         }
 
@@ -1330,15 +1340,15 @@ $.widget("gp.jobResults", {
         this.element.find(".job-widget-submitted").text(submittedText);
 
         // Display the status
-        var statusText = widget._statusText(job.status());
+        var statusText = this._statusText(job.status());
         this.element.find(".job-widget-status").text(statusText);
 
         // Display the job results
-        var outputsList = widget._outputsList(job.outputFiles());
+        var outputsList = this._outputsList(job.outputFiles());
         this.element.find(".job-widget-outputs").append(outputsList);
 
         // Display the log files
-        var logList = widget._outputsList(job.logFiles());
+        var logList = this._outputsList(job.logFiles());
         this.element.find(".job-widget-outputs").append(logList);
 
         // Initialize status polling
