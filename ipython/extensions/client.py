@@ -1,4 +1,5 @@
 import urllib2
+import urllib
 import base64
 import json
 import time
@@ -364,19 +365,32 @@ class GPTask(GPResource, widgets.DOMWidget):
     components.
 
     """
-    _view_name = Unicode('TaskWidgetView', sync=True)  # Define the widget's view
-    json = Unicode(sync=True)  # Define the backing JSON string
+    _view_name = Unicode('TaskWidgetView', sync=True)   # Define the widget's view
+    json = Unicode(sync=True)                           # Define the backing JSON string
+    description = Unicode(sync=True)
+    name = Unicode(sync=True)
+    documentation = Unicode(sync=True)
+    lsid = Unicode(sync=True)
+    version = Unicode(sync=True)
+    params = List(sync=True)
 
-    def __init__(self, lsid, server_data, **kwargs):
-        GPResource.__init__(self, lsid)
+    def __init__(self, name_or_lsid, server_data, **kwargs):
+        GPResource.__init__(self, name_or_lsid)
         widgets.DOMWidget.__init__(self, **kwargs)
 
-        request = urllib2.Request(server_data.url + '/rest/RunTask/load?lsid=' + lsid)
+        request = urllib2.Request(server_data.url + '/rest/v1/tasks/' + urllib.quote(name_or_lsid))
         request.add_header('Authorization', server_data.authorization_header())
         request.add_header('User-Agent', 'GenePatternRest')
         response = urllib2.urlopen(request)
         self.json = response.read()
         self.dto = json.loads(self.json)
+
+        self.description = self.dto['description']
+        self.name = self.dto['name']
+        self.documentation = self.dto['documentation']
+        self.lsid = self.dto['lsid']
+        self.version = self.dto['version']
+        self.params = self.dto['params']
 
         self.errors = widgets.CallbackDispatcher(accepted_nargs=[0, 1])
         self.on_msg(self._handle_custom_msg)
@@ -398,35 +412,23 @@ class GPTask(GPResource, widgets.DOMWidget):
         return self.dto
 
     def get_lsid(self):
-        return self.dto['module']['LSID']
+        return self.dto['lsid']
 
     def get_name(self):
-        return self.dto['module']['name']
-
-    # note that in v3.7.0 only support single category per task.
-    # will introduce support for multiple catories per task in v3.8.0.
-    # will need to introduce getCategories() for 3.8.0
-    def get_category(self):
-        return self.dto['module']['taskType']
+        return self.dto['name']
 
     def get_description(self):
         """ Returns task description.
 
         If task has no description, throws GenePatternException.
         """
-
-        if not 'description' in self.dto['module']:
-            raise GenePatternException('no task description')
-        return self.dto['module']['description']
+        return "DESCRIPTION NOT YET SUPPORTED"
 
     def get_version_comment(self):
-        return self.dto['module']['version']
+        return "VERSION NOT YET SUPPORTED"
 
     def get_parameters(self):
-        return self.dto['parameters']
-
-    def get_initial_values(self):
-        return self.dto['initialValues']
+        return self.dto['params']
 
 
 class GPTaskParameter(object):

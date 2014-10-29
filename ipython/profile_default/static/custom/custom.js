@@ -56,6 +56,9 @@ jQuery.getScript("/static/custom/gp.js").done(function() {
 jQuery.getScript("/static/custom/gp-widget.js");
 $('head')
     .append($('<link rel="stylesheet" type="text/css" />')
+    .attr('href', '/static/custom/jquery-ui.css'));
+$('head')
+    .append($('<link rel="stylesheet" type="text/css" />')
     .attr('href', '/static/custom/gp-widget.css'));
 
 /**

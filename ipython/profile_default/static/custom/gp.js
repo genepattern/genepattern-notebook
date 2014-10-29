@@ -308,6 +308,16 @@ gp.Task = function(taskJson) {
     this._lsid = null;
     this._params = null;
 
+    this._buildParams = function(params) {
+        if (params) {
+            this._params = [];
+            for (var i = 0; i < params.length; i++) {
+                var param = params[i];
+                this._params.push(new gp.Param(param));
+            }
+        }
+    };
+
     /**
      * Constructor-like initialization for the Task class
      *
@@ -323,6 +333,9 @@ gp.Task = function(taskJson) {
             this._suites = taskJson.suites;
             this._version = taskJson.version;
             this._lsid = taskJson.lsid;
+            if (taskJson.params) {
+                this._buildParams(taskJson.params);
+            }
         }
     };
     this._init_();
@@ -372,13 +385,7 @@ gp.Task = function(taskJson) {
                 .done(function(response) {
                     // Add params to Task object
                     var params = response['params'];
-                    if (params) {
-                        task._params = [];
-                        for (var i = 0; i < params.length; i++) {
-                            var param = params[i];
-                            task._params.push(new gp.Param(param));
-                        }
-                    }
+                    task._buildParams(params);
 
                     if (pObj && pObj.success) {
                         pObj.success(response, task._params);
@@ -798,7 +805,7 @@ gp.Param = function(paramJson) {
             if (paramJson) {
                 this._name = Object.keys(paramJson)[0];
                 this._description = paramJson[this._name]['description'];
-                this._choices = paramJson[this._name]['choices'] ? paramJson[this._name]['choices'] : null;
+                this._choices = paramJson[this._name]['choiceInfo'] ? this._parseChoices(paramJson[this._name]['choiceInfo']) : null;
                 this._values = null;
                 this._batchParam = false;
                 this._groupId = null;
@@ -809,7 +816,28 @@ gp.Param = function(paramJson) {
             }
         }
     };
-    this._init_();
+
+    /**
+     * Parses the choice info JSON returned by the server into the expected format
+     *
+     * @param choiceInfo - The choice info JSON
+     * @returns {*}
+     * @private
+     */
+    this._parseChoices = function(choiceInfo) {
+        if (choiceInfo['choices']) {
+            var choices = {};
+            for (var i = 0; i < choiceInfo['choices'].length; i++) {
+                var choice = choiceInfo['choices'][i];
+                choices[choice['label']] = choice['value'];
+            }
+            return choices;
+        }
+        else {
+            console.log("No choices in choice info. Dynamic choices not yet supported.");
+            return null;
+        }
+    };
 
     /**
      * Return a clone of this param
@@ -978,4 +1006,6 @@ gp.Param = function(paramJson) {
             return this._type;
         }
     };
+
+    this._init_();
 };
