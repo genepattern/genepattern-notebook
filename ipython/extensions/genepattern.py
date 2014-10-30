@@ -1,5 +1,6 @@
 from IPython.core.magic import Magics, magics_class, line_magic
 from client import *
+from broadprotocol import *
 
 
 @magics_class

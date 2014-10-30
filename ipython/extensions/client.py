@@ -395,11 +395,11 @@ class GPTask(GPResource, widgets.DOMWidget):
         self.dto = json.loads(self.json)
         self.server_data = server_data
 
-        self.description = self.dto['description']
+        self.description = self.dto['description'] if 'description' in self.dto else ""
         self.name = self.dto['name']
-        self.documentation = self.dto['documentation']
+        self.documentation = self.dto['documentation'] if 'documentation' in self.dto else ""
         self.lsid = self.dto['lsid']
-        self.version = self.dto['version']
+        self.version = self.dto['version'] if 'version' in self.dto else ""
         self.params = self.dto['params']
 
         self.errors = widgets.CallbackDispatcher(accepted_nargs=[0, 1])
