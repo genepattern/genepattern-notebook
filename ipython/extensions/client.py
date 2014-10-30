@@ -226,6 +226,12 @@ class GPJob(GPResource, widgets.DOMWidget):
 
         self.status = self.get_status_message()
 
+    # def _task_name_changed(self):
+    #     return True
+    #
+    # def _json_changed(self):
+    #     return True
+
     def is_finished(self, server_data):
 
         self.get_info(server_data)
@@ -241,7 +247,10 @@ class GPJob(GPResource, widgets.DOMWidget):
         return self.info['status']['statusMessage']
 
     def get_output_files(self):
-        return [GPFile(f['link']['href']) for f in self.info['outputFiles']]
+        if 'outputFiles' in self.info:
+            return [GPFile(f['link']['href']) for f in self.info['outputFiles']]
+        else:
+            return []
 
     def wait_until_done(self, server_data):
         wait = 1
