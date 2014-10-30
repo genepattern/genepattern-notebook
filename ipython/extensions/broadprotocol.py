@@ -18,7 +18,8 @@ def load_session_state(session_file):
             if not i.startswith('__'):
                 obj = getattr(state, i)
                 pickle_obj = unpickle(obj)
-                setattr(state, i, pickle_obj)
+                if pickle_obj != obj:
+                    setattr(state, i, pickle_obj)
         return state
 
 
@@ -27,7 +28,8 @@ def save_session_state(session_state, session_file):
         if not i.startswith('__'):
             obj = getattr(session_state, i)
             pickle_obj = pickle(obj)
-            setattr(session_state, i, pickle_obj)
+            if pickle_obj != obj:
+                setattr(session_state, i, pickle_obj)
 
     with open(session_file, 'w') as outfile:
         outfile.write(jsonpickle.encode(session_state))
