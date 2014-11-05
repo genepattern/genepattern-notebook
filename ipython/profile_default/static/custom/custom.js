@@ -60,6 +60,113 @@ $('head')
 $('head')
     .append($('<link rel="stylesheet" type="text/css" />')
     .attr('href', '/static/custom/gp-widget.css'));
+$('body')
+    .append(
+    	$('<div></div>')
+    		.attr("id", "left-nav")
+    		.addClass("left-nav")
+    		.hide()
+    		.append(
+    			$('<ul></ul>')
+    				.addClass("nav nav-tabs left-nav-tabs")
+    				.attr("role", "tablist")
+    				.append(
+    					$('<li></li>')
+    						.addClass("active left-nav-modules-tab")
+    						.attr("role", "presentation")
+    						.append(
+    							$('<a></a>')
+    								.attr("href", "#left-nav-modules")
+    								.attr("role", "tab")
+    								.attr("data-toggle", "tab")
+    								.text("Modules")
+    								.click(function() {
+    									$(".left-nav-tab").hide();
+    									$($(this).attr("href")).show();
+    								})
+    						)
+    				)
+    				.append(
+    					$('<li></li>')
+    						.addClass("left-nav-jobs-tab")
+    						.attr("role", "presentation")
+    						.append(
+    							$('<a></a>')
+    								.attr("href", "#left-nav-jobs")
+    								.attr("role", "tab")
+    								.attr("data-toggle", "tab")
+    								.text("Jobs")
+    								.click(function() {
+    									$(".left-nav-tab").hide();
+    									$($(this).attr("href")).show();
+    								})
+    						)
+    				)
+    				.append(
+    					$('<li></li>')
+    						.addClass("left-nav-files-tab")
+    						.attr("role", "presentation")
+    						.append(
+    							$('<a></a>')
+    								.attr("href", "#left-nav-files")
+    								.attr("role", "tab")
+    								.attr("data-toggle", "tab")
+    								.text("Files")
+    								.click(function() {
+    									$(".left-nav-tab").hide();
+    									$($(this).attr("href")).show();
+    								})
+    						)
+    				)
+    		)
+    		.append(
+    			$('<div></div>')
+    				.addClass("tab-content")
+	    			.append(
+    					$('<div></div>')
+    						.attr("id", "left-nav-modules")
+    						.addClass("tab-pane active left-nav-tab")
+    						.attr("role", "tabpanel")
+    						.append(
+    							$('<div></div>')
+    							.addClass("left-nav-top")
+	    						.append(
+    								$('<div></div>')
+    									.addClass("module-search-block")
+    									.append(
+    										$('<input></input>')
+    											.addClass("module-search-box")
+    											.attr("type", "search")
+    											.attr("placeholder", "Search Modules & Pipelines")
+    									)
+	    						)
+    							.append(
+    								$('<div></div>')
+    									.addClass("module-browse-button")
+    									.append(
+    										$('<button></button>')
+    											.addClass("btn")
+    											.text("Browse Modules ›")
+    									)
+	    						)
+    						)
+    				)
+    				.append(
+    					$('<div></div>')
+    						.attr("id", "left-nav-jobs")
+	    					.addClass("tab-pane left-nav-tab")
+	    					.attr("role", "tabpanel")
+    				)
+    				.append(
+    					$('<div></div>')
+    						.attr("id", "left-nav-files")
+    						.addClass("tab-pane left-nav-tab")
+    						.attr("role", "tabpanel")
+    				)
+    		)
+    );
+$(".left-nav").show();
+$(".left-nav").find(".active").show();
 
 /**
  * Define the IPython GenePattern Job widget
