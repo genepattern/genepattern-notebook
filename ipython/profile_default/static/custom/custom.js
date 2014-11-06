@@ -54,6 +54,7 @@ jQuery.getScript("/static/custom/gp.js").done(function() {
     gp.setServer("http://127.0.0.1:8080/gp");
 });
 jQuery.getScript("/static/custom/gp-widget.js");
+jQuery.getScript("/static/custom/jquery.leftnav.js");
 $('head')
     .append($('<link rel="stylesheet" type="text/css" />')
     .attr('href', '/static/custom/jquery-ui.css'));
@@ -138,6 +139,18 @@ $('body')
     											.addClass("module-search-box")
     											.attr("type", "search")
     											.attr("placeholder", "Search Modules & Pipelines")
+    											.keyup(function(event) {
+	                    							if ($(".search-widget:visible").length === 0) {
+	                    								$("#module-search").searchslider("show");
+	                        							setModuleSearchTitle($(this).val());
+	                    							}
+	                    							$("#module-search").searchslider("show");
+	                    							$("#module-search").searchslider("filter", $(this).val());
+	                    							setModuleSearchTitle($(this).val());
+	                    							
+	                    							event.stopPropagation();
+    												event.preventDefault();
+    											})
     									)
 	    						)
     							.append(
@@ -147,6 +160,10 @@ $('body')
     										$('<button></button>')
     											.addClass("btn")
     											.text("Browse Modules ›")
+    											.click(function() {
+    												$(".module-search-box").val("");
+	                								$("#module-browse").searchslider("show");
+    											})
     									)
 	    						)
     						)
@@ -167,6 +184,204 @@ $('body')
     );
 $(".left-nav").show();
 $(".left-nav").find(".active").show();
+
+$('body')
+    .append(
+    	$('<div></div>')
+    		.attr("id", "module-search")
+    		.hide()
+    ) 
+$('body')
+    .append(
+    	$('<div></div>')
+    		.attr("id", "module-browse")
+    		.hide()
+    )
+
+
+// Load the modules
+var all_modules = null;
+var kindToModules = null;
+var all_categories = null;
+var all_suites = null;
+var all_modules_map = null;
+
+
+function setModuleSearchTitle(filter) {
+    if (filter === '') {
+        $("#module-search").searchslider("set_title", "Search: Modules &amp; Pipelines");
+    }
+    else {
+        $("#module-search").searchslider("set_title", "Search: " + filter);
+    }
+}
+
+
+function initAllModulesMap(all_modules) {
+    var modMap = {};
+
+    for (var i = 0; i < all_modules.length; i++) {
+        var mod = all_modules[i];
+        modMap[mod.lsid] = mod;
+    }
+
+    all_modules_map = modMap;
+}
+
+function initSearchSlider() {
+    var still_loading = false;
+
+    var search = $('<div id="module-list-search"></div>').modulelist({
+        title: 'Search: Modules &amp; Pipelines',
+        data: all_modules,
+        droppable: false,
+        draggable: true,
+        click: function(event) {
+            var lsid = $(event.target).closest(".module-listing").module("get_lsid");
+            if (!still_loading) {
+                still_loading = true;
+                setTimeout(function() {
+                    console.log(still_loading);
+                    still_loading = false;
+                }, 400);
+                loadRunTaskForm(lsid, false);
+            }
+        }
+    });
+
+    $('#module-search').searchslider({
+        lists: [search]
+    });
+}
+
+function initBrowseTop() {
+    return $('<div id="module-list-allnsuite"></div>').modulelist({
+        title: 'Browse Modules &amp; Pipelines',
+        data: [
+            {
+                "lsid": "",
+                "name": "All Modules",
+                "description": "Browse an alphabetical listing of all installed GenePattern modules and pipelines.",
+                "version": "",
+                "documentation": "http://genepattern.org",
+                "categories": [],
+                "suites": [],
+                "tags": []
+            },
+
+            {
+                "lsid": "",
+                "name": "Browse by Suite",
+                "description": "Browse available modules and pipelines by associated suites.",
+                "version": "",
+                "documentation": "http://genepattern.org",
+                "categories": [],
+                "suites": [],
+                "tags": []
+            }
+        ],
+        droppable: false,
+        draggable: false,
+        click: function(event) {
+            var button = $(event.currentTarget).find(".module-name").text();
+            if (button == 'All Modules') {
+                var modSearch = $("#module-search");
+                modSearch.searchslider("show");
+                modSearch.searchslider("filter", '');
+                modSearch.searchslider("set_title", '<a href="#" onclick="$(\'#module-browse\').searchslider(\'show\');">Browse Modules</a> &raquo; All Modules');
+            }
+            else {
+                $("#module-suites").searchslider("show");
+            }
+        }
+    });
+}
+
+function initBrowseModules() {
+    return $('<div id="module-list-browse"></div>').modulelist({
+        title: 'Browse Modules by Category',
+        data: all_categories,
+        droppable: false,
+        draggable: false,
+        click: function(event) {
+            var filter = $(event.currentTarget).find(".module-name").text();
+            var modSearch = $("#module-search");
+            modSearch.searchslider("show");
+            modSearch.searchslider("tagfilter", filter);
+            modSearch.searchslider("set_title", '<a href="#" onclick="$(\'#module-browse\').searchslider(\'show\');">Browse Modules</a> &raquo; ' + filter);
+        }
+    });
+}
+
+function initBrowseSuites() {
+    var browse = $('<div id="module-list-suites"></div>').modulelist({
+        title: '<a href="#" onclick="$(\'#module-browse\').searchslider(\'show\');">Browse Modules</a> &raquo; Browse Suites',
+        data: all_suites,
+        droppable: false,
+        draggable: false,
+        click: function(event) {
+            var filter = $(event.currentTarget).find(".module-name").text();
+            var modSearch = $("#module-search");
+            modSearch.searchslider("show");
+            modSearch.searchslider("tagfilter", filter);
+            modSearch.searchslider("set_title", '<a href="#" onclick="$(\'#module-browse\').searchslider(\'show\');">Browse Modules</a> &raquo; <a href="#" onclick="$(\'#module-suites\').searchslider(\'show\');">Browse Suites</a> &raquo; ' + filter);
+        }
+    });
+
+    $('#module-suites').searchslider({
+        lists: [browse]
+    });
+}
+
+
+
+	            	$.ajax({
+                        cache: false,
+	                    url: 'http://127.0.0.1:8080/gp/rest/v1/tasks/all.json',
+	                    dataType: 'json',
+	                    xhrFields: {
+                    		withCredentials: true
+                		},
+	                    //beforeSend: function (xhr) {
+    					//	xhr.setRequestHeader ("Authorization", "Basic " + btoa("tabor"));
+						//},
+	                    success: function(data, status, xhr) {
+	                    	all_modules = data.all_modules;
+                            initAllModulesMap(all_modules);
+                            kindToModules = data.kindToModules;
+	                    	
+	                    	// Initialize the displays on the left nav bar
+	                    	//$("#loading-modules").hide();
+	                    	//initPinned();
+	                    	//initRecent();
+
+	                    	// Initialize the search slider
+	                    	initSearchSlider();
+	                    	
+	                    	all_categories = data.all_categories;
+	                        // Initialize the module browse button and slider
+	                        var allnsuite = initBrowseTop();
+	                        var browse = initBrowseModules();
+	                                
+	                        // Initialize the slider
+	                        var modbrowse = $('#module-browse').searchslider({
+	                            lists: [allnsuite, browse]
+	                        });
+	                        
+	                        // Initialize the suites slider
+	                        all_suites = data.all_suites;
+	                        initBrowseSuites();
+	                    },
+                        error: function(data) {
+                            var userAborted = !data.getAllResponseHeaders();
+                            if (!userAborted) {
+                                $("#loading-modules").text("Error Loading Modules");
+                                $("#loading-modules").css("color", "red");
+                                $("#loading-modules").css("font-size", "14pt");
+                            }
+                        }
+	                });
+
 
 /**
  * Define the IPython GenePattern Job widget
