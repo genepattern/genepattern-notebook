@@ -140,6 +140,16 @@ $('body')
     											.attr("type", "search")
     											.attr("placeholder", "Search Modules & Pipelines")
     											.keyup(function(event) {
+    												// Handle backspace
+    												if (event.keyCode === 8) {
+    													$(this).val($(this).val().substring(0, $(this).val().length-1));
+    												}
+    												
+    												// Handle standard characters 
+    												if (event.key.length === 1) {
+    													$(this).val($(this).val() + event.key);
+    												}
+    											
 	                    							if ($(".search-widget:visible").length === 0) {
 	                    								$("#module-search").searchslider("show");
 	                        							setModuleSearchTitle($(this).val());
@@ -148,7 +158,19 @@ $('body')
 	                    							$("#module-search").searchslider("filter", $(this).val());
 	                    							setModuleSearchTitle($(this).val());
 	                    							
+	                    							event.stopImmediatePropagation();
 	                    							event.stopPropagation();
+    												event.preventDefault();
+    											})
+    											.keypress(function(event) {
+    												event.stopImmediatePropagation();
+	                    							event.stopPropagation();
+    												event.preventDefault();
+    											})
+    											.keydown(function(event) {
+    												console.log(event);
+    												event.stopImmediatePropagation();
+    												event.stopPropagation();
     												event.preventDefault();
     											})
     									)
@@ -228,6 +250,15 @@ function initAllModulesMap(all_modules) {
     all_modules_map = modMap;
 }
 
+function addTaskCell(lsid) {
+	var selectedIndex = IPython.notebook.get_selected_index();
+	var cell = IPython.notebook.insert_cell_at_index("code", selectedIndex + 1);
+	var textArea = $(cell.element).find("textarea");
+	cell.set_text("%get_task http://127.0.0.1:8080/gp tabor \"\" " + lsid);
+	cell.execute();
+	$(".search-widget").searchslider("hide");
+}
+
 function initSearchSlider() {
     var still_loading = false;
 
@@ -244,7 +275,7 @@ function initSearchSlider() {
                     console.log(still_loading);
                     still_loading = false;
                 }, 400);
-                loadRunTaskForm(lsid, false);
+                addTaskCell(lsid);
             }
         }
     });
