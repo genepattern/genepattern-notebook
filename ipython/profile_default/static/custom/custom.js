@@ -135,7 +135,7 @@ $('body')
     								$('<div></div>')
     									.addClass("module-search-block")
     									.append(
-    										$('<input></input>')
+    										$('<input/>')
     											.addClass("module-search-box")
     											.attr("type", "search")
     											.attr("placeholder", "Search Modules & Pipelines")
