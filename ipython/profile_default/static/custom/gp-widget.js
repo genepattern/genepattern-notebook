@@ -1128,6 +1128,18 @@ $.widget("gp.runTask", {
             this.options.view.model.set('submit_json', JSON.stringify(jobInput._submitJson_()));
             this.options.view.touch();
             this.successMessage("Job successfully submitted!");
+            
+            
+            // FIXME: IPython hack
+            setTimeout(function() {
+            	var jobNumber = widget.options.view.model.get('job_number');
+            				var selectedIndex = IPython.notebook.get_selected_index();
+							var cell = IPython.notebook.insert_cell_at_index("code", selectedIndex + 1);
+							var textArea = $(cell.element).find("textarea");
+							cell.set_text("%get_job http://127.0.0.1:8080/gp tabor \"\" " + jobNumber);
+							cell.execute();
+            }, 2000);
+            
         }
         else {
             this.uploadAll({

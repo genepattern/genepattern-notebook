@@ -394,6 +394,7 @@ class GPTask(GPResource, widgets.DOMWidget):
     submit_json = Unicode(sync=True)
     job_spec = None
     job = None
+    job_number = Integer(sync=True)
 
     def __init__(self, name_or_lsid, server_data, **kwargs):
         GPResource.__init__(self, name_or_lsid)
@@ -427,6 +428,7 @@ class GPTask(GPResource, widgets.DOMWidget):
             value = p['values']
             self.job_spec.set_parameter(name, value)
         self.job = self.server_data.run_job(self.job_spec, False)
+        self.job_number = self.job.job_number
 
     def _handle_custom_msg(self, content):
         """
