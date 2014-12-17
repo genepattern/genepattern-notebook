@@ -96,7 +96,7 @@ class ServerData(object):
 
         # names should be a list of names,
         # values should be a list of **lists** of values
-        json_string = json.dumps({'lsid': job_spec.lsid, 'params': job_spec.params})
+        json_string = json.dumps({'lsid': job_spec.lsid, 'params': job_spec.params})      
         request = urllib2.Request(self.url + '/rest/v1/jobs')
         request.add_header('Authorization', self.authorization_header())
         request.add_header('Content-Type', 'application/json')
@@ -286,10 +286,13 @@ class JobSpec(object):
     def set_lsid(self, lsid):
         self.lsid = lsid
 
-    def set_parameter(self, name, values):
+    def set_parameter(self, name, values, groupId=None):
         if not isinstance(values, list):
             values = [values]
-        self.params.append({'name': name, 'values': values})
+        if groupId is None:
+            self.params.append({'name': name, 'values': values})
+        else:
+            self.params.append({'name': name, 'groupId': groupId, 'values': values})
 
 
 class GPCategory(object):
