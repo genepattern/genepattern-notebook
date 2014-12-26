@@ -265,6 +265,8 @@ class GPJob(GPResource, widgets.DOMWidget):
     def get_job_status_url(self, server_data):
         return server_data.url + "pages/index.jsf?jobid=" + self.uri.split("/")[-1]
 
+    def get_job_results_url(self, server_data):
+        return server_data.url + "/jobResults/" + str(self.job_number)
 
 class JobSpec(object):
     """
