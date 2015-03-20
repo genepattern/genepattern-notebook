@@ -352,6 +352,7 @@ class GPTask(GPResource):
 
     def param_load(self):
         # Differences between Python 2 and Python 3
+        escaped_uri = self.uri
         if sys.version_info.major == 2:
             escaped_uri = urllib.quote(self.uri)
         elif sys.version_info.major == 3:
@@ -372,7 +373,7 @@ class GPTask(GPResource):
         self.version = self.dto['version'] if 'version' in self.dto else ""
         self.params = []
         for param in self.dto['params']:
-            self.params.append(GPTaskParam(param))
+            self.params.append(GPTaskParam(self, param))
 
     def get_lsid(self):
         return self.lsid
@@ -402,12 +403,14 @@ class GPTaskParam(object):
     associated with a single task parameter (i.e., element from list
     returned by GPTask.getParameters)
     """
+    task = None
     dto = None
     name = None
     description = None
     attributes = None
 
-    def __init__(self, dto):
+    def __init__(self, task, dto):
+        self.task = task
         self.dto = dto
         self.name = list(dto)[0]
         if 'description' in dto[self.name]:
@@ -536,8 +539,8 @@ class GPTaskParam(object):
             print("choice status not initialized")
 
             request = urllib2.Request(self.get_choice_href())
-            if self.server_data.authorization_header() is not None:
-                request.add_header('Authorization', self.server_data.authorization_header())
+            if self.task.server_data.authorization_header() is not None:
+                request.add_header('Authorization', self.task.server_data.authorization_header())
             request.add_header('User-Agent', 'GenePatternRest')
             response = urllib2.urlopen(request)
             self.dto[self.name]['choiceInfo'] = json.loads(response.read().decode('utf-8'))
