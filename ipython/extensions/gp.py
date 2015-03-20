@@ -35,11 +35,26 @@ class GPServer(object):
         self.url = url
         self.username = username
         self.password = password
-        auth_string = '%s:%s' % (self.username, self.password)
-        if sys.version_info.major == 3:  # Required for Python 3
-            auth_string = bytes(auth_string, 'utf-8')
-        auth_string = base64.encodestring(auth_string)[:-1]
-        self.auth_header = "Basic %s" % auth_string
+        self.auth_header = None
+
+        # Handle Basic Auth differences in Python 2 vs. Python 3
+        if sys.version_info.major == 2:
+            auth_string = base64.encodestring('%s:%s' % (self.username, self.password))[:-1]
+            self.auth_header = "Basic %s" % auth_string
+        elif sys.version_info.major == 3:
+            password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+            password_mgr.add_password(None, url, username, password)
+            handler = urllib2.HTTPBasicAuthHandler(password_mgr)
+            opener = urllib2.build_opener(handler)
+            urllib2.install_opener(opener)
+
+            # auth_string = '%s:%s' % (self.username, self.password)
+            # if sys.version_info.major == 3:  # Required for Python 3
+            #     auth_string = bytes(auth_string, 'ascii')
+            # auth_string = base64.encodestring(auth_string)[:-1]
+            # self.auth_header = "Basic %s" % auth_string
+        else:
+            raise GPException('Version of Python not supported')
 
     def authorization_header(self):
         return self.auth_header
@@ -62,7 +77,8 @@ class GPServer(object):
         """
 
         request = urllib2.Request(self.url + '/rest/v1/data/upload/job_input?name=' + file_name)
-        request.add_header('Authorization', self.authorization_header())
+        if self.authorization_header() is not None:
+            request.add_header('Authorization', self.authorization_header())
         request.add_header('User-Agent', 'GenePatternRest')
         data = open(file_path, 'rb').read()
 
@@ -76,7 +92,7 @@ class GPServer(object):
             print("file upload failed, status code = %i" % response.getcode())
             return None
 
-        return GPFile(self, response.info().getheader('Location'))
+        return GPFile(self, response.info().get('Location'))
 
     def run_job(self, job_spec, wait_until_done=True):
         """
@@ -102,15 +118,18 @@ class GPServer(object):
         # names should be a list of names,
         # values should be a list of **lists** of values
         json_string = json.dumps({'lsid': job_spec.lsid, 'params': job_spec.params})
+        if sys.version_info.major == 3:  # Handle conversion to bytes for Python 3
+            json_string = bytes(json_string, 'utf-8')
         request = urllib2.Request(self.url + '/rest/v1/jobs')
-        request.add_header('Authorization', self.authorization_header())
+        if self.authorization_header() is not None:
+            request.add_header('Authorization', self.authorization_header())
         request.add_header('Content-Type', 'application/json')
         request.add_header('User-Agent', 'GenePatternRest')
         response = urllib2.urlopen(request, json_string)
         if response.getcode() != 201:
             print(" job POST failed, status code = %i" % response.getcode())
             return None
-        job = GPJob(self, response.info().getheader('Location'))
+        job = GPJob(self, response.info().get('Location'))
         job.get_info()
         if wait_until_done:
             job.wait_until_done()
@@ -118,10 +137,12 @@ class GPServer(object):
 
     def get_task_list(self):
         request = urllib2.Request(self.url + '/rest/v1/tasks/all.json')
-        request.add_header('Authorization', self.authorization_header())
+        if self.authorization_header() is not None:
+            request.add_header('Authorization', self.authorization_header())
         request.add_header('User-Agent', 'GenePatternRest')
         response = urllib2.urlopen(request)
-        category_and_tasks = json.loads(response.read())
+        response_string = response.read().decode('utf-8')
+        category_and_tasks = json.loads(response_string)
         raw_list = category_and_tasks['all_modules']
         task_list = []
         for task_dict in raw_list:
@@ -171,7 +192,8 @@ class GPFile(GPResource):
 
     def open(self):
         request = urllib2.Request(self.uri)
-        request.add_header('Authorization', self.server_data.authorization_header())
+        if self.server_data.authorization_header() is not None:
+            request.add_header('Authorization', self.server_data.authorization_header())
         request.add_header('User-Agent', 'GenePatternRest')
         return urllib2.urlopen(request)
 
@@ -210,11 +232,12 @@ class GPJob(GPResource):
 
     def get_info(self):
         request = urllib2.Request(self.uri)
-        request.add_header('Authorization', self.server_data.authorization_header())
+        if self.server_data.authorization_header() is not None:
+            request.add_header('Authorization', self.server_data.authorization_header())
         request.add_header('User-Agent', 'GenePatternRest')
         response = urllib2.urlopen(request)
 
-        self.json = response.read()
+        self.json = response.read().decode('utf-8')
         self.info = json.loads(self.json)
 
         self.task_name = self.info['taskName']
@@ -328,11 +351,18 @@ class GPTask(GPResource):
                 self.version = task_dict['version']
 
     def param_load(self):
-        request = urllib2.Request(self.server_data.url + '/rest/v1/tasks/' + urllib.quote(self.uri))
-        request.add_header('Authorization', self.server_data.authorization_header())
+        # Differences between Python 2 and Python 3
+        if sys.version_info.major == 2:
+            escaped_uri = urllib.quote(self.uri)
+        elif sys.version_info.major == 3:
+            escaped_uri = urllib.parse.quote(self.uri)
+
+        request = urllib2.Request(self.server_data.url + '/rest/v1/tasks/' + escaped_uri)
+        if self.server_data.authorization_header() is not None:
+            request.add_header('Authorization', self.server_data.authorization_header())
         request.add_header('User-Agent', 'GenePatternRest')
         response = urllib2.urlopen(request)
-        self.json = response.read()
+        self.json = response.read().decode('utf-8')
         self.dto = json.loads(self.json)
 
         self.description = self.dto['description'] if 'description' in self.dto else ""
@@ -379,7 +409,7 @@ class GPTaskParam(object):
 
     def __init__(self, dto):
         self.dto = dto
-        self.name = dto.keys()[0]
+        self.name = list(dto)[0]
         if 'description' in dto[self.name]:
             self.description = dto[self.name]['description']
         else:
@@ -506,10 +536,11 @@ class GPTaskParam(object):
             print("choice status not initialized")
 
             request = urllib2.Request(self.get_choice_href())
-            request.add_header('Authorization', self.server_data.authorization_header())
+            if self.server_data.authorization_header() is not None:
+                request.add_header('Authorization', self.server_data.authorization_header())
             request.add_header('User-Agent', 'GenePatternRest')
             response = urllib2.urlopen(request)
-            self.dto[self.name]['choiceInfo'] = json.loads(response.read())
+            self.dto[self.name]['choiceInfo'] = json.loads(response.read().decode('utf-8'))
         return self.dto[self.name]['choiceInfo']['choices']
 
     # only pipeline prompt-when-run parameters
