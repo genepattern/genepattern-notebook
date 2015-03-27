@@ -7,6 +7,12 @@ from contextlib import closing
 from IPython.html import widgets
 from IPython.utils.traitlets import Unicode, List, Integer
 
+'''
+    Old version of the GenePattern Python client
+    Kept for reference
+    @deprecated
+'''
+
 # API for GenePattern server
 
 # This API contains:
@@ -96,7 +102,7 @@ class ServerData(object):
 
         # names should be a list of names,
         # values should be a list of **lists** of values
-        json_string = json.dumps({'lsid': job_spec.lsid, 'params': job_spec.params})      
+        json_string = json.dumps({'lsid': job_spec.lsid, 'params': job_spec.params})
         request = urllib2.Request(self.url + '/rest/v1/jobs')
         request.add_header('Authorization', self.authorization_header())
         request.add_header('Content-Type', 'application/json')
@@ -265,8 +271,6 @@ class GPJob(GPResource, widgets.DOMWidget):
     def get_job_status_url(self, server_data):
         return server_data.url + "pages/index.jsf?jobid=" + self.uri.split("/")[-1]
 
-    def get_job_results_url(self, server_data):
-        return server_data.url + "/jobResults/" + str(self.job_number)
 
 class JobSpec(object):
     """
@@ -288,13 +292,10 @@ class JobSpec(object):
     def set_lsid(self, lsid):
         self.lsid = lsid
 
-    def set_parameter(self, name, values, groupId=None):
+    def set_parameter(self, name, values):
         if not isinstance(values, list):
             values = [values]
-        if groupId is None:
-            self.params.append({'name': name, 'values': values})
-        else:
-            self.params.append({'name': name, 'groupId': groupId, 'values': values})
+        self.params.append({'name': name, 'values': values})
 
 
 class GPCategory(object):

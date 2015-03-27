@@ -56,6 +56,9 @@ class GPServer(object):
         else:
             raise GPException('Version of Python not supported')
 
+    def __str__(self):
+        return self.url + ' ' + self.username + ' ' + self.password
+
     def authorization_header(self):
         return self.auth_header
 
