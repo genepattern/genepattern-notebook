@@ -1,7 +1,7 @@
 GenePatternNotebook
 ===================
 
-Some notes on setup of GenePattern Notebook enviornment.
+Some notes on setup of GenePattern Notebook environment.
 
 # Installation
 
@@ -22,9 +22,9 @@ are interested.  Bottom line was that I could not get Homebrew installed on my
 laptop due to some permissions issue that running sudo did not address.
 
 I ended up installing the Anaconda Distribution of python from continuum analytics
-(see http://continuum.io/downloads).  Choose the Python 2.7 graphcial
+(see http://continuum.io/downloads).  Choose the Python 2.7 graphical
 installer for Mac OS X - 64 bit.  That seemed to do the trick.
-Another beneifit of installing the Anaconda Distribution is that it is
+Another benefit of installing the Anaconda Distribution is that it is
 a scientific distribution of python which includes a very large
 number of the most popular Python packages for science, math and data
 analysis (e.g., NumPy, SciPy, Pandas, Matplotlib, IPython, etc.) 
@@ -47,7 +47,7 @@ Needed for RNA-Seq notebook document - used to serialization of session state
 
 ## Install GenePattern Notebook
 
-(5) clone onto your local system the broadinstitute/GenePatternNotebook private repository, avaialble on GitHub.
+(5) clone onto your local system the broadinstitute/GenePatternNotebook private repository, available on GitHub.
 
 Check to see if git client tools are installed on your system.  If
 not, go to Github.com to see instructions for getting started with Git
