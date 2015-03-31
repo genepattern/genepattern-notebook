@@ -1,0 +1,55 @@
+#header {
+	background-image: url("/static/custom/aurora5.png");
+	background-position: center center;
+	padding: 10px;
+}
+
+.header-bar {
+	display: none;
+}
+
+body {
+    background-color: white;
+    color: #333333;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    line-height: 1.42857;
+    overflow: hidden;
+}
+
+/* Hide the clusters tab */
+#tabs li:last-of-type {
+	display:none
+}
+
+#save_widget {
+	color: white;
+	text-shadow: 0 0 6px #002244;
+}
+
+#save_widget #notebook_name:hover {
+	color: #f1f2f2;
+}
+
+.navbar-text {
+	color: white;
+	text-shadow: 0 0 6px #002244;
+}
+
+#kernel_indicator {
+	text-shadow: none;
+}
+
+#notebook, #site {
+	background-color: #f1f2f2;
+}
+
+#ipython-main-app {
+	background-color: #fff;
+    box-shadow: 0 0 12px 1px rgba(87, 87, 87, 0.2);
+    min-height: 0;
+}
+
+#tab_content {
+    padding: 15px;
+}
