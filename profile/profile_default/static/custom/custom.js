@@ -10,7 +10,7 @@ setTimeout(function() {
                 .addClass("container add-cell-container")
                 .append(
                     $("<span></span>")
-                        .addClass("glyphicon glyphicon-pencil add-cell-button")
+                        .addClass("fa fa-paragraph add-cell-button")
                         .attr("title", "Add Markdown Cell")
                         .attr("data-toggle", "tooltip")
                         .attr("data-placement", "top")
@@ -22,7 +22,7 @@ setTimeout(function() {
                 )
                 .append(
                     $("<span></span>")
-                        .addClass("glyphicon glyphicon-list-alt add-cell-button")
+                        .addClass("fa fa-terminal add-cell-button")
                         .attr("title", "Add Code Cell")
                         .attr("data-toggle", "tooltip")
                         .attr("data-placement", "top")
@@ -42,6 +42,18 @@ setTimeout(function() {
                 )
         );
 
+        // Add the sidebar
+        $("body").append(
+            $("<span></span>")
+                .addClass("glyphicon glyphicon-ok sidebar-button")
+                .attr("title", "Open GenePattern Options")
+                .attr("data-toggle", "tooltip")
+                .attr("data-placement", "right")
+                .click(function() {
+                    alert("Placeholder");
+                })
+        );
+
         // Initialize tooltips
         $(function () {
             $('[data-toggle="tooltip"]').tooltip()
@@ -57,7 +69,35 @@ require(["widgets/js/widget"], function (WidgetManager) {
     var AuthWidgetView = IPython.WidgetView.extend({
         render: function () {
             // Render the view.
-            this.setElement($('<div/>OK</div>'));
+            this.setElement(
+                $("<div></div>")
+                    .addClass("panel panel-default gp-widget gp-widget-auth")
+                    .append(
+                        $("<div></div>")
+                            .addClass("panel-heading")
+                            .append(
+                                $("<h3></h3>")
+                                    .addClass("panel-title")
+                                    .append(
+                                        $("<span></span>")
+                                            .addClass("glyphicon glyphicon-th")
+                                    )
+                                    .append(" GenePattern Login")
+                            )
+                        )
+                    .append(
+                        $("<div></div>")
+                            .addClass("panel-body")
+                            .append("This is a placeholder for the authentication widget, which will by default appear at the top of a notebook. This widget allows authentication to be part of the workflow in a GenePattern Notebook. By making it part of the workflow we solve a problem in portability - namely, what happens if someone downloads their notebook and sends it to another user. Through this widget we can also expose the GPServer object, which is important for code cells making use of our Python library. We may decide to make this widget collapsed by default so as not to consume too much screen real estate for those who aren't interested.")
+                    )
+            );
+
+            // Hide the code by default
+            var element = this.$el;
+            setTimeout(function() {
+                element.closest(".cell").find(".input").hide();
+            }, 1);
+
             //var json = this.model.get('json');
             //this.$el.jobResults({
             //    json: json
