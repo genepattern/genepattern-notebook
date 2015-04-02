@@ -120,7 +120,7 @@ c.NotebookApp.notebook_dir = u'/Users/tabor/PyCharmProjects/GenePatternNotebook/
 #   from IPython.lib import passwd; passwd()
 # 
 # The string should be of the form type:salt:hashed-password.
-c.NotebookApp.password = u'sha1:5bb78a86d42d:3a4c8b3adb36a0847b3f0dd957730b11c590c3e9'
+# c.NotebookApp.password = u'sha1:5bb78a86d42d:3a4c8b3adb36a0847b3f0dd957730b11c590c3e9'
 
 # Set the Access-Control-Allow-Credentials: true header
 # c.NotebookApp.allow_credentials = False
