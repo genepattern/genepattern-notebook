@@ -1,8 +1,20 @@
-// Necessary because jQuery isn't imported until after the custom HTML
-setTimeout(function() { 
-	$(document).ready(function() {
+// Add the loading screen
+$("body").append(
+    $("<div></div>")
+        .addClass("loading-screen")
+        .append(
+            $("<img/>")
+                .attr("src", "/static/custom/GP_logo_on_black.png")
+        )
+        //.append("<br/>Loading...")
+);
+
+// Declare and attach the initialization function
+function launch_init(evt) {
+    // console.log("maybe launching", evt, launch_first_cell.executed, IPython.notebook.kernel && IPython.notebook.kernel.is_connected());
+    if (!launch_init.done_init  && IPython.notebook.kernel) {
         // Change the logo
-		$("#ipython_notebook").find("img").attr("src", "/static/custom/GP_logo_on_black.png");
+        $("#ipython_notebook").find("img").attr("src", "/static/custom/GP_logo_on_black.png");
 
         // Add the bottom buttons
         $("#notebook-container").append(
@@ -58,8 +70,24 @@ setTimeout(function() {
         $(function () {
             $('[data-toggle="tooltip"]').tooltip()
         });
-	});
-}, 100);
+
+        // Auto-run widgets
+        $(function () {
+            $.each($(".cell"), function(index, val) {
+                if ($(val).html().indexOf("# !AUTOEXEC") > -1) {
+                    IPython.notebook.get_cell(index).execute();
+                }
+            });
+        });
+
+        // Hide the loading screen
+        $(".loading-screen").toggle("fade");
+
+        // Mark init as done
+        launch_init.done_init = true;
+    }
+}
+$([IPython.events]).on('kernel_ready.Kernel kernel_created.Session notebook_loaded.Notebook', launch_init);
 
 /**
  * Define the IPython GenePattern Authentication widget
@@ -71,7 +99,7 @@ require(["widgets/js/widget"], function (WidgetManager) {
             // Render the view.
             this.setElement(
                 $("<div></div>")
-                    .addClass("panel panel-default gp-widget gp-widget-auth")
+                    .addClass("panel panel-primary gp-widget gp-widget-auth")
                     .append(
                         $("<div></div>")
                             .addClass("panel-heading")
@@ -88,7 +116,69 @@ require(["widgets/js/widget"], function (WidgetManager) {
                     .append(
                         $("<div></div>")
                             .addClass("panel-body")
-                            .append("This is a placeholder for the authentication widget, which will by default appear at the top of a notebook. This widget allows authentication to be part of the workflow in a GenePattern Notebook. By making it part of the workflow we solve a problem in portability - namely, what happens if someone downloads their notebook and sends it to another user. Through this widget we can also expose the GPServer object, which is important for code cells making use of our Python library. We may decide to make this widget collapsed by default so as not to consume too much screen real estate for those who aren't interested.")
+                            .append(
+                                $("<div></div>")
+                                    .addClass("form-group")
+                                    .append(
+                                        $("<label></label>")
+                                            .attr("for", "server")
+                                            .text("GenePattern Server")
+                                    )
+                                    .append(
+                                        $("<select></select>")
+                                            .addClass("form-control")
+                                            .attr("name", "server")
+                                            .attr("type", "text")
+                                            .css("margin-left", "0")
+                                            .append(
+                                                $("<option></option>")
+                                                    .attr("value", "http://genepattern.broadinstitute.org/gp")
+                                                    .text("GenePattern @ Broad Institute")
+                                            )
+                                            .append(
+                                                $("<option></option>")
+                                                    .attr("value", "http://127.0.0.1:8080/gp")
+                                                    .text("GenePattern @ localhost")
+                                            )
+                                    )
+                            )
+                            .append(
+                                $("<div></div>")
+                                    .addClass("form-group")
+                                    .append(
+                                        $("<label></label>")
+                                            .attr("for", "username")
+                                            .text("GenePattern Username")
+                                    )
+                                    .append(
+                                        $("<input></input>")
+                                            .addClass("form-control")
+                                            .attr("name", "username")
+                                            .attr("type", "text")
+                                            .attr("placeholder", "Username")
+                                    )
+                            )
+                            .append(
+                                $("<div></div>")
+                                    .addClass("form-group")
+                                    .append(
+                                        $("<label></label>")
+                                            .attr("for", "password")
+                                            .text("GenePattern Password")
+                                    )
+                                    .append(
+                                        $("<input></input>")
+                                            .addClass("form-control")
+                                            .attr("name", "password")
+                                            .attr("type", "password")
+                                            .attr("placeholder", "Password")
+                                    )
+                            )
+                            .append(
+                                $("<button></button>")
+                                    .addClass("btn btn-default gp-auth-button")
+                                    .text("Login")
+                            )
                     )
             );
 
