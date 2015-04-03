@@ -6,7 +6,6 @@ $("body").append(
             $("<img/>")
                 .attr("src", "/static/custom/GP_logo_on_black.png")
         )
-        //.append("<br/>Loading...")
 );
 
 // Declare and attach the initialization function
@@ -81,7 +80,9 @@ function launch_init(evt) {
         });
 
         // Hide the loading screen
-        $(".loading-screen").toggle("fade");
+        setTimeout(function () {
+            $(".loading-screen").toggle("fade");
+        }, 100);
 
         // Mark init as done
         launch_init.done_init = true;
@@ -176,8 +177,8 @@ require(["widgets/js/widget"], function (WidgetManager) {
                             )
                             .append(
                                 $("<button></button>")
-                                    .addClass("btn btn-default gp-auth-button")
-                                    .text("Login")
+                                    .addClass("btn btn-primary gp-auth-button")
+                                    .text("Login to GenePattern")
                             )
                     )
             );

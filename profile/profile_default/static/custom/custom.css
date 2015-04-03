@@ -150,8 +150,23 @@ body {
 
 .gp-widget {
     width: 100%;
+    border-color: rgba(10, 45, 105, 0.80);
 }
 
 .gp-widget .panel-heading {
     background-color: rgba(10, 45, 105, 0.80);
+}
+
+.gp-widget label {
+    font-weight: bold;
+}
+
+.gp-widget .btn-primary {
+    border-color: rgba(10, 45, 105, 0.80);
+    background-color: rgba(10, 45, 105, 0.80);
+}
+
+.gp-widget .btn-primary:hover {
+    border-color: rgba(10, 45, 105, 1);
+    background-color: rgba(10, 45, 105, 1);
 }
