@@ -292,6 +292,7 @@ require(["widgets/js/widget"], function (WidgetManager) {
                 toSlide.slideDown();
                 indicator.removeClass("fa-arrow-down");
                 indicator.addClass("fa-arrow-up");
+                this.$el.find(".widget-code").slideUp();
             }
             else {
                 toSlide.slideUp();

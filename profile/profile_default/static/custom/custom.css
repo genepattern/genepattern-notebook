@@ -200,7 +200,16 @@ body {
 }
 
 .widget-code {
-    /*background-color: #f5f5f5;*/
+    -moz-box-align: stretch;
+    -moz-box-orient: horizontal;
+    align-items: stretch;
+    display: flex;
+    flex-direction: row;
+    page-break-inside: avoid;
+}
+
+.widget-code .prompt {
+    display: inline-block;
 }
 
 .widget-code pre {
