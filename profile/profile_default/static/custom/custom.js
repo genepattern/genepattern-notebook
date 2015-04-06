@@ -1,3 +1,13 @@
+// Create the GenePattern object to hold GP state
+var GenePattern = {
+    authenticated: false,
+    initialized: false,
+    password: null,
+    server: null,
+    tasks: [],
+    username: null
+};
+
 // Add the loading screen
 $("body").append(
     $("<div></div>")
@@ -143,6 +153,11 @@ require(["widgets/js/widget"], function (WidgetManager) {
                                 $("<div></div>")
                                     .addClass("widget-float-right")
                                     .append(
+                                        $("<span></span>")
+                                            .addClass("widget-server-label")
+                                            .append(widget.getServerLabel(""))
+                                    )
+                                    .append(
                                         $("<button></button>")
                                             .addClass("btn btn-default btn-sm widget-slide-indicator")
                                             .css("padding", "2px 7px")
@@ -183,14 +198,18 @@ require(["widgets/js/widget"], function (WidgetManager) {
                                         $("<span></span>")
                                             .addClass("glyphicon glyphicon-th")
                                     )
-                                    .append(" GenePattern Login")
+                                    .append(" GenePattern: ")
+                                    .append(
+                                        $("<span></span>")
+                                            .addClass("widget-username-label")
+                                            .append(widget.getUserLabel("Login"))
+                                    )
                             )
                         )
                     .append(
                         $("<div></div>")
                             .addClass("panel-body widget-code")
                             .css("display", "none")
-                            .append("CODE")
                     )
                     .append(
                         $("<div></div>")
@@ -219,6 +238,7 @@ require(["widgets/js/widget"], function (WidgetManager) {
                                                     .attr("value", "http://127.0.0.1:8080/gp")
                                                     .text("GenePattern @ localhost")
                                             )
+                                            .val(widget.getServerLabel("http://genepattern.broadinstitute.org/gp"))
                                     )
                             )
                             .append(
@@ -235,6 +255,8 @@ require(["widgets/js/widget"], function (WidgetManager) {
                                             .attr("name", "username")
                                             .attr("type", "text")
                                             .attr("placeholder", "Username")
+                                            .attr("required", "required")
+                                            .val(widget.getUserLabel(""))
                                     )
                             )
                             .append(
@@ -251,6 +273,7 @@ require(["widgets/js/widget"], function (WidgetManager) {
                                             .attr("name", "password")
                                             .attr("type", "password")
                                             .attr("placeholder", "Password")
+                                            .val(widget.getPasswordLabel(""))
                                     )
                             )
                             .append(
@@ -258,7 +281,14 @@ require(["widgets/js/widget"], function (WidgetManager) {
                                     .addClass("btn btn-primary gp-auth-button")
                                     .text("Login to GenePattern")
                                     .click(function() {
-                                        widget.expandCollapse();
+                                        var server = widget.$el.find("[name=server]").val();
+                                        var username = widget.$el.find("[name=username]").val();
+                                        var password = widget.$el.find("[name=password]").val();
+
+                                        widget.buildCode();
+                                        widget.authenticate(server, username, password, function() {
+                                            widget.executeCell();
+                                        });
                                     })
                             )
                     )
@@ -267,25 +297,23 @@ require(["widgets/js/widget"], function (WidgetManager) {
             // Hide the code by default
             var element = this.$el;
             setTimeout(function() {
-                element.closest(".cell").find(".input").hide();
+                element.closest(".cell").find(".input")
+                    .css("height", "0")
+                    .css("overflow", "hidden");
             }, 1);
 
-            //var json = this.model.get('json');
-            //this.$el.jobResults({
-            //    json: json
-            //});
+            // Hide the login form if already authenticated
+            if (GenePattern.authenticated) {
+                setTimeout(function() {
+                    element.find(".panel-body").hide();
+                    var indicator = element.find(".widget-slide-indicator").find("span");
+                    indicator.removeClass("fa-arrow-up");
+                    indicator.addClass("fa-arrow-down");
+                }, 1);
+            }
         },
 
-        events: {
-            // List of events and their handlers.
-            'click': 'handle_click'
-        },
-
-        handle_click: function(evt) {
-            console.log("Clicked!");
-        },
-
-        expandCollapse: function(evt) {
+        expandCollapse: function() {
             var toSlide = this.$el.find(".panel-body.widget-view");
             var indicator = this.$el.find(".widget-slide-indicator").find("span");
             if (toSlide.is(":hidden")) {
@@ -301,11 +329,12 @@ require(["widgets/js/widget"], function (WidgetManager) {
             }
         },
 
-        toggleCode: function(evt) {
+        toggleCode: function() {
             var code = this.$el.find(".widget-code");
             var view = this.$el.find(".widget-view");
 
             if (code.is(":hidden")) {
+                this.options.cell.code_mirror.refresh();
                 var raw = this.$el.closest(".cell").find(".input").html();
                 code.html(raw);
 
@@ -315,6 +344,91 @@ require(["widgets/js/widget"], function (WidgetManager) {
             else {
                 view.slideDown();
                 code.slideUp();
+            }
+        },
+
+        buildCode: function() {
+            var server = this.$el.find("[name=server]").val();
+            var username = this.$el.find("[name=username]").val();
+            var password = this.$el.find("[name=password]").val();
+
+            var code = '# !AUTOEXEC\n\
+\n\
+import gp\n\
+from gp_widgets import GPAuthWidget\n\
+\n\
+# The gpserver object holds your authentication credentials and is used to\n\
+# make calls to the GenePattern server through the GenePattern Python library\n\
+gpserver = gp.GPServer("' + server + '", "' + username + '", "' + password + '")\n\
+\n\
+# Return the authentication widget to view it\n\
+GPAuthWidget(gpserver)';
+
+            this.options.cell.code_mirror.setValue(code);
+            console.log(this);
+        },
+
+        executeCell: function() {
+            this.options.cell.execute();
+        },
+
+        authenticate: function(server, username, password, done) {
+            var widget = this;
+            $.ajax({
+                type: "GET",
+                url: server + "/rest/v1/tasks/all.json",
+                dataType: 'json',
+                cache: false,
+                xhrFields: {
+                    withCredentials: true
+                },
+                //beforeSend: function (xhr) {
+                //    xhr.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
+                //},
+                success: function(data, status, xhr) {
+                    GenePattern.authenticated = true;
+                    GenePattern.server = server;
+                    GenePattern.username = username;
+                    GenePattern.password = password;
+
+                    console.log(data);
+
+                    widget.$el.find(".widget-username-label").text(username);
+                    widget.$el.find(".widget-server-label").text(server);
+
+                    // If a function to execute when done has been passed in, execute it
+                    if (done) { done(); }
+                },
+                error: function(xhr, status, e) {
+                    alert("error");
+                }
+            });
+        },
+
+        getUserLabel: function(alt) {
+            if (GenePattern.authenticated && GenePattern.username) {
+                return GenePattern.username;
+            }
+            else {
+                return alt
+            }
+        },
+
+        getPasswordLabel: function(alt) {
+            if (GenePattern.authenticated && GenePattern.password) {
+                return GenePattern.password;
+            }
+            else {
+                return alt
+            }
+        },
+
+        getServerLabel: function(alt) {
+            if (GenePattern.authenticated && GenePattern.server) {
+                return GenePattern.server;
+            }
+            else {
+                return alt
             }
         }
     });

@@ -189,6 +189,16 @@ body {
     font-weight: bold;
 }
 
+.widget-username-label {
+    font-style: italic;
+}
+
+.widget-server-label {
+    font-size: 0.8em;
+    font-style: italic;
+    padding-right: 10px;
+}
+
 .gp-widget .btn-primary {
     border-color: rgba(10, 45, 105, 0.80);
     background-color: rgba(10, 45, 105, 0.80);
