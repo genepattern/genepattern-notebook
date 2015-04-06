@@ -285,9 +285,10 @@ require(["widgets/js/widget"], function (WidgetManager) {
                                         var username = widget.$el.find("[name=username]").val();
                                         var password = widget.$el.find("[name=password]").val();
 
-                                        widget.buildCode();
+                                        widget.buildCode(server, username, password);
                                         widget.authenticate(server, username, password, function() {
                                             widget.executeCell();
+                                            widget.buildCode(server, "", "")
                                         });
                                     })
                             )
@@ -347,18 +348,16 @@ require(["widgets/js/widget"], function (WidgetManager) {
             }
         },
 
-        buildCode: function() {
-            var server = this.$el.find("[name=server]").val();
-            var username = this.$el.find("[name=username]").val();
-            var password = this.$el.find("[name=password]").val();
-
+        buildCode: function(server, username, password) {
             var code = '# !AUTOEXEC\n\
 \n\
 import gp\n\
 from gp_widgets import GPAuthWidget\n\
 \n\
 # The gpserver object holds your authentication credentials and is used to\n\
-# make calls to the GenePattern server through the GenePattern Python library\n\
+# make calls to the GenePattern server through the GenePattern Python library.\n\
+# Your actual username and password have been removed from the code shown\n\
+# below for security reasons.\n\
 gpserver = gp.GPServer("' + server + '", "' + username + '", "' + password + '")\n\
 \n\
 # Return the authentication widget to view it\n\
