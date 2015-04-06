@@ -120,10 +120,31 @@ body {
     cursor: pointer;
 }
 
-.sidebar-button {
+#slider {
+    display: none;
+    position: fixed;
+    top: 120px;
+    bottom: 0px;
+    left: 0%;
+    z-index: 5;
+    width: 50%;
+    background-color: #f8f8f8;
+    border: 1px solid rgba(10, 45, 105, 0.8);
+}
+
+.sidebar-button-main {
     position: fixed;
     left: 0px;
     top: 200px;
+}
+
+.sidebar-button-slider {
+    position: absolute;
+    right: -40px;
+    top: 50px;
+}
+
+.sidebar-button {
     color: white;
     z-index: 5;
     box-shadow: 2px 2px 1px #cecece;
@@ -148,6 +169,13 @@ body {
     display: none;
 }
 
+.widget-float-right {
+    float: right;
+    position: relative;
+    top: -3px;
+    left: 7px;
+}
+
 .gp-widget {
     width: 100%;
     border-color: rgba(10, 45, 105, 0.80);
@@ -169,4 +197,15 @@ body {
 .gp-widget .btn-primary:hover {
     border-color: rgba(10, 45, 105, 1);
     background-color: rgba(10, 45, 105, 1);
+}
+
+.widget-code {
+    /*background-color: #f5f5f5;*/
+}
+
+.widget-code pre {
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
 }
