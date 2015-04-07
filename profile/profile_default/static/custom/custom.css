@@ -24,9 +24,9 @@
  */
 
 #header {
-	background-image: url("/static/custom/aurora5.png");
-	background-position: center center;
-	padding: 10px;
+    background: url("/static/custom/aurora5.png") center center;
+    padding: 10px;
+    min-height: 130px;
 }
 
 .header-bar {
@@ -123,19 +123,46 @@ body {
 #slider {
     display: none;
     position: fixed;
-    top: 120px;
+    top: 129px;
     bottom: 0px;
     left: 0%;
     z-index: 5;
     width: 50%;
+    min-width: 400px;
     background-color: #f8f8f8;
     border: 1px solid rgba(10, 45, 105, 0.8);
+}
+
+#slider-tabs, #slider .tab-content {
+    flex: auto;
+    -ms-flex: auto;
+    -moz-flex: auto;
+    -webkit-flex: auto;
+    height: 100%;
+}
+
+#slider-tabs .active {
+    background-color: #ffffff;
+}
+
+#slider-tabs .tab-pane {
+    padding: 10px;
+    overflow: auto;
+    position: absolute;
+    top: 43px;
+    bottom: 0;
+    width: 100%;
+}
+
+#slider-filter-box {
+    float: right;
+    padding: 7px;
 }
 
 .sidebar-button-main {
     position: fixed;
     left: 0px;
-    top: 200px;
+    top: 180px;
 }
 
 .sidebar-button-slider {
@@ -159,6 +186,46 @@ body {
     border: medium none;
     border-top-right-radius: 50%;
     border-bottom-right-radius: 50%;
+}
+
+.slider-option {
+    background-color: #fdfdfd;
+    border-color: #bbbbee;
+    border-radius: 5px;
+    border-style: solid;
+    border-width: 1px;
+    cursor: pointer;
+    margin-top: 10px;
+    overflow: hidden;
+    padding: 2px;
+    position: relative;
+}
+
+.slider-option-name {
+    display: inline-block;
+    width: 100%;
+    color: gray;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.slider-option-anno {
+    position: absolute;
+    right: 5px;
+    color: gray;
+    font-size: 0.8em;
+    margin-top: 3px;
+}
+
+.slider-option-desc {
+    color: #333366;
+    font-size: 0.8em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+    display: block;
 }
 
 /*

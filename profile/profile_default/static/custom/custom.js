@@ -24,6 +24,7 @@ function loadingScreenNav() {
 }
 
 function bottomButtonNav() {
+    var auth_view = GenePattern.authenticated ? "visible" : "hidden";
     return $("<div></div>")
             .addClass("container add-cell-container")
             .append(
@@ -52,9 +53,10 @@ function bottomButtonNav() {
             )
             .append(
                 $("<span></span>")
-                    .addClass("glyphicon glyphicon-th add-cell-button")
+                    .addClass("glyphicon glyphicon-th add-cell-button gp-cell-button")
                     .attr("title", "Add GenePattern Cell")
                     .css("padding-left", "3px")
+                    .css("visibility", auth_view)
                     .attr("data-toggle", "tooltip")
                     .attr("data-placement", "top")
                     .click(function() {
@@ -64,32 +66,143 @@ function bottomButtonNav() {
 }
 
 function sliderTabNav() {
+    var auth_view = GenePattern.authenticated ? "inline-block" : "none";
     return $("<span></span>")
             .addClass("glyphicon glyphicon-ok sidebar-button sidebar-button-main")
             .attr("title", "GenePattern Options")
             .attr("data-toggle", "tooltip")
             .attr("data-placement", "right")
-            .css("position", "fixed")
-            .css("top", "170px")
-            .css("left", "0")
+            .css("display", auth_view)
             .click(function() {
                 $("#slider").show("slide");
             });
 }
 
+function sliderOptionNav(id, name, anno, desc) {
+    return $("<div></div>")
+        .addClass("slider-option")
+        .attr("name", id)
+        .append(
+            $("<span></span>")
+                .addClass("slider-option-name")
+                .append(name)
+        )
+        .append(
+            $("<span></span>")
+                .addClass("slider-option-anno")
+                .append(anno)
+        )
+        .append(
+            $("<span></span>")
+                .addClass("slider-option-desc")
+                .append(desc)
+        );
+}
+
 function sliderNav() {
     return $("<div></div>")
-            .attr("id", "slider")
-            .append(
-                $("<span></span>")
-                    .addClass("glyphicon glyphicon-ok sidebar-button sidebar-button-slider")
-                    .attr("title", "GenePattern Options")
-                    .attr("data-toggle", "tooltip")
-                    .attr("data-placement", "right")
-                    .click(function() {
-                        $("#slider").hide("slide");
-                    })
-            );
+        .attr("id", "slider")
+
+        // Append the navigation tab
+        .append(
+            $("<span></span>")
+                .addClass("glyphicon glyphicon-ok sidebar-button sidebar-button-slider")
+                .attr("title", "GenePattern Options")
+                .attr("data-toggle", "tooltip")
+                .attr("data-placement", "right")
+                .click(function() {
+                    $("#slider").hide("slide");
+                })
+        )
+
+        // Append the filter box
+        .append(
+            $("<div></div>")
+                .attr("id", "slider-filter-box")
+                .append(
+                    $("<input/>")
+                        .attr("id", "slider-filter")
+                        .attr("type", "search")
+                        .attr("placeholder", "Type to Filter")
+                )
+        )
+
+        // Append the internal tabs
+        .append(
+            $("<div></div>")
+                .attr("id", "slider-tabs")
+                .addClass("tabbable")
+                .append(
+                    $("<ul></ul>")
+                        .addClass("nav nav-tabs")
+                        .append(
+                            $("<li></li>")
+                                .addClass("active")
+                                .append(
+                                    $("<a></a>")
+                                        .attr("data-toggle", "tab")
+                                        .attr("href", "#slider-modules")
+                                        .text("Modules")
+                                )
+                        )
+                        .append(
+                            $("<li></li>")
+                                .append(
+                                    $("<a></a>")
+                                        .attr("data-toggle", "tab")
+                                        .attr("href", "#slider-data")
+                                        .text("Data")
+                                )
+                        )
+                        .append(
+                            $("<li></li>")
+                                .append(
+                                    $("<a></a>")
+                                        .attr("data-toggle", "tab")
+                                        .attr("href", "#slider-jobs")
+                                        .text("Jobs")
+                                )
+                        )
+                )
+                .append(
+                    $("<div></div>")
+                        .addClass("tab-content")
+                        .append(
+                            $("<div></div>")
+                                .attr("id", "slider-modules")
+                                .addClass("tab-pane active")
+                        )
+                        .append(
+                            $("<div></div>")
+                                .attr("id", "slider-data")
+                                .addClass("tab-pane")
+                        )
+                        .append(
+                            $("<div></div>")
+                                .attr("id", "slider-jobs")
+                                .addClass("tab-pane")
+                        )
+                )
+        );
+}
+
+function authenticateNav(data) {
+    // Show the GenePattern cell button
+    $(".gp-cell-button").css("visibility", "visible");
+
+    // Show the slider tab
+    $(".sidebar-button-main").show("slide", {"direction": "left"});
+
+    // Clear and add the modules to the slider
+    $("#slider-modules").empty();
+    if (data['all_modules']) {
+        $.each(data['all_modules'], function(index, module) {
+            $("#slider-modules").append(sliderOptionNav(module['lsid'], module['name'], "v" + module['version'], module['description']));
+        });
+        $("#slider-modules").append($("<p>&nbsp;</p>"))
+    }
+
+    console.log(data);
 }
 
 /*
@@ -104,7 +217,6 @@ function main_init_wrapper(evt) {
     launch_init.done_init = true;
 }
 function notebook_init_wrapper(evt) {
-    // console.log("maybe launching", evt, launch_first_cell.executed, IPython.notebook.kernel && IPython.notebook.kernel.is_connected());
     if (!launch_init.done_init  && IPython.notebook.kernel) {
         launch_init(evt);
 
@@ -112,7 +224,7 @@ function notebook_init_wrapper(evt) {
         launch_init.done_init = true;
     }
 }
-function launch_init(evt) {
+function launch_init() {
     // Change the logo
     $("#ipython_notebook").find("img").attr("src", "/static/custom/GP_logo_on_black.png");
 
@@ -120,8 +232,9 @@ function launch_init(evt) {
     $("#notebook-container").append(bottomButtonNav());
 
     // Add the sidebar
-    $("body").append(sliderTabNav());
-    $("body").append(sliderNav());
+    var body = $("body");
+    body.append(sliderTabNav());
+    body.append(sliderNav());
 
     // Initialize tooltips
     $(function () {
@@ -274,7 +387,7 @@ require(["widgets/js/widget"], function (WidgetManager) {
                                             .text("GenePattern Username")
                                     )
                                     .append(
-                                        $("<input></input>")
+                                        $("<input/>")
                                             .addClass("form-control")
                                             .attr("name", "username")
                                             .attr("type", "text")
@@ -292,7 +405,7 @@ require(["widgets/js/widget"], function (WidgetManager) {
                                             .text("GenePattern Password")
                                     )
                                     .append(
-                                        $("<input></input>")
+                                        $("<input/>")
                                             .addClass("form-control")
                                             .attr("name", "password")
                                             .attr("type", "password")
@@ -391,7 +504,6 @@ gpserver = gp.GPServer("' + server + '", "' + username + '", "' + password + '")
 GPAuthWidget(gpserver)';
 
             this.options.cell.code_mirror.setValue(code);
-            console.log(this);
         },
 
         executeCell: function() {
@@ -412,21 +524,24 @@ GPAuthWidget(gpserver)';
                 //    xhr.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
                 //},
                 success: function(data, status, xhr) {
+                    // Set the authentication info on GenePattern object
                     GenePattern.authenticated = true;
                     GenePattern.server = server;
                     GenePattern.username = username;
                     GenePattern.password = password;
 
-                    console.log(data);
-
+                    // Make authenticated UI changes to auth widget
                     widget.$el.find(".widget-username-label").text(username);
                     widget.$el.find(".widget-server-label").text(server);
+
+                    // Enable authenticated nav elsewhere in notebook
+                    authenticateNav(data);
 
                     // If a function to execute when done has been passed in, execute it
                     if (done) { done(); }
                 },
                 error: function(xhr, status, e) {
-                    alert("error");
+                    console.log("Error authenticating");
                 }
             });
         },
