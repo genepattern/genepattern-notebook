@@ -124,6 +124,21 @@ function sliderNav() {
                         .attr("id", "slider-filter")
                         .attr("type", "search")
                         .attr("placeholder", "Type to Filter")
+                        .keydown(function(event) {
+                            event.stopPropagation();
+                        })
+                        .keyup(function(event) {
+                            var search = $("#slider-filter").val().toLowerCase();
+                            $.each($("#slider-tabs").find(".slider-option"), function(index, element) {
+                                var raw = $(element).text().toLowerCase();
+                                if (raw.indexOf(search) === -1) {
+                                    $(element).hide();
+                                }
+                                else {
+                                    $(element).show();
+                                }
+                            })
+                        })
                 )
         )
 
@@ -260,16 +275,18 @@ function launch_init() {
  * Initialize the page
  */
 
-// Add the loading screen
-$("body").append(loadingScreenNav());
+require(['jquery'], function() {
+    // Add the loading screen
+    $("body").append(loadingScreenNav());
 
-// If in a notebook, display with the full event model
-$([IPython.events]).on('kernel_ready.Kernel kernel_created.Session notebook_loaded.Notebook', notebook_init_wrapper);
+    // If in a notebook, display with the full event model
+    $([IPython.events]).on('kernel_ready.Kernel kernel_created.Session notebook_loaded.Notebook', notebook_init_wrapper);
 
-// If the notebook listing page, display with alternate event model
-if ($(document).find("#notebooks").length > 0) {
-    setTimeout(main_init_wrapper, 1000);
-}
+    // If the notebook listing page, display with alternate event model
+    if ($(document).find("#notebooks").length > 0) {
+        setTimeout(main_init_wrapper, 1000);
+    }
+});
 
 /**
  * Define the IPython GenePattern Authentication widget
