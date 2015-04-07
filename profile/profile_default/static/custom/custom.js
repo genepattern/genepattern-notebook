@@ -1,4 +1,6 @@
-// Create the GenePattern object to hold GP state
+/*
+ * Create the GenePattern object to hold GP state
+ */
 var GenePattern = {
     authenticated: false,
     initialized: false,
@@ -8,39 +10,21 @@ var GenePattern = {
     username: null
 };
 
-// Add the loading screen
-$("body").append(
-    $("<div></div>")
+/*
+ * Navigation widgets
+ */
+
+function loadingScreenNav() {
+    return $("<div></div>")
         .addClass("loading-screen")
         .append(
             $("<img/>")
                 .attr("src", "/static/custom/GP_logo_on_black.png")
-        )
-);
-
-// Declare and attach the initialization functions
-function main_init_wrapper(evt) {
-    launch_init(evt);
-
-    // Mark init as done
-    launch_init.done_init = true;
+        );
 }
-function notebook_init_wrapper(evt) {
-    // console.log("maybe launching", evt, launch_first_cell.executed, IPython.notebook.kernel && IPython.notebook.kernel.is_connected());
-    if (!launch_init.done_init  && IPython.notebook.kernel) {
-        launch_init(evt);
 
-        // Mark init as done
-        launch_init.done_init = true;
-    }
-}
-function launch_init(evt) {
-    // Change the logo
-    $("#ipython_notebook").find("img").attr("src", "/static/custom/GP_logo_on_black.png");
-
-    // Add the bottom buttons
-    $("#notebook-container").append(
-        $("<div></div>")
+function bottomButtonNav() {
+    return $("<div></div>")
             .addClass("container add-cell-container")
             .append(
                 $("<span></span>")
@@ -76,12 +60,11 @@ function launch_init(evt) {
                     .click(function() {
                         $(".sidebar-button-main").trigger("click");
                     })
-            )
-    );
+            );
+}
 
-    // Add the sidebar
-    $("body").append(
-        $("<span></span>")
+function sliderTabNav() {
+    return $("<span></span>")
             .addClass("glyphicon glyphicon-ok sidebar-button sidebar-button-main")
             .attr("title", "GenePattern Options")
             .attr("data-toggle", "tooltip")
@@ -91,10 +74,11 @@ function launch_init(evt) {
             .css("left", "0")
             .click(function() {
                 $("#slider").show("slide");
-            })
-    );
-    $("body").append(
-        $("<div></div>")
+            });
+}
+
+function sliderNav() {
+    return $("<div></div>")
             .attr("id", "slider")
             .append(
                 $("<span></span>")
@@ -105,8 +89,39 @@ function launch_init(evt) {
                     .click(function() {
                         $("#slider").hide("slide");
                     })
-            )
-    );
+            );
+}
+
+/*
+ * Initialization functions
+ */
+
+// Declare and attach the initialization functions
+function main_init_wrapper(evt) {
+    launch_init(evt);
+
+    // Mark init as done
+    launch_init.done_init = true;
+}
+function notebook_init_wrapper(evt) {
+    // console.log("maybe launching", evt, launch_first_cell.executed, IPython.notebook.kernel && IPython.notebook.kernel.is_connected());
+    if (!launch_init.done_init  && IPython.notebook.kernel) {
+        launch_init(evt);
+
+        // Mark init as done
+        launch_init.done_init = true;
+    }
+}
+function launch_init(evt) {
+    // Change the logo
+    $("#ipython_notebook").find("img").attr("src", "/static/custom/GP_logo_on_black.png");
+
+    // Add the bottom buttons
+    $("#notebook-container").append(bottomButtonNav());
+
+    // Add the sidebar
+    $("body").append(sliderTabNav());
+    $("body").append(sliderNav());
 
     // Initialize tooltips
     $(function () {
@@ -127,6 +142,15 @@ function launch_init(evt) {
         $(".loading-screen").toggle("fade");
     }, 100);
 }
+
+/*
+ * Initialize the page
+ */
+
+// Add the loading screen
+$("body").append(loadingScreenNav());
+
+// If in a notebook, display with the full event model
 $([IPython.events]).on('kernel_ready.Kernel kernel_created.Session notebook_loaded.Notebook', notebook_init_wrapper);
 
 // If the notebook listing page, display with alternate event model
@@ -338,6 +362,9 @@ require(["widgets/js/widget"], function (WidgetManager) {
                 this.options.cell.code_mirror.refresh();
                 var raw = this.$el.closest(".cell").find(".input").html();
                 code.html(raw);
+
+                // Fix the issue where the code couldn't be selected
+                code.find(".CodeMirror-scroll").attr("draggable", "false");
 
                 view.slideUp();
                 code.slideDown();
