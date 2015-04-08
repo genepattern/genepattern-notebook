@@ -1301,11 +1301,43 @@ GenePattern.notebook.init.main_init_wrapper = function(evt) {
  */
 GenePattern.notebook.init.notebook_init_wrapper = function (evt) {
     if (!GenePattern.notebook.init.launch_init.done_init  && IPython.notebook.kernel) {
+        // Call the core init function
         GenePattern.notebook.init.launch_init(evt);
+
+        // If no auth widget exists, add it
+        if ($(".gp-widget-auth").length < 1) {
+            var cell = IPython.notebook.insert_cell_at_index("code", 0);
+            var code = GenePattern.notebook.init.buildCode("http://genepattern.broadinstitute.org/gp", "", "");
+            cell.code_mirror.setValue(code);
+            cell.execute();
+        }
 
         // Mark init as done
         GenePattern.notebook.init.launch_init.done_init = true;
     }
+};
+
+/**
+ * Build the Python code used to authenticate GenePattern
+ *
+ * @param server
+ * @param username
+ * @param password
+ */
+GenePattern.notebook.init.buildCode = function(server, username, password) {
+    return '# !AUTOEXEC\n\
+\n\
+import gp\n\
+from gp_widgets import GPAuthWidget\n\
+\n\
+# The gpserver object holds your authentication credentials and is used to\n\
+# make calls to the GenePattern server through the GenePattern Python library.\n\
+# Your actual username and password have been removed from the code shown\n\
+# below for security reasons.\n\
+gpserver = gp.GPServer("' + server + '", "' + username + '", "' + password + '")\n\
+\n\
+# Return the authentication widget to view it\n\
+GPAuthWidget(gpserver)';
 };
 
 /**
@@ -1578,20 +1610,7 @@ require(["widgets/js/widget"], function (WidgetManager) {
         },
 
         buildCode: function(server, username, password) {
-            var code = '# !AUTOEXEC\n\
-\n\
-import gp\n\
-from gp_widgets import GPAuthWidget\n\
-\n\
-# The gpserver object holds your authentication credentials and is used to\n\
-# make calls to the GenePattern server through the GenePattern Python library.\n\
-# Your actual username and password have been removed from the code shown\n\
-# below for security reasons.\n\
-gpserver = gp.GPServer("' + server + '", "' + username + '", "' + password + '")\n\
-\n\
-# Return the authentication widget to view it\n\
-GPAuthWidget(gpserver)';
-
+            var code = GenePattern.notebook.init.buildCode(server, username, password);
             this.options.cell.code_mirror.setValue(code);
         },
 
