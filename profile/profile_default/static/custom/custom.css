@@ -29,6 +29,11 @@
     min-height: 130px;
 }
 
+/* Don't expand header on main notebook listing page */
+body[data-notebook-path=''] #header {
+    min-height: unset;
+}
+
 .header-bar {
 	display: none;
 }
