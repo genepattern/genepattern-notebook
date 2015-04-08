@@ -32,8 +32,8 @@ require(["jquery"], function() {
     GenePattern.setServer = function(url) {
         GenePattern._server = url;
     };
-    
-    
+
+
     /**
      * Easily determine if the URL to the GenePattern server has been set or not.
      *
@@ -42,8 +42,8 @@ require(["jquery"], function() {
     GenePattern.isServerSet = function() {
         return GenePattern._server ? true : false;
     };
-    
-    
+
+
     /**
      * Returns the server at which this library is pointed
      * @returns {string|null}
@@ -51,8 +51,8 @@ require(["jquery"], function() {
     GenePattern.server = function() {
         return GenePattern._server;
     };
-    
-    
+
+
     /**
      * Queries for a list of all tasks available to the user. If this data is not yet cached, it will
      * make an AJAX request to get the info, and make a callback once available. If this data is already
@@ -73,7 +73,7 @@ require(["jquery"], function() {
     GenePattern.tasks = function(pObj) {
         var forceRefresh = pObj && pObj.force && pObj.force.toLowerCase() === 'true';
         var useCache = GenePattern._tasks && !forceRefresh;
-    
+
         if (useCache) {
             return new $.Deferred()
                 .done(function() {
@@ -86,13 +86,13 @@ require(["jquery"], function() {
         else {
             var REST_ENDPOINT = "/rest/v1/tasks/all.json";
             var includeHidden = pObj && pObj.hidden && pObj.hidden.toLowerCase() === 'true' ? '?includeHidden=true' : '';
-    
+
             return $.ajax({
-                    url: GenePattern._server() + REST_ENDPOINT + includeHidden,
+                    url: GenePattern.server() + REST_ENDPOINT + includeHidden,
                     type: 'GET',
                     dataType: 'json',
-                    headers: {
-                        'Authorization': 'tabor:'
+                    xhrFields: {
+                        withCredentials: true
                     }
                 })
                 .done(function(response) {
@@ -105,7 +105,7 @@ require(["jquery"], function() {
                             GenePattern._tasks.push(new GenePattern.Task(json));
                         }
                     }
-    
+
                     if (pObj && pObj.success) {
                         pObj.success(response, GenePattern._tasks);
                     }
@@ -117,8 +117,8 @@ require(["jquery"], function() {
                 });
         }
     };
-    
-    
+
+
     /**
      * Returns a cached Task() object matching the provided LSID or module name
      *
@@ -135,19 +135,20 @@ require(["jquery"], function() {
         if (!pObj) throw "GenePattern.task() parameter either null or undefined";
         if (typeof pObj === 'object' && !pObj.lsid && !pObj.name) throw "GenePattern.task() parameter does not contain lsid or name";
         if (typeof pObj !== 'string' && typeof pObj !== 'object') throw "GenePattern.task() parameter must be either object or string";
-    
+        if (GenePattern._tasks === null) throw "gp task list has not been initialized";
+
         var identifier = typeof pObj === 'string'? pObj : null;
-    
+
         for (var i = 0; i < GenePattern._tasks.length; i++) {
             var task = GenePattern._tasks[i];
             if (task.lsid() === pObj.lsid || task.lsid() === identifier) return task;
             if (task.name() === pObj.name || task.name() === identifier) return task;
         }
-    
+
         return null;
     };
-    
-    
+
+
     /**
      * Returns a list of jobs on the server and caches those jobs.
      * To begin a new search include the force parameter
@@ -172,7 +173,7 @@ require(["jquery"], function() {
     GenePattern.jobs = function(pObj) {
         var forceRefresh = pObj && pObj.force && pObj.force.toLowerCase() === 'true';
         var useCache = GenePattern._jobs && !forceRefresh;
-    
+
         if (useCache) {
             return new $.Deferred()
                 .done(function() {
@@ -184,7 +185,7 @@ require(["jquery"], function() {
         }
         else {
             var REST_ENDPOINT = "/rest/v1/jobs/?";
-    
+
             var userId = pObj && pObj['userId'] ? pObj['userId'] : null;
             var groupId = pObj && pObj['groupId'] ? pObj['groupId'] : null;
             var batchId = pObj && pObj['batchId'] ? pObj['batchId'] : null;
@@ -193,7 +194,7 @@ require(["jquery"], function() {
             var includeChildren = pObj && pObj['includeChildren'] ? pObj['includeChildren'] : null;
             var includeOutputFiles = pObj && pObj['includeOutputFiles'] ? pObj['includeOutputFiles'] : null;
             var includePermissions = pObj && pObj['includePermissions'] ? pObj['includePermissions'] : null;
-    
+
             if (userId) REST_ENDPOINT += "&userId=" + encodeURIComponent(userId);
             if (groupId) REST_ENDPOINT += "&groupId=" + encodeURIComponent(groupId);
             if (batchId) REST_ENDPOINT += "&batchId=" + encodeURIComponent(batchId);
@@ -202,11 +203,14 @@ require(["jquery"], function() {
             if (includeChildren) REST_ENDPOINT += "&includeChildren=" + encodeURIComponent(includeChildren);
             if (includeOutputFiles) REST_ENDPOINT += "&includeOutputFiles=" + encodeURIComponent(includeOutputFiles);
             if (includePermissions) REST_ENDPOINT += "&includePermissions=" + encodeURIComponent(includePermissions);
-    
+
             return $.ajax({
-                    url: GenePattern._server() + REST_ENDPOINT,
+                    url: GenePattern.server() + REST_ENDPOINT,
                     type: 'GET',
-                    dataType: 'json'
+                    dataType: 'json',
+                    xhrFields: {
+                        withCredentials: true
+                    }
                 })
                 .done(function(response) {
                     // Create the new _jobs list and iterate over returned JSON list, creating Job objects
@@ -218,7 +222,7 @@ require(["jquery"], function() {
                             GenePattern._jobs.push(new GenePattern.Job(json));
                         }
                     }
-    
+
                     if (pObj && pObj.success) {
                         pObj.success(response, GenePattern._tasks);
                     }
@@ -230,34 +234,67 @@ require(["jquery"], function() {
                 });
         }
     };
-    
-    
+
+
     /**
-     * Returns a cached Job() object matching the provided job number
+     * Returns a Job object either from the cache or from a server query
      *
      * @param pObj - An object specifying this property:
      *                  jobNumber: the job number of the job
-     *               Alternately, will accept a job number directly
+     *                  force: do not use cache, force a new query
+     *                  success: callback function for a done() event,
+     *                          expects response and a Job object as arguments
+     *                  error: callback function for an fail() event, expects exception as argument
      *
-     * @returns {GenePattern.Job|null} - The Job object from the cache
+     * @returns {jQuery.Deferred} - Returns a jQuery Deferred object for event chaining.
+     *      See http://api.jquery.com/jquery.deferred/ for details.
      */
     GenePattern.job = function(pObj) {
-        // Ensure the job number is defined
-        if (!pObj) throw "GenePattern.job() parameter either null or undefined";
-        if (typeof pObj === 'object' && !pObj.jobNumber) throw "GenePattern.job() parameter does not contain jobNumber";
-        if (typeof pObj !== 'string' && typeof pObj !== 'object' && typeof pObj !== 'number') throw "GenePattern.job() parameter must be object, string or number";
-    
-        var identifier = typeof pObj === 'object'? pObj.jobNumber : pObj;
-    
-        for (var i = 0; i < GenePattern._jobs.length; i++) {
-            var job = GenePattern._jobs[i];
-            if (job.jobNumber().toString() === identifier.toString()) return job;
+        var forceRefresh = pObj && pObj.force && pObj.force.toLowerCase() === 'true';
+        var jobNumber = pObj.jobNumber;
+
+        // Try to find the job in the cache
+        if (!forceRefresh && GenePattern._jobs) {
+            for (var i = 0; i < GenePattern._jobs.length; i++) {
+                var job = GenePattern._jobs[i];
+                if (job.jobNumber() === jobNumber) {
+                    return new $.Deferred()
+                        .done(function() {
+                            if (pObj && pObj.success) {
+                                pObj.success("Job cached", job);
+                            }
+                        })
+                        .resolve();
+                }
+            }
         }
-    
-        return null;
+
+        // Otherwise, if not cached or refreshed forced
+        var REST_ENDPOINT = "/rest/v1/jobs/";
+        return $.ajax({
+                url: GenePattern.server() + REST_ENDPOINT + jobNumber,
+                type: 'GET',
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true
+                }
+            })
+            .done(function(response) {
+                // Create the new _jobs list and iterate over returned JSON list, creating Job objects
+                var loadedJob = new GenePattern.Job(response);
+
+                if (pObj && pObj.success) {
+                    pObj.success(response, loadedJob);
+                }
+            })
+            .fail(function(exception) {
+                if (pObj && pObj.error) {
+                    pObj.error(exception);
+                }
+            });
     };
-    
-    
+
+
     /**
      * Uploads a file for running a job
      *
@@ -272,16 +309,19 @@ require(["jquery"], function() {
         // Ensure the file is specified
         if (!pObj) throw "GenePattern.upload() parameter either null or undefined";
         if (typeof pObj === 'object' && typeof pObj.file !== 'object') throw "GenePattern.upload() parameter does not contain a File object";
-    
+
         var REST_ENDPOINT = "/rest/v1/data/upload/job_input";
         var nameParam = "?name=" + pObj.file.name;
-    
+
         return $.ajax({
-                url: GenePattern._server() + REST_ENDPOINT + nameParam,
+                url: GenePattern.server() + REST_ENDPOINT + nameParam,
                 type: 'POST',
                 dataType: "text",
                 processData: false,
                 data: pObj.file,
+                xhrFields: {
+                    withCredentials: true
+                },
                 headers: {
                     "Content-Length": pObj.file.size
                 },
@@ -298,8 +338,8 @@ require(["jquery"], function() {
                 }
             });
     };
-    
-    
+
+
     /**
      * Declaration of Task class
      * @constructor
@@ -315,17 +355,7 @@ require(["jquery"], function() {
         this._version = null;
         this._lsid = null;
         this._params = null;
-    
-        this._buildParams = function(params) {
-            if (params) {
-                this._params = [];
-                for (var i = 0; i < params.length; i++) {
-                    var param = params[i];
-                    this._params.push(new GenePattern.Param(param));
-                }
-            }
-        };
-    
+
         /**
          * Constructor-like initialization for the Task class
          *
@@ -341,13 +371,10 @@ require(["jquery"], function() {
                 this._suites = taskJson.suites;
                 this._version = taskJson.version;
                 this._lsid = taskJson.lsid;
-                if (taskJson.params) {
-                    this._buildParams(taskJson.params);
-                }
             }
         };
         this._init_();
-    
+
         /**
          * Returns a JobInput object for submitting a job for this task
          * @returns {GenePattern.JobInput}
@@ -355,7 +382,7 @@ require(["jquery"], function() {
         this.jobInput = function() {
             return new GenePattern.JobInput(this);
         };
-    
+
         /**
          * Loads a Task's parameters from REST call, or retrieves them from the cache
          *
@@ -372,7 +399,7 @@ require(["jquery"], function() {
             var task = this;
             var forceRefresh = (pObj && pObj.force && pObj.force.toLowerCase() === 'true') ? true : false;
             var inCache = forceRefresh ? false : task._params !== null;
-    
+
             if (inCache) {
                 return new $.Deferred()
                     .done(function() {
@@ -384,17 +411,26 @@ require(["jquery"], function() {
             }
             else {
                 var REST_ENDPOINT = "/rest/v1/tasks/";
-    
+
                 return $.ajax({
-                        url: GenePattern._server() + REST_ENDPOINT + encodeURIComponent(task.lsid()),
+                        url: GenePattern.server() + REST_ENDPOINT + encodeURIComponent(task.lsid()),
                         type: 'GET',
-                        dataType: 'json'
+                        dataType: 'json',
+                        xhrFields: {
+                            withCredentials: true
+                        }
                     })
                     .done(function(response) {
                         // Add params to Task object
                         var params = response['params'];
-                        task._buildParams(params);
-    
+                        if (params) {
+                            task._params = [];
+                            for (var i = 0; i < params.length; i++) {
+                                var param = params[i];
+                                task._params.push(new GenePattern.Param(param));
+                            }
+                        }
+
                         if (pObj && pObj.success) {
                             pObj.success(response, task._params);
                         }
@@ -406,7 +442,7 @@ require(["jquery"], function() {
                     });
             }
         };
-    
+
         /**
          * Getter for Task tags
          *
@@ -415,7 +451,7 @@ require(["jquery"], function() {
         this.tags = function() {
             return this._tags;
         };
-    
+
         /**
          * Getter for Task description
          *
@@ -424,7 +460,7 @@ require(["jquery"], function() {
         this.description = function() {
             return this._description;
         };
-    
+
         /**
          * Getter for Task name
          *
@@ -433,7 +469,7 @@ require(["jquery"], function() {
         this.name = function() {
             return this._name;
         };
-    
+
         /**
          * Getter for URL to Task documentation
          *
@@ -442,7 +478,7 @@ require(["jquery"], function() {
         this.documentation = function() {
             return this._documentation;
         };
-    
+
         /**
          * Getter for list of Task categories
          *
@@ -451,7 +487,7 @@ require(["jquery"], function() {
         this.categories = function() {
             return this._categories;
         };
-    
+
         /**
          * Getter for list of Task suites
          *
@@ -460,7 +496,7 @@ require(["jquery"], function() {
         this.suites = function() {
             return this._suites;
         };
-    
+
         /**
          * Getter for Task version
          *
@@ -469,7 +505,7 @@ require(["jquery"], function() {
         this.version = function() {
             return this._version;
         };
-    
+
         /**
          * Getter for Task LSID
          *
@@ -479,8 +515,8 @@ require(["jquery"], function() {
             return this._lsid;
         };
     };
-    
-    
+
+
     /**
      * Declaration of Job class
      * @constructor
@@ -497,7 +533,7 @@ require(["jquery"], function() {
         this._logFiles = null;
         this._outputFiles = null;
         this._numOutputFiles = null;
-    
+
         /**
          * Constructor-like initialization for the Job class
          *
@@ -515,11 +551,11 @@ require(["jquery"], function() {
                 this._logFiles = jobJson.logFiles;
                 this._outputFiles = jobJson.outputFiles;
                 this._numOutputFiles = typeof jobJson.numOutputFiles === 'string' ? parseInt(jobJson.numOutputFiles) : jobJson.numOutputFiles;
-                //this._task = GenePattern.task(this._taskLsid);
+                this._task = GenePattern.task(this._taskLsid);
             }
         };
         this._init_();
-    
+
         /**
          * Queries the server for the job's status, updates the Job object and returns
          *
@@ -534,11 +570,14 @@ require(["jquery"], function() {
         this.update = function(pObj) {
             var REST_ENDPOINT = "/rest/v1/jobs/" + this.jobNumber() + "/status.json";
             var job = this;
-    
+
             return $.ajax({
-                    url: GenePattern._server() + REST_ENDPOINT,
+                    url: GenePattern.server() + REST_ENDPOINT,
                     type: 'GET',
-                    dataType: 'json'
+                    dataType: 'json',
+                    xhrFields: {
+                        withCredentials: true
+                    }
                 })
                 .done(function(response) {
                     // Add params to Job object
@@ -546,7 +585,7 @@ require(["jquery"], function() {
                     if (status) {
                         job._status = status;
                     }
-    
+
                     if (pObj && pObj.success) {
                         pObj.success(response, status);
                     }
@@ -557,7 +596,7 @@ require(["jquery"], function() {
                     }
                 });
         };
-    
+
         /**
          * Returns the Task object associated with the job
          *
@@ -566,7 +605,7 @@ require(["jquery"], function() {
         this.task = function() {
             return this._task;
         };
-    
+
         /**
          * Returns the name of the job's associated task
          * @returns {string}
@@ -574,7 +613,7 @@ require(["jquery"], function() {
         this.taskName = function() {
             return this._taskName;
         };
-    
+
         /**
          * Returns the LSID of the job's associated task
          *
@@ -583,7 +622,7 @@ require(["jquery"], function() {
         this.taskLsid = function() {
             return this._taskLsid;
         };
-    
+
         /**
          * Returns the user ID of the job's owner
          *
@@ -592,11 +631,11 @@ require(["jquery"], function() {
         this.userId = function() {
             return this._userId;
         };
-    
+
         this.permissions = function() {
             return this._permissions;
         };
-    
+
         /**
          * Returns the job number
          *
@@ -605,7 +644,7 @@ require(["jquery"], function() {
         this.jobNumber = function() {
             return this._jobNumber;
         };
-    
+
         /**
          * Returns a job permissions object
          *
@@ -614,7 +653,7 @@ require(["jquery"], function() {
         this.permissions = function() {
             return this._permissions;
         };
-    
+
         /**
          * Returns a job status object
          *
@@ -623,7 +662,7 @@ require(["jquery"], function() {
         this.status = function() {
             return this._status;
         };
-    
+
         /**
          * Returns the date the job was submitted
          * @returns {null|string|Date}
@@ -631,7 +670,7 @@ require(["jquery"], function() {
         this.dateSubmitted = function() {
             return this._dateSubmitted;
         };
-    
+
         /**
          * Returns an array of log files associated with the job
          * @returns {Array}
@@ -639,7 +678,7 @@ require(["jquery"], function() {
         this.logFiles = function() {
             return this._logFiles;
         };
-    
+
         /**
          * Returns an array of the output files possessed by the job
          *
@@ -648,7 +687,7 @@ require(["jquery"], function() {
         this.outputFiles = function() {
             return this._outputFiles;
         };
-    
+
         /**
          * Returns the number of output files the job has currently output
          *
@@ -658,8 +697,8 @@ require(["jquery"], function() {
             return this._numOutputFiles;
         };
     };
-    
-    
+
+
     /**
      * Declaration of Job Input class
      * @constructor
@@ -668,10 +707,10 @@ require(["jquery"], function() {
         // Define class members
         this._lsid = null;
         this._params = null;
-    
+
         // Ensure that Task object has its params initialized
         if (task._params === null) throw "Cannot create JonInput from Task with null params. First call Task.params()";
-    
+
         /**
          * Constructor-like initialization for the JobInput class
          *
@@ -688,7 +727,7 @@ require(["jquery"], function() {
             }
         };
         this._init_();
-    
+
         /**
          * Getter for Task LSID
          *
@@ -697,7 +736,7 @@ require(["jquery"], function() {
         this.lsid = function() {
             return this._lsid;
         };
-    
+
         /**
          * Getter for the params list
          *
@@ -706,7 +745,7 @@ require(["jquery"], function() {
         this.params = function() {
             return this._params;
         };
-    
+
         /**
          * Returns a Parameter after looking it up by name
          *      Returns null if the param was not found.
@@ -721,7 +760,7 @@ require(["jquery"], function() {
             }
             return null;
         };
-    
+
         /**
          * Returns a JSON structure for this Job Input designed to be consumed by a submit() call
          * @returns {object}
@@ -745,7 +784,7 @@ require(["jquery"], function() {
                 params: params
             };
         };
-    
+
         /**
          * Submits the task and parameter values to the server as a Job
          *
@@ -759,21 +798,24 @@ require(["jquery"], function() {
          */
         this.submit = function(pObj) {
             var REST_ENDPOINT = "/rest/v1/jobs/";
-    
+
             return $.ajax({
-                    url: GenePattern._server() + REST_ENDPOINT,
+                    url: GenePattern.server() + REST_ENDPOINT,
                     type: 'POST',
                     data: JSON.stringify(this._submitJson_()),
                     dataType: 'json',
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
+                    },
+                    xhrFields: {
+                        withCredentials: true
                     }
                 })
                 .done(function(response) {
                     // Create Job object from JSON response
                     var jobNumber = response['jobId'];
-    
+
                     if (pObj && pObj.success) {
                         pObj.success(response, jobNumber);
                     }
@@ -785,7 +827,7 @@ require(["jquery"], function() {
                 });
         };
     };
-    
+
     /**
      * Declaration of Param class
      * @constructor
@@ -802,7 +844,7 @@ require(["jquery"], function() {
         this._optional = null;
         this._prefixWhenSpecified = null;
         this._type = null;
-    
+
         /**
          * Constructor-like initialization for the Param class
          *
@@ -824,7 +866,7 @@ require(["jquery"], function() {
                 }
             }
         };
-    
+
         /**
          * Parses the choice info JSON returned by the server into the expected format
          *
@@ -846,7 +888,7 @@ require(["jquery"], function() {
                 return null;
             }
         };
-    
+
         /**
          * Return a clone of this param
          *
@@ -860,10 +902,10 @@ require(["jquery"], function() {
             param.optional(this.optional());
             param.prefixWhenSpecified(this.prefixWhenSpecified());
             param.type(this.type());
-    
+
             return param;
         };
-    
+
         /**
          * Returns or sets the value of the parameter
          *
@@ -878,7 +920,7 @@ require(["jquery"], function() {
                 return this._values;
             }
         };
-    
+
         /**
          * Returns or sets whether this parameter is a batch (default is false)
          *
@@ -893,7 +935,7 @@ require(["jquery"], function() {
                 return this._batchParam;
             }
         };
-    
+
         /**
          * Returns or sets the group ID
          *
@@ -908,7 +950,7 @@ require(["jquery"], function() {
                 return this._groupId;
             }
         };
-    
+
         /**
          * Returns or sets the name of the parameter
          *
@@ -923,7 +965,7 @@ require(["jquery"], function() {
                 return this._name;
             }
         };
-    
+
         /**
          * Returns or sets the description of the parameter
          *
@@ -938,7 +980,7 @@ require(["jquery"], function() {
                 return this._description;
             }
         };
-    
+
         /**
          * Returns or sets the choices for the parameter
          *
@@ -954,7 +996,7 @@ require(["jquery"], function() {
                 return this._choices;
             }
         };
-    
+
         /**
          * Returns or sets the default value of the parameter
          *
@@ -969,7 +1011,7 @@ require(["jquery"], function() {
                 return this._defaultValue;
             }
         };
-    
+
         /**
          * Returns or sets whether the parameter is optional or not
          *
@@ -984,7 +1026,7 @@ require(["jquery"], function() {
                 return this._optional;
             }
         };
-    
+
         /**
          * Returns or sets the prefix when specified value
          *
@@ -999,7 +1041,7 @@ require(["jquery"], function() {
                 return this._prefixWhenSpecified;
             }
         };
-    
+
         /**
          * Returns or sets the type of the parameter
          *
@@ -1014,7 +1056,8 @@ require(["jquery"], function() {
                 return this._type;
             }
         };
-    
+
+        // Init the object
         this._init_();
     };
 });
@@ -1305,12 +1348,14 @@ GenePattern.notebook.init.notebook_init_wrapper = function (evt) {
         GenePattern.notebook.init.launch_init(evt);
 
         // If no auth widget exists, add it
-        if ($(".gp-widget-auth").length < 1) {
-            var cell = IPython.notebook.insert_cell_at_index("code", 0);
-            var code = GenePattern.notebook.init.buildCode("http://genepattern.broadinstitute.org/gp", "", "");
-            cell.code_mirror.setValue(code);
-            cell.execute();
-        }
+        setTimeout(function() {
+            if ($(".gp-widget-auth").length < 1) {
+                var cell = IPython.notebook.insert_cell_at_index("code", 0);
+                var code = GenePattern.notebook.init.buildCode("http://genepattern.broadinstitute.org/gp", "", "");
+                cell.code_mirror.setValue(code);
+                cell.execute();
+            }
+        }, 100);
 
         // Mark init as done
         GenePattern.notebook.init.launch_init.done_init = true;
