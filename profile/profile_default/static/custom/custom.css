@@ -189,43 +189,39 @@ body {
 }
 
 .slider-option {
-    background-color: #fdfdfd;
-    border-color: #bbbbee;
-    border-radius: 5px;
-    border-style: solid;
-    border-width: 1px;
     cursor: pointer;
-    margin-top: 10px;
-    overflow: hidden;
-    padding: 2px;
     position: relative;
 }
 
+.slider-option:hover {
+    background-color: #e4e4e4;
+}
+
 .slider-option-name {
-    display: inline-block;
-    width: 100%;
-    color: gray;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .slider-option-anno {
-    position: absolute;
-    right: 5px;
     color: gray;
-    font-size: 0.8em;
-    margin-top: 3px;
+    position: absolute;
+    right: 15px;
+    top: 10px;
 }
 
 .slider-option-desc {
     color: #333366;
-    font-size: 0.8em;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    width: 100%;
     display: block;
+}
+
+.slider-option-tags {
+    display: block;
+    color: rgba(10, 45, 105, 1);
+    padding: 5px;
 }
 
 /*
