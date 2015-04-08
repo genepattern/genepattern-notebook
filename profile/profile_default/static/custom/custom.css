@@ -251,6 +251,7 @@ body {
 
 .gp-widget .panel-heading {
     background-color: rgba(10, 45, 105, 0.80);
+    color: white;
 }
 
 .gp-widget label {

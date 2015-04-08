@@ -1775,26 +1775,26 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
             }
 
             // Add class and child elements
-            this.element.addClass("job-widget");
+            this.element.addClass("panel panel-default gp-widget gp-widget-job");
             this.element.append(
                 $("<div></div>")
-                    .addClass("job-widget-header")
+                    .addClass("panel-heading gp-widget-job-header")
                     .append(
                         $("<div></div>")
-                            .addClass("job-widget-status")
+                            .addClass("widget-float-right gp-widget-job-status")
+                    )
+                    .append(
+                        $("<h3></h3>")
+                            .addClass("panel-title gp-widget-job-task")
                     )
                     .append(
                         $("<div></div>")
-                            .addClass("job-widget-task")
-                    )
-                    .append(
-                        $("<div></div>")
-                            .addClass("job-widget-submitted")
+                            .addClass("gp-widget-job-submitted")
                     )
             );
             this.element.append(
                 $("<div></div>")
-                    .addClass("job-widget-outputs")
+                    .addClass("panel-body gp-widget-job-outputs")
             );
 
             // Load job status
@@ -1807,7 +1807,7 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
          * @private
          */
         _destroy: function() {
-            this.element.removeClass("job-widget-widget");
+            this.element.removeClass("gp-widget-job-widget");
             this.element.empty();
         },
 
@@ -1878,7 +1878,7 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                         widget._clean();
 
                         // Display the error
-                        widget.element.find(".job-widget-task").text("Error loading job: " + widget.options.jobNumber);
+                        widget.element.find(".gp-widget-job-task").text("Error loading job: " + widget.options.jobNumber);
                     }
                 });
             }
@@ -1896,23 +1896,23 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
 
             // Display the job number and task name
             var taskText = job.jobNumber() + ". " + job.taskName();
-            this.element.find(".job-widget-task").text(taskText);
+            this.element.find(".gp-widget-job-task").text(taskText);
 
             // Display the user and date submitted
             var submittedText = "Submitted by " + job.userId() + " on " + job.dateSubmitted();
-            this.element.find(".job-widget-submitted").text(submittedText);
+            this.element.find(".gp-widget-job-submitted").text(submittedText);
 
             // Display the status
             var statusText = this._statusText(job.status());
-            this.element.find(".job-widget-status").text(statusText);
+            this.element.find(".gp-widget-job-status").text(statusText);
 
             // Display the job results
             var outputsList = this._outputsList(job.outputFiles());
-            this.element.find(".job-widget-outputs").append(outputsList);
+            this.element.find(".gp-widget-job-outputs").append(outputsList);
 
             // Display the log files
             var logList = this._outputsList(job.logFiles());
-            this.element.find(".job-widget-outputs").append(logList);
+            this.element.find(".gp-widget-job-outputs").append(logList);
 
             // Initialize status polling
             this._initPoll(job.status());
@@ -1949,7 +1949,7 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
          */
         _outputsList: function(outputs) {
             var outputsList = $("<div></div>")
-                .addClass("job-widget-outputs-list");
+                .addClass("gp-widget-job-outputs-list");
 
             if (outputs) {
                 for (var i = 0; i < outputs.length; i++) {
@@ -1974,10 +1974,10 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
          * @private
          */
         _clean: function() {
-            this.element.find(".job-widget-task").empty();
-            this.element.find(".job-widget-submitted").empty();
-            this.element.find(".job-widget-status").empty();
-            this.element.find(".job-widget-outputs").empty();
+            this.element.find(".gp-widget-job-task").empty();
+            this.element.find(".gp-widget-job-submitted").empty();
+            this.element.find(".gp-widget-job-status").empty();
+            this.element.find(".gp-widget-job-outputs").empty();
         },
 
         /**
