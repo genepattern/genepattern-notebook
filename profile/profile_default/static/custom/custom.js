@@ -1805,6 +1805,9 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                     .addClass("panel-body gp-widget-job-outputs")
             );
 
+            // Add job to slider
+            this._updateSlider("create");
+
             // Check to see if the user is authenticated yet
             if (GenePattern.authenticated) {
                 // If authenticated, load job status
@@ -1823,6 +1826,7 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
          * @private
          */
         _destroy: function() {
+            this._updateSlider("destroy");
             this.element.removeClass("gp-widget-job-widget");
             this.element.empty();
         },
@@ -1888,6 +1892,25 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
         },
 
         /**
+         * Update the left-hand slider with job information
+         *
+         * @private
+         */
+        _updateSlider: function(method) {
+            if (method.toLowerCase() == "create") {
+                // TODO: Implement
+                //GenePattern.notebook.addSliderJob(this.job);
+            }
+            else if (method.toLowerCase() == "destroy") {
+                ;
+            }
+            // Else assume "update"
+            else {
+                ;
+            }
+        },
+
+        /**
          * Show the message about authentication
          *
          * @private
@@ -1917,7 +1940,11 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                     jobNumber: this.options.jobNumber,
                     forceRefresh: true,
                     success: function(response, job) {
+                        // Update the widget
                         widget._displayJob(job);
+
+                        // Update the slider
+                        widget._updateSlider("update");
                     },
                     error: function() {
                         // Clean the old data
@@ -1926,6 +1953,9 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                         // Display the error
                         widget.element.find(".gp-widget-job-task").text(" GenePattern Job: Error");
                         widget.element.find(".gp-widget-job-outputs").text("Error loading job: " + widget.options.jobNumber);
+
+                        // Update the slider
+                        widget._updateSlider("update");
                     }
                 });
             }
@@ -2047,12 +2077,12 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
             });
 
             // Hide the code by default
-            var element = this.$el;
-            setTimeout(function() {
-                element.closest(".cell").find(".input")
-                    .css("height", "0")
-                    .css("overflow", "hidden");
-            }, 1);
+            //var element = this.$el;
+            //setTimeout(function() {
+            //    element.closest(".cell").find(".input")
+            //        .css("height", "0")
+            //        .css("overflow", "hidden");
+            //}, 1);
         }
     });
 
