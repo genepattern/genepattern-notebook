@@ -1373,7 +1373,7 @@ GenePattern.notebook.init.buildCode = function(server, username, password) {
     return '# !AUTOEXEC\n\
 \n\
 import gp\n\
-from gp_widgets import GPAuthWidget\n\
+from gp_widgets import GPAuthWidget, GPJobWidget\n\
 \n\
 # The gpserver object holds your authentication credentials and is used to\n\
 # make calls to the GenePattern server through the GenePattern Python library.\n\
@@ -1785,7 +1785,15 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                     )
                     .append(
                         $("<h3></h3>")
-                            .addClass("panel-title gp-widget-job-task")
+                            .addClass("panel-title")
+                            .append(
+                                $("<span></span>")
+                                    .addClass("glyphicon glyphicon-th")
+                            )
+                            .append(
+                                $("<span></span>")
+                                    .addClass("gp-widget-job-task")
+                            )
                     )
                     .append(
                         $("<div></div>")
@@ -1797,8 +1805,16 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                     .addClass("panel-body gp-widget-job-outputs")
             );
 
-            // Load job status
-            this._loadJobStatus();
+            // Check to see if the user is authenticated yet
+            if (GenePattern.authenticated) {
+                // If authenticated, load job status
+                this._loadJobStatus();
+            }
+            else {
+                // If not authenticated, display message
+                this._showAuthenticationMessage();
+                this._pollForAuth();
+            }
         },
 
         /**
@@ -1852,6 +1868,36 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
         },
 
         /**
+         * Polls every few seconds to see if the notebook is authenticated, and gets job info once authenticated
+         *
+         * @private
+         */
+        _pollForAuth: function() {
+            var widget = this;
+            setTimeout(function() {
+                // Check to see if the user is authenticated yet
+                if (GenePattern.authenticated) {
+                    // If authenticated, load job status
+                    widget._loadJobStatus();
+                }
+                else {
+                    // If not authenticated, poll again
+                    widget._pollForAuth();
+                }
+            }, 1000);
+        },
+
+        /**
+         * Show the message about authentication
+         *
+         * @private
+         */
+        _showAuthenticationMessage: function() {
+            this.element.find(".gp-widget-job-task").text(" GenePattern Job: Not Authenticated");
+            this.element.find(".gp-widget-job-outputs").text("You must be authenticated before the job information can be displayed. After you authenticate it may take a few seconds for the job information to appear.");
+        },
+
+        /**
          * Make a quest to the server to update the job status, and then update the UI
          *
          * @private
@@ -1878,7 +1924,8 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                         widget._clean();
 
                         // Display the error
-                        widget.element.find(".gp-widget-job-task").text("Error loading job: " + widget.options.jobNumber);
+                        widget.element.find(".gp-widget-job-task").text(" GenePattern Job: Error");
+                        widget.element.find(".gp-widget-job-outputs").text("Error loading job: " + widget.options.jobNumber);
                     }
                 });
             }
@@ -1895,7 +1942,7 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
             this._clean();
 
             // Display the job number and task name
-            var taskText = job.jobNumber() + ". " + job.taskName();
+            var taskText = " " + job.jobNumber() + ". " + job.taskName();
             this.element.find(".gp-widget-job-task").text(taskText);
 
             // Display the user and date submitted
@@ -1994,19 +2041,18 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
         render: function () {
             // Render the view.
             this.setElement($('<div/></div>'));
-            var json = this.model.get('json');
+            var jobNumber = this.model.get('job_number');
             this.$el.jobResults({
-                json: json
+                jobNumber: jobNumber
             });
-        },
 
-        events: {
-            // List of events and their handlers.
-            'click': 'handle_click'
-        },
-
-        handle_click: function (evt) {
-            console.log("Clicked!");
+            // Hide the code by default
+            var element = this.$el;
+            setTimeout(function() {
+                element.closest(".cell").find(".input")
+                    .css("height", "0")
+                    .css("overflow", "hidden");
+            }, 1);
         }
     });
 
