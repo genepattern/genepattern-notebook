@@ -44,11 +44,12 @@ class GPJobWidget(GPResource, widgets.DOMWidget):
     polling the server until the job is completed.
     """
     _view_name = Unicode('JobWidgetView', sync=True)  # Define the widget's view
+    job_number = Integer(0, sync=True)
 
     def __init__(self, uri, **kwargs):
         super(GPJobWidget, self).__init__(uri)
         widgets.DOMWidget.__init__(self, **kwargs)
-        self.info = None
+        self.job_number = uri
 
         self.errors = widgets.CallbackDispatcher(accepted_nargs=[0, 1])
         self.on_msg(self._handle_custom_msg)
