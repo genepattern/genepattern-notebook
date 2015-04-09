@@ -1835,6 +1835,8 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
          * @private
          */
         _create: function() {
+            var widget = this;
+
             // Ensure the job number is defined
             if (typeof this.options.jobNumber !== 'number' && !this.options.json) {
                 throw "The job number is not correctly defined, cannot create job results widget";
@@ -1886,8 +1888,7 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                                             )
                                             .tooltip()
                                             .click(function() {
-                                                // TODO: Implement
-                                                //widget.toggleCode();
+                                                widget.toggleCode();
                                             })
                                     )
                             )
@@ -1911,7 +1912,16 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
             );
             this.element.append(
                 $("<div></div>")
-                    .addClass("panel-body gp-widget-job-outputs")
+                    .addClass("panel-body")
+                    .append(
+                        $("<div></div>")
+                            .addClass("widget-code gp-widget-job-code")
+                            .css("display", "none")
+                    )
+                    .append(
+                        $("<div></div>")
+                            .addClass("gp-widget-job-outputs")
+                    )
             );
 
             // Check to see if the user is authenticated yet
@@ -1957,6 +1967,30 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
          */
         _setOption: function(key, value) {
             this._super(key, value);
+        },
+
+        /**
+         * Toggle the code view on or off
+         */
+        toggleCode: function() {
+            var code = this.element.find(".gp-widget-job-code");
+            var view = this.element.find(".gp-widget-job-outputs");
+
+            if (code.is(":hidden")) {
+                this.element.closest(".cell").data("cell").code_mirror.refresh();
+                var raw = this.element.closest(".cell").find(".input").html();
+                code.html(raw);
+
+                // Fix the issue where the code couldn't be selected
+                code.find(".CodeMirror-scroll").attr("draggable", "false");
+
+                view.slideUp();
+                code.slideDown();
+            }
+            else {
+                view.slideDown();
+                code.slideUp();
+            }
         },
 
         /**
@@ -2182,12 +2216,12 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
             });
 
             // Hide the code by default
-            //var element = this.$el;
-            //setTimeout(function() {
-            //    element.closest(".cell").find(".input")
-            //        .css("height", "0")
-            //        .css("overflow", "hidden");
-            //}, 1);
+            var element = this.$el;
+            setTimeout(function() {
+                element.closest(".cell").find(".input")
+                    .css("height", "0")
+                    .css("overflow", "hidden");
+            }, 1);
         }
     });
 
