@@ -1422,12 +1422,12 @@ GenePattern.notebook.init.main_init_wrapper = function(evt) {
 GenePattern.notebook.init.notebook_init_wrapper = function (evt) {
     if (!GenePattern.notebook.init.launch_init.done_init  && IPython.notebook.kernel) {
         // Call the core init function
-        GenePattern.notebook.init.launch_init(evt);
+        GenePattern.notebook.init.launch_init();
 
         // If no auth widget exists, add it
         setTimeout(function() {
             if ($(".gp-widget-auth").length < 1) {
-                var cell = IPython.notebook.insert_cell_at_index("code", 0);
+                var cell = IPython.notebook.insert_cell_above("code", 0);
                 var code = GenePattern.notebook.init.buildCode("http://genepattern.broadinstitute.org/gp", "", "");
                 cell.code_mirror.setValue(code);
                 cell.execute();
@@ -2222,20 +2222,23 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
 
     var JobWidgetView = IPython.WidgetView.extend({
         render: function () {
-            // Render the view.
-            this.setElement($('<div/></div>'));
-            var jobNumber = this.model.get('job_number');
-            this.$el.jobResults({
-                jobNumber: jobNumber
-            });
+            // Double check to make sure that this is the correct cell
+            if ($(this.options.cell.element).hasClass("running")) {
+                // Render the view.
+                this.setElement($('<div/></div>'));
+                var jobNumber = this.model.get('job_number');
+                this.$el.jobResults({
+                    jobNumber: jobNumber
+                });
 
-            // Hide the code by default
-            var element = this.$el;
-            setTimeout(function() {
-                element.closest(".cell").find(".input")
-                    .css("height", "0")
-                    .css("overflow", "hidden");
-            }, 1);
+                // Hide the code by default
+                var element = this.$el;
+                setTimeout(function() {
+                    element.closest(".cell").find(".input")
+                        .css("height", "0")
+                        .css("overflow", "hidden");
+                }, 1);
+            }
         }
     });
 
