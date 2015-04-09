@@ -1,6 +1,6 @@
 __authors__ = ['Thorin Tabor', 'Chet Birger']
 __copyright__ = 'Copyright 2015, Broad Institute'
-__version__ = '1.0.0'
+__version__ = '1.0.2'
 __status__ = 'Production'
 
 """ GenePattern Python Client
@@ -132,7 +132,8 @@ class GPServer(object):
         if response.getcode() != 201:
             print(" job POST failed, status code = %i" % response.getcode())
             return None
-        job = GPJob(self, response.info().get('Location'))
+        data = json.loads(response.read().decode('utf-8'))
+        job = GPJob(self, data['jobId'])
         job.get_info()
         if wait_until_done:
             job.wait_until_done()
@@ -229,9 +230,10 @@ class GPJob(GPResource):
     num_output_files = None
 
     def __init__(self, server_data, uri):
-        super(GPJob, self).__init__(uri)
+        super(GPJob, self).__init__(server_data.url + "/rest/v1/jobs/" + str(uri))
         self.info = None
         self.server_data = server_data
+        self.job_number = uri
 
     def get_info(self):
         request = urllib2.Request(self.uri)
