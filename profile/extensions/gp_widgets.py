@@ -46,10 +46,10 @@ class GPJobWidget(GPResource, widgets.DOMWidget):
     _view_name = Unicode('JobWidgetView', sync=True)  # Define the widget's view
     job_number = Integer(0, sync=True)
 
-    def __init__(self, uri, **kwargs):
-        super(GPJobWidget, self).__init__(uri)
+    def __init__(self, job, **kwargs):
+        super(GPJobWidget, self).__init__(job.uri)
         widgets.DOMWidget.__init__(self, **kwargs)
-        self.job_number = uri
+        self.job_number = job.job_number
 
         self.errors = widgets.CallbackDispatcher(accepted_nargs=[0, 1])
         self.on_msg(self._handle_custom_msg)
