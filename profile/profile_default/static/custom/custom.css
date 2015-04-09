@@ -298,8 +298,16 @@ body {
     margin: 0;
 }
 
+.gp-widget-job-status {
+    padding-bottom: 3px;
+}
+
 .gp-widget-job-submitted {
     padding-top: 5px;
     font-style: italic;
     font-size:0.9em;
+}
+
+.gp-widget-job-buttons {
+    text-align: right;
 }

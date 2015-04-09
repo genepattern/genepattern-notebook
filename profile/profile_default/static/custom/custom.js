@@ -1847,7 +1847,50 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                     .addClass("panel-heading gp-widget-job-header")
                     .append(
                         $("<div></div>")
-                            .addClass("widget-float-right gp-widget-job-status")
+                            .addClass("widget-float-right")
+                            .append(
+                                $("<div></div>")
+                                    .addClass("gp-widget-job-status")
+                            )
+                            .append(
+                                $("<div></div>")
+                                    .addClass("gp-widget-job-buttons")
+                                    .append(
+                                        $("<button></button>")
+                                            .addClass("btn btn-default btn-sm")
+                                            .css("padding", "2px 7px")
+                                            .attr("title", "Reload Task Form")
+                                            .attr("data-toggle", "tooltip")
+                                            .attr("data-placement", "bottom")
+                                            .append(
+                                                $("<span></span>")
+                                                    .addClass("fa fa-refresh")
+                                            )
+                                            .tooltip()
+                                            .click(function() {
+                                                // TODO: Implement
+                                                // widget.expandCollapse();
+                                            })
+                                    )
+                                    .append(" ")
+                                    .append(
+                                        $("<button></button>")
+                                            .addClass("btn btn-default btn-sm")
+                                            .css("padding", "2px 7px")
+                                            .attr("title", "Toggle Code View")
+                                            .attr("data-toggle", "tooltip")
+                                            .attr("data-placement", "bottom")
+                                            .append(
+                                                $("<span></span>")
+                                                    .addClass("fa fa-terminal")
+                                            )
+                                            .tooltip()
+                                            .click(function() {
+                                                // TODO: Implement
+                                                //widget.toggleCode();
+                                            })
+                                    )
+                            )
                     )
                     .append(
                         $("<h3></h3>")
