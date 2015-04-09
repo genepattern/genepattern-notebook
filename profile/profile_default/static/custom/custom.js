@@ -1319,6 +1319,72 @@ GenePattern.notebook.authenticate = function(data) {
     console.log(data);
 };
 
+GenePattern.notebook.statusIndicator = function(statusObj) {
+    if (statusObj["hasError"]) {                // Error
+        return "Error";
+    }
+    else if (statusObj["completedInGp"]) {      // Complete
+        return "Completed"
+    }
+    else if (statusObj["isPending"]) {          // Pending
+        return "Pending";
+    }
+    else {                                      // Running
+        return "Running";
+    }
+};
+
+/**
+ * Remove a slider option representing a job from the slider
+ *
+ * @param jobNumber
+ */
+GenePattern.notebook.removeSliderJob = function(jobNumber) {
+    // Remove from jobs list
+    for (var i = 0; i < GenePattern._jobs.length; i++) {
+        var job = GenePattern._jobs[i];
+        if (job.jobNumber() === jobNumber) {
+            GenePattern._jobs.splice(i, 1);
+        }
+    }
+
+    // Update the UI
+    $("#slider-jobs").find(".slider-option[name='" + jobNumber + "']").remove();
+};
+
+/**
+ * Update a slider option representing a job on the slider
+ *
+ * @param job
+ */
+GenePattern.notebook.updateSliderJob = function(job) {
+    // If the job does not yet exist in the list, add it
+    var jobsSlider = $("#slider-jobs");
+    var existingOption = jobsSlider.find(".slider-option[name='" + job.jobNumber() + "']");
+    if (existingOption.length < 1) {
+        // Add to jobs list
+        GenePattern._jobs.push(job);
+
+        // Update the UI
+        var option = GenePattern.notebook.sliderOption(job.jobNumber(), job.jobNumber() + ". " + job.taskName(),
+            GenePattern.notebook.statusIndicator(job.status()), "Submitted: " + job.dateSubmitted(), []);
+        jobsSlider.append(option);
+    }
+    // Otherwise update the view
+    else {
+        // Update in jobs list
+        for (var i = 0; i < GenePattern._jobs.length; i++) {
+            var jobInList = GenePattern._jobs[i];
+            if (jobInList.jobNumber() === job.jobNumber()) {
+                GenePattern._jobs.splice(i, 1, job);
+            }
+        }
+
+        // Update the UI
+        existingOption.find(".slider-option-anno").text(GenePattern.notebook.statusIndicator(job.status()));
+    }
+};
+
 /*
  * Initialization functions
  */
@@ -1760,7 +1826,7 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
         options: {
             jobNumber: null,    // The job number
             poll: true,         // Poll to refresh running jobs
-            json: null          // JSON to load from
+            job: null           // Job object this represents
         },
 
         /**
@@ -1804,9 +1870,6 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                 $("<div></div>")
                     .addClass("panel-body gp-widget-job-outputs")
             );
-
-            // Add job to slider
-            this._updateSlider("create");
 
             // Check to see if the user is authenticated yet
             if (GenePattern.authenticated) {
@@ -1897,16 +1960,12 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
          * @private
          */
         _updateSlider: function(method) {
-            if (method.toLowerCase() == "create") {
-                // TODO: Implement
-                //GenePattern.notebook.addSliderJob(this.job);
-            }
-            else if (method.toLowerCase() == "destroy") {
-                ;
+            if (method.toLowerCase() == "destroy") {
+                GenePattern.notebook.removeSliderJob(this.options.jobNumber);
             }
             // Else assume "update"
             else {
-                ;
+                GenePattern.notebook.updateSliderJob(this.options.job);
             }
         },
 
@@ -1940,6 +1999,9 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                     jobNumber: this.options.jobNumber,
                     forceRefresh: true,
                     success: function(response, job) {
+                        // Set the job object
+                        widget.options.job = job;
+
                         // Update the widget
                         widget._displayJob(job);
 
