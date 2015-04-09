@@ -1319,6 +1319,12 @@ GenePattern.notebook.authenticate = function(data) {
     console.log(data);
 };
 
+/**
+ * Convert a status object from a Job object to a display string
+ *
+ * @param statusObj
+ * @returns {string}
+ */
 GenePattern.notebook.statusIndicator = function(statusObj) {
     if (statusObj["hasError"]) {                // Error
         return "Error";
@@ -1368,6 +1374,11 @@ GenePattern.notebook.updateSliderJob = function(job) {
         // Update the UI
         var option = GenePattern.notebook.sliderOption(job.jobNumber(), job.jobNumber() + ". " + job.taskName(),
             GenePattern.notebook.statusIndicator(job.status()), "Submitted: " + job.dateSubmitted(), []);
+        option.click(function() {
+            $('#site').animate({
+                scrollTop: option.offset().top
+            }, 500);
+        });
         jobsSlider.append(option);
     }
     // Otherwise update the view
