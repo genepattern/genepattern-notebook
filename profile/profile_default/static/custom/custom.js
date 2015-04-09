@@ -1376,7 +1376,7 @@ GenePattern.notebook.updateSliderJob = function(job) {
             GenePattern.notebook.statusIndicator(job.status()), "Submitted: " + job.dateSubmitted(), []);
         option.click(function() {
             $('#site').animate({
-                scrollTop: option.offset().top
+                scrollTop: $(".gp-widget-job[name='" + job.jobNumber() + "']").offset().top
             }, 500);
         });
         jobsSlider.append(option);
@@ -1432,7 +1432,7 @@ GenePattern.notebook.init.notebook_init_wrapper = function (evt) {
                 cell.code_mirror.setValue(code);
                 cell.execute();
             }
-        }, 100);
+        }, 1000);
 
         // Mark init as done
         GenePattern.notebook.init.launch_init.done_init = true;
@@ -2120,6 +2120,9 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
         _displayJob: function(job) {
             // Clean the old data
             this._clean();
+
+            // Set the job number
+            this.element.attr("name", job.jobNumber());
 
             // Display the job number and task name
             var taskText = " " + job.jobNumber() + ". " + job.taskName();
