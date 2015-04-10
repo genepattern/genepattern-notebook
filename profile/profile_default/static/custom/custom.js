@@ -3012,7 +3012,6 @@ require(["widgets/js/widget"], function (WidgetManager) {
             // Set variables
             var widget = this;
             var identifier = this._getIdentifier();
-            this._task = this._loadTask(identifier);
 
             // Add classes and scaffolding
             this.element.addClass("panel panel-default gp-widget gp-widget-task");
@@ -3077,6 +3076,11 @@ require(["widgets/js/widget"], function (WidgetManager) {
             this.element.append( // Attach header
                 $("<div></div>")
                     .addClass("panel-body")
+                    .append(
+                        $("<div></div>")
+                            .addClass("widget-code gp-widget-task-code")
+                            .css("display", "none")
+                    )
                     .append( // Attach message box
                         $("<div></div>")
                             .addClass("alert gp-widget-task-message")
@@ -3133,8 +3137,13 @@ require(["widgets/js/widget"], function (WidgetManager) {
             // Check to see if the user is authenticated yet
             if (GenePattern.authenticated) {
                 // Make call to build the header & form
+                this._task = this._loadTask(identifier);
                 this._buildHeader();
                 this._buildForm();
+            }
+            else {
+                this._showAuthenticationMessage();
+                this._pollForAuth();
             }
         },
 
@@ -3199,11 +3208,49 @@ require(["widgets/js/widget"], function (WidgetManager) {
         },
 
         /**
+         * Display the not authenticated message
+         *
+         * @private
+         */
+        _showAuthenticationMessage: function() {
+            this.element.find(".gp-widget-task-name").empty().text(" GenePattern Task: Not Authenticated");
+            this.element.find(".gp-widget-task-form").empty().text("You must be authenticated before the task information can be displayed. After you authenticate it may take a few seconds for the task information to appear.");
+            this.element.find(".gp-widget-task-subheader").hide();
+            this.element.find(".gp-widget-task-footer").hide();
+        },
+
+        /**
+         * Polls every few seconds to see if the notebook is authenticated, and gets task info once authenticated
+         *
+         * @private
+         */
+        _pollForAuth: function() {
+            var widget = this;
+            setTimeout(function() {
+                // Check to see if the user is authenticated yet
+                if (GenePattern.authenticated) {
+                    // Make call to build the header & form
+                    var identifier = widget._getIdentifier();
+                    widget._task = widget._loadTask(identifier)
+                    widget._buildHeader();
+                    widget._buildForm();
+                }
+                else {
+                    // If not authenticated, poll again
+                    widget._pollForAuth();
+                }
+            }, 1000);
+        },
+
+        /**
          * Build the header and return the Task object
          *
          * @private
          */
         _buildHeader: function() {
+            this.element.find(".gp-widget-task-subheader").show();
+            this.element.find(".gp-widget-task-footer").show();
+
             this.element.find(".gp-widget-task-name").empty().text(" " + this._task.name());
             this.element.find(".gp-widget-task-version").empty().text("Version " + this._task.version());
             this.element.find(".gp-widget-task-doc").attr("data-href", GenePattern.server() + this._task.documentation().substring(3));
@@ -3230,6 +3277,38 @@ require(["widgets/js/widget"], function (WidgetManager) {
                     widget.errorMessage("Could not load task: " + exception.statusText);
                 }
             });
+        },
+
+        /**
+         * Toggle the code view on or off
+         */
+        toggleCode: function() {
+            var code = this.element.find(".gp-widget-task-code");
+            var form = this.element.find(".gp-widget-task-form");
+            var headers = this.element.find(".gp-widget-task-subheader, .gp-widget-task-footer");
+
+            if (code.is(":hidden")) {
+                this.element.closest(".cell").data("cell").code_mirror.refresh();
+                var raw = this.element.closest(".cell").find(".input").html();
+                code.html(raw);
+
+                // Fix the issue where the code couldn't be selected
+                code.find(".CodeMirror-scroll").attr("draggable", "false");
+
+                form.slideUp();
+                headers.slideUp();
+                code.slideDown();
+            }
+            else {
+                form.slideDown();
+
+                // Only show these bits if authenticated
+                if (GenePattern.authenticated) {
+                    headers.slideDown();
+                }
+
+                code.slideUp();
+            }
         },
 
         /**
