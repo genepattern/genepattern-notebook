@@ -2049,7 +2049,11 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
          */
         _updateSlider: function(method) {
             if (method.toLowerCase() == "destroy") {
-                GenePattern.notebook.removeSliderJob(this.options.jobNumber);
+                // Remove only if this is the last instance of the job in the notebook
+                var JobInstanceNum = $(".gp-widget-job[name='" + this.options.jobNumber + "']").length;
+                if (JobInstanceNum === 1) {
+                    GenePattern.notebook.removeSliderJob(this.options.jobNumber);
+                }
             }
             // Else assume "update"
             else {
