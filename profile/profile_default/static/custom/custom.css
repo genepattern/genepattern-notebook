@@ -311,3 +311,196 @@ body {
 .gp-widget-job-buttons {
     text-align: right;
 }
+
+
+
+
+
+
+
+/*
+ * File Input Styles
+ */
+
+.file-widget {
+    font-family: Verdana,Arial,Helvetica,sans-serif;
+    border: 2px dashed darkgray;
+    display: inline-block;
+    margin-bottom: 0;
+    min-width: 570px;
+    padding: 9px 10px 10px;
+    vertical-align: bottom;
+    white-space: normal;
+    word-break: break-all;
+}
+
+.file-widget-upload-file {
+    border: 1px solid #466eb6;
+    border-radius: 5px;
+    font-size: 11px;
+    padding: 1px;
+    margin-right: 7px;
+    position: relative;
+    top: -5px;
+    vertical-align: bottom;
+    font-weight: normal;
+}
+
+.file-widget-input-file {
+    display: none;
+}
+
+.file-widget-url {
+    position: relative;
+    top: -4px;
+}
+
+.file-widget-button {
+    border: 1px solid #466eb6;
+    border-radius: 5px;
+    font-size: 11px;
+    padding: 1px;
+    font-weight: normal;
+}
+
+.file-widget-input-file {
+    position: absolute;
+    z-index: -1000;
+}
+
+.file-widget-drop {
+    color: darkgray;
+    font-family: Helvetica,Arial,sans-serif;
+    font-size: 28px;
+    height: 20px;
+    letter-spacing: 1px;
+    line-height: 28pt;
+    margin-left: 9px;
+    padding: 5px 10px;
+    text-align: center;
+    width: 120px;
+}
+
+.file-widget-size {
+    font-size: 10px;
+    font-style: italic;
+    margin-left: 5px;
+}
+
+.file-widget-value {
+    background-color: #eeeeee;
+    font-size: 10pt;
+    height: 17px;
+    margin-top: 10px;
+    overflow: hidden;
+    padding: 4px;
+    white-space: normal;
+    width: 99%;
+}
+
+.file-widget-value-erase {
+    cursor: pointer;
+    float: right;
+    text-align: center;
+    white-space: normal;
+    width: 19px;
+    color: #2e6e9e;
+}
+
+.file-widget-path-label {
+    font-size: 10pt;
+}
+
+.file-widget-path-input {
+    margin-top: 5px;
+    width: 99%;
+}
+
+.file-widget-path-buttons {
+    margin-top: 5px;
+    text-align: right;
+}
+
+/*
+ * Text Input Styles
+ */
+
+.text-widget-input {
+    width: 570px;
+}
+
+/*
+ * Choice Input Styles
+ */
+
+.choice-widget-select {
+    width: 570px;
+}
+
+/*
+ * Run Task Styles
+ */
+
+.gp-widget-task-version {
+    font-size: 0.8em;
+    font-style: italic;
+    padding-right: 10px;
+}
+
+.gp-widget-task-subheader {
+    border-bottom: 1px solid rgba(10, 45, 105, 0.8);
+}
+
+.gp-widget-task-run {
+    overflow: auto;
+    margin-left: 20px;
+    font-size: 0.9em;
+    padding-top: 10px;
+}
+
+.gp-widget-task-run-button {
+    float: right;
+    position: relative;
+    top: -10px;
+}
+
+.gp-widget-task-form {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.gp-widget-task-param {
+    margin: 10px;
+    padding: 10px;
+}
+
+.gp-widget-task-param-name {
+    display: inline-block;
+    /*width: 150px;*/
+    font-weight: bold;
+    font-size: 1em;
+    word-break: break-all;
+    vertical-align: top;
+    padding-top: 10px;
+    padding-right: 10px;
+}
+
+.gp-widget-task-param-wrapper {
+    vertical-align: top;
+    padding-left: 10px;
+}
+
+.gp-widget-task-param-desc {
+    font-size: 1em;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.gp-widget-task-param-missing {
+    border: 2px solid red;
+}
+
+.gp-widget-task-footer {
+    border-top: 1px solid rgba(10, 45, 105, 0.8);
+    padding-top: 10px;
+}
