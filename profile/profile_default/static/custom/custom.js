@@ -1097,7 +1097,7 @@ GenePattern.notebook.bottomButton = function() {
                     .attr("data-toggle", "tooltip")
                     .attr("data-placement", "top")
                     .click(function() {
-                        var index = IPython.notebook.get_cells().length;
+                        var index = IPython.notebook.get_selected_index();
                         IPython.notebook.insert_cell_below('markdown', index);
                         IPython.notebook.select_next();
                     })
@@ -1109,7 +1109,7 @@ GenePattern.notebook.bottomButton = function() {
                     .attr("data-toggle", "tooltip")
                     .attr("data-placement", "top")
                     .click(function() {
-                        var index = IPython.notebook.get_cells().length;
+                        var index = IPython.notebook.get_selected_index();
                         IPython.notebook.insert_cell_below('code', index);
                         IPython.notebook.select_next();
                     })
@@ -1124,6 +1124,7 @@ GenePattern.notebook.bottomButton = function() {
                     .attr("data-placement", "top")
                     .click(function() {
                         $(".sidebar-button-main").trigger("click");
+                        $("#slider-tabs").find("[href='#slider-modules']").trigger("click");
                     })
             );
 };
@@ -1303,7 +1304,8 @@ GenePattern.notebook.authenticate = function(data) {
     $(".sidebar-button-main").show("slide", {"direction": "left"});
 
     // Clear and add the modules to the slider
-    $("#slider-modules").empty();
+    var sliderModules = $("#slider-modules");
+    sliderModules.empty();
     if (data['all_modules']) {
         $.each(data['all_modules'], function(index, module) {
             var tags = module['categories'];
@@ -1311,12 +1313,41 @@ GenePattern.notebook.authenticate = function(data) {
                 tags.push(e['tag'])
             });
             tags.sort();
-            $("#slider-modules").append(GenePattern.notebook.sliderOption(module['lsid'], module['name'], "v" + module['version'], module['description'], tags));
+            var option = GenePattern.notebook.sliderOption(module['lsid'], module['name'], "v" + module['version'], module['description'], tags);
+            option.click(function() {
+                var index = IPython.notebook.get_selected_index();
+                IPython.notebook.insert_cell_below('code', index);
+                IPython.notebook.select_next();
+                var cell = IPython.notebook.get_selected_cell();
+                var code = GenePattern.notebook.buildModuleCode(module);
+                cell.set_text(code);
+                cell.execute();
+
+                // Close the slider
+                $(".sidebar-button-slider").trigger("click");
+
+                // Scroll to the new cell
+                $('#site').animate({
+                    scrollTop: $(IPython.notebook.get_selected_cell().element).offset().top - 100
+                }, 500);
+            });
+            sliderModules.append(option);
         });
-        $("#slider-modules").append($("<p>&nbsp;</p>"))
+        sliderModules.append($("<p>&nbsp;</p>"))
     }
 
     console.log(data);
+};
+
+/**
+ * Build the basic code for displaying a module widget
+ *
+ * @param module
+ */
+GenePattern.notebook.buildModuleCode = function(module) {
+    return "# !AUTOEXEC\n\n" +
+            "task = gp.GPTask(gpserver, '" + module["lsid"] + "')\n" +
+            "GPTaskWidget(task)";
 };
 
 /**
