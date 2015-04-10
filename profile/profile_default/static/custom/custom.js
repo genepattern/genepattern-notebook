@@ -2301,9 +2301,8 @@ require(["widgets/js/widget"], function (WidgetManager) {
                     .addClass("file-widget-upload")
                     .append(
                         $("<button></button>")
-                            .addClass("file-widget-upload-file")
+                            .addClass("btn btn-default file-widget-upload-file")
                             .text("Upload File...")
-                            .button()
                             .click(function () {
                                 $(this).parents(".file-widget").find(".file-widget-input-file").click();
                             })
@@ -2320,9 +2319,8 @@ require(["widgets/js/widget"], function (WidgetManager) {
                     .append(
                         $("<button></button>")
                             .addClass("file-widget-url")
-                            .addClass("file-widget-button")
+                            .addClass("btn btn-default file-widget-button")
                             .text("Add Path or URL...")
-                            .button()
                             .click(function() {
                                 widget._pathBox(true);
                             })
@@ -2347,14 +2345,15 @@ require(["widgets/js/widget"], function (WidgetManager) {
                             .addClass("file-widget-value")
                             .append(
                                 $("<div></div>")
-                                    .addClass("file-widget-value-erase")
+                                    .addClass("btn btn-default btn-sm file-widget-value-erase")
                                     .append(
-                                        $("<a></a>")
-                                            .html("&times;")
-                                            .click(function() {
-                                                widget.clear();
-                                            })
+                                        $("<span></span>")
+                                            .addClass("fa fa-times")
+
                                     )
+                                    .click(function() {
+                                        widget.clear();
+                                    })
                             )
                             .append(
                                 $("<span></span>")
@@ -2364,16 +2363,16 @@ require(["widgets/js/widget"], function (WidgetManager) {
             );
             this.element.append(
                 $("<div></div>")
-                    .addClass("file-widget-path")
+                    .addClass("form-group file-widget-path")
                     .css("display", "none")
                     .append(
                         $("<div></div>")
-                            .addClass("file-widget-path-label")
+                            .addClass("control-label file-widget-path-label")
                             .text("Enter Path or URL")
                     )
                     .append(
                         $("<input />")
-                            .addClass("file-widget-path-input")
+                            .addClass("form-control file-widget-path-input")
                             .attr("type", "text")
                     )
                     .append(
@@ -2381,9 +2380,8 @@ require(["widgets/js/widget"], function (WidgetManager) {
                             .addClass("file-widget-path-buttons")
                             .append(
                                 $("<button></button>")
-                                    .addClass("file-widget-button")
+                                    .addClass("btn btn-default file-widget-button")
                                     .text("Select")
-                                    .button()
                                     .click(function() {
                                         var boxValue = widget.element.find(".file-widget-path-input").val();
                                         widget.element.find(".file-widget-path-input").val("");
@@ -2394,9 +2392,8 @@ require(["widgets/js/widget"], function (WidgetManager) {
                             .append(" ")
                             .append(
                                 $("<button></button>")
-                                    .addClass("file-widget-button")
+                                    .addClass("btn btn-default file-widget-button")
                                     .text("Cancel")
-                                    .button()
                                     .click(function() {
                                         widget._pathBox(false);
                                         widget.element.find(".file-widget-path-input").val("");
@@ -2717,7 +2714,7 @@ require(["widgets/js/widget"], function (WidgetManager) {
             this.element.addClass("text-widget");
             this.element.append(
                 $("<input />")
-                    .addClass("text-widget-input")
+                    .addClass("form-control text-widget-input")
                     .attr("type", this.options.type)
                     .val(this._value)
                     .change(function() {
@@ -2859,7 +2856,7 @@ require(["widgets/js/widget"], function (WidgetManager) {
             this.element.addClass("choice-widget");
             this.element.append(
                 $("<select></select>")
-                    .addClass("choice-widget-select")
+                    .addClass("form-control choice-widget-select")
                     .change(function() {
                         widget._value = $(this).val();
                     })
@@ -3326,12 +3323,12 @@ require(["widgets/js/widget"], function (WidgetManager) {
                 .attr("name", param.name())
                 .append(
                     $("<label></label>")
-                        .addClass("col-sm-2 control-label gp-widget-task-param-name")
+                        .addClass("col-sm-3 control-label gp-widget-task-param-name")
                         .text(param.name() + required)
                 )
                 .append(
                     $("<div></div>")
-                        .addClass("col-sm-10 gp-widget-task-param-wrapper")
+                        .addClass("col-sm-9 gp-widget-task-param-wrapper")
                         .append(
                         $("<div></div>")
                             .addClass("gp-widget-task-param-input")

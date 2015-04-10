@@ -323,44 +323,21 @@ body {
  */
 
 .file-widget {
-    font-family: Verdana,Arial,Helvetica,sans-serif;
     border: 2px dashed darkgray;
     display: inline-block;
-    margin-bottom: 0;
-    min-width: 570px;
+    min-width: 450px;
+    width: 100%;
     padding: 9px 10px 10px;
-    vertical-align: bottom;
     white-space: normal;
     word-break: break-all;
 }
 
 .file-widget-upload-file {
-    border: 1px solid #466eb6;
-    border-radius: 5px;
-    font-size: 11px;
-    padding: 1px;
     margin-right: 7px;
-    position: relative;
-    top: -5px;
-    vertical-align: bottom;
-    font-weight: normal;
 }
 
 .file-widget-input-file {
     display: none;
-}
-
-.file-widget-url {
-    position: relative;
-    top: -4px;
-}
-
-.file-widget-button {
-    border: 1px solid #466eb6;
-    border-radius: 5px;
-    font-size: 11px;
-    padding: 1px;
-    font-weight: normal;
 }
 
 .file-widget-input-file {
@@ -370,50 +347,38 @@ body {
 
 .file-widget-drop {
     color: darkgray;
-    font-family: Helvetica,Arial,sans-serif;
-    font-size: 28px;
-    height: 20px;
+    font-size: 2em;
     letter-spacing: 1px;
-    line-height: 28pt;
     margin-left: 9px;
     padding: 5px 10px;
-    text-align: center;
-    width: 120px;
+    position: relative;
+    top: 10px;
 }
 
 .file-widget-size {
-    font-size: 10px;
+    font-size: 0.9em;
     font-style: italic;
     margin-left: 5px;
+    margin-top: 5px;
 }
 
 .file-widget-value {
-    background-color: #eeeeee;
-    font-size: 10pt;
-    height: 17px;
+    background-color: #f7f7f7;
     margin-top: 10px;
     overflow: hidden;
     padding: 4px;
     white-space: normal;
-    width: 99%;
+    line-height: 2.2em;
+    vertical-align: middle;
 }
 
 .file-widget-value-erase {
-    cursor: pointer;
     float: right;
-    text-align: center;
-    white-space: normal;
-    width: 19px;
-    color: #2e6e9e;
 }
 
 .file-widget-path-label {
-    font-size: 10pt;
-}
-
-.file-widget-path-input {
-    margin-top: 5px;
-    width: 99%;
+    font-weight: bold;
+    text-align: left !important;
 }
 
 .file-widget-path-buttons {
@@ -422,19 +387,12 @@ body {
 }
 
 /*
- * Text Input Styles
- */
-
-.text-widget-input {
-    width: 570px;
-}
-
-/*
  * Choice Input Styles
  */
 
 .choice-widget-select {
-    width: 570px;
+    position: relative;
+    left: -10px;
 }
 
 /*
