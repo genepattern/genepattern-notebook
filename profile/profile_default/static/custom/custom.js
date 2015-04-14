@@ -1364,8 +1364,6 @@ GenePattern.notebook.authenticate = function(data) {
         });
         sliderModules.append($("<p>&nbsp;</p>"))
     }
-
-    console.log(data);
 };
 
 /**
@@ -1918,6 +1916,9 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                 throw "The job number is not correctly defined, cannot create job results widget";
             }
 
+            // Add data pointer
+            this.element.data("widget", this);
+
             // Add class and child elements
             this.element.addClass("panel panel-default gp-widget gp-widget-job");
             this.element.append(
@@ -2440,6 +2441,9 @@ require(["widgets/js/widget"], function (WidgetManager) {
             this._value = null;
             this._display = null;
 
+            // Add data pointer
+            this.element.data("widget", this);
+
             // Add classes and child elements
             this.element.addClass("file-widget");
             this.element.append(
@@ -2856,6 +2860,9 @@ require(["widgets/js/widget"], function (WidgetManager) {
             // Clean the type option
             this._cleanType();
 
+            // Add data pointer
+            this.element.data("widget", this);
+
             // Add classes and child elements
             this.element.addClass("text-widget");
             this.element.append(
@@ -2997,6 +3004,9 @@ require(["widgets/js/widget"], function (WidgetManager) {
 
             // Set variables
             var widget = this;
+
+            // Add data pointer
+            this.element.data("widget", this);
 
             // Add classes and child elements
             this.element.addClass("choice-widget");
@@ -3155,6 +3165,9 @@ require(["widgets/js/widget"], function (WidgetManager) {
             // Set variables
             var widget = this;
             var identifier = this._getIdentifier();
+
+            // Add data pointer
+            this.element.data("widget", this);
 
             // Add classes and scaffolding
             this.element.addClass("panel panel-default gp-widget gp-widget-task");
@@ -3401,6 +3414,33 @@ require(["widgets/js/widget"], function (WidgetManager) {
         },
 
         /**
+         * Parse the code for the job spec and return the values of the inputs in a dictionary
+         *
+         * @private
+         */
+        _parseJobSpec: function() {
+            var dict = {};
+            var code = this.element.closest(".cell").data("cell").code_mirror.getValue();
+            var lines = code.split("\n");
+
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+
+                // Here is a line to parse
+                if (line.indexOf("_job_spec.set_parameter") !== -1) {
+                    var parts = line.split(",");
+                    var first = parts[0].split("\"");
+                    var second = parts[1].split("\"")
+                    var key = first[1];
+                    var value = second[1];
+                    dict[key] = value;
+                }
+            }
+
+            return dict;
+        },
+
+        /**
          * Make the call to the server to get the params and build the form
          *
          * @private
@@ -3409,11 +3449,18 @@ require(["widgets/js/widget"], function (WidgetManager) {
             var widget = this;
             this.element.find(".gp-widget-task-form").empty();
 
+            var reloadVals = this._parseJobSpec();
+
             this._task.params({
                 success: function(response, params) {
                     for (var i = 0; i < params.length; i++) {
                         var param = params[i];
-                        widget._addParam(param);
+                        var pDiv = widget._addParam(param);
+
+                        if (reloadVals[param.name()] !== undefined) {
+                            var pWidget = pDiv.data("widget");
+                            pWidget.value(reloadVals[param.name()]);
+                        }
                     }
                 },
                 error: function(exception) {
@@ -3455,7 +3502,7 @@ require(["widgets/js/widget"], function (WidgetManager) {
         },
 
         /**
-         * Add the parameter to the form
+         * Add the parameter to the form and return the widget
          *
          * @param param {GenePattern.Param}
          * @private
@@ -3490,13 +3537,13 @@ require(["widgets/js/widget"], function (WidgetManager) {
 
             // Add the correct input widget
             if (param.type() === "java.io.File") {
-                paramBox.find(".gp-widget-task-param-input").fileInput({
+                return paramBox.find(".gp-widget-task-param-input").fileInput({
                     runTask: this,
                     param: param
                 });
             }
             else if (param.choices()) {
-                paramBox.find(".gp-widget-task-param-input").choiceInput({
+                return paramBox.find(".gp-widget-task-param-input").choiceInput({
                     runTask: this,
                     param: param,
                     choices: param.choices(),
@@ -3504,14 +3551,14 @@ require(["widgets/js/widget"], function (WidgetManager) {
                 });
             }
             else if (param.type() === "java.lang.String") {
-                paramBox.find(".gp-widget-task-param-input").textInput({
+                return paramBox.find(".gp-widget-task-param-input").textInput({
                     runTask: this,
                     param: param,
                     default: param.defaultValue()
                 });
             }
             else if (param.type() === "java.lang.Integer") {
-                paramBox.find(".gp-widget-task-param-input").textInput({
+                return paramBox.find(".gp-widget-task-param-input").textInput({
                     runTask: this,
                     param: param,
                     default: param.defaultValue(),
