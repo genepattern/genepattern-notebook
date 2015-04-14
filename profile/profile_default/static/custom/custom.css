@@ -92,6 +92,10 @@ body {
     padding: 15px;
 }
 
+.widget-subarea {
+    max-width: 100%;
+}
+
 /*
  * Styles for navigation
  */
@@ -246,6 +250,7 @@ body {
 
 .gp-widget {
     width: 100%;
+    max-width: 100%;
     border-color: rgba(10, 45, 105, 0.80);
 }
 
