@@ -597,6 +597,35 @@ require(["jquery"], function() {
                 });
         };
 
+        this.code = function(pObj) {
+            // Validate language
+            var language = null;
+
+            if (typeof pObj === "string") { language = pObj; }
+            else { language = pObj.language; }
+
+            if (language !== "Python" && language !== "R" && language !== "Java" && language !== "MATLAB") {
+                console.log("Unknown language, defaulting to Python: " + language);
+            }
+
+            var REST_ENDPOINT = "/rest/v1/jobs/" + this.jobNumber() + "/code?language=" + language;
+            var job = this;
+
+            return $.ajax({
+                    url: GenePattern.server() + REST_ENDPOINT,
+                    type: 'GET',
+                    dataType: 'text',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                })
+                .fail(function(exception) {
+                    if (pObj && pObj.error) {
+                        pObj.error(exception);
+                    }
+                });
+        };
+
         /**
          * Returns the Task object associated with the job
          *
@@ -1649,6 +1678,11 @@ require(["widgets/js/widget"], function (WidgetManager) {
                                                     .attr("value", "http://127.0.0.1:8080/gp")
                                                     .text("GenePattern @ localhost")
                                             )
+                                            .append(
+                                                $("<option></option>")
+                                                    .attr("value", "http://genepatternbeta.broadinstitute.org/gp")
+                                                    .text("GenePattern @ gpbeta")
+                                            )
                                             .val(widget.getServerLabel("http://genepattern.broadinstitute.org/gp"))
                                     )
                             )
@@ -1901,7 +1935,7 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                                     .addClass("gp-widget-job-buttons")
                                     .append(
                                         $("<button></button>")
-                                            .addClass("btn btn-default btn-sm")
+                                            .addClass("btn btn-default btn-sm gp-widget-job-reload")
                                             .css("padding", "2px 7px")
                                             .attr("title", "Reload Task Form")
                                             .attr("data-toggle", "tooltip")
@@ -1912,8 +1946,7 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                                             )
                                             .tooltip()
                                             .click(function() {
-                                                // TODO: Implement
-                                                // widget.expandCollapse();
+                                                widget.reloadJob();
                                             })
                                     )
                                     .append(" ")
@@ -2012,6 +2045,66 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
         },
 
         /**
+         * Remove unwanted code from reload, such as import statements and run_job
+         *
+         * @param code
+         * @private
+         */
+        _stripUnwantedCode: function(code) {
+            var lines = code.split("\n");
+            var newCode = "# !AUTOEXEC\n\n";
+            var taskVar = null;
+
+            // Iterate over each line
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                var skip = false;
+
+                // Determine if this is a skipped line
+                if (line.trim().indexOf("import gp") === 0) { skip = true; }
+                if (line.trim().indexOf("gpserver = ") === 0) { skip = true; }
+                if (line.trim().indexOf("# Load the parameters") === 0) { skip = true; }
+                if (line.trim().indexOf("gpserver.run_job") !== -1) { skip = true; }
+                if (line.trim().indexOf(".param_load()") !== -1) { skip = true; }
+                if (line.trim().length === 0) { skip = true; }
+
+                // Identify taskVar if necessary
+                if (taskVar === null && line.trim().indexOf("gp.GPTask") !== -1) {
+                    taskVar = line.split(" ")[0];
+                }
+
+                // Append the code if it's not a skipped line
+                if (!skip) {
+                    newCode += line.trim() + "\n"
+                }
+            }
+
+            // Append the widget view
+            newCode += "\nGPTaskWidget(" + taskVar + ")";
+
+            return newCode;
+        },
+
+        /**
+         * Reloads the job in a Task widget
+         */
+        reloadJob: function() {
+            var job = this.options.job;
+            var widget = this;
+            var cell = this.element.closest(".cell").data("cell");
+
+            job.code("Python").done(function(code) {
+                code = widget._stripUnwantedCode(code);
+
+                // Put the code in the cell
+                cell.code_mirror.setValue(code);
+
+                // Execute the cell
+                cell.execute();
+            })
+        },
+
+        /**
          * Toggle the code view on or off
          */
         toggleCode: function() {
@@ -2100,6 +2193,9 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
         _showAuthenticationMessage: function() {
             this.element.find(".gp-widget-job-task").text(" GenePattern Job: Not Authenticated");
             this.element.find(".gp-widget-job-outputs").text("You must be authenticated before the job information can be displayed. After you authenticate it may take a few seconds for the job information to appear.");
+
+            // Update the code button
+            this.element.find(".gp-widget-job-reload").attr("disabled", "disabled");
         },
 
         /**
@@ -2130,6 +2226,9 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
 
                         // Update the slider
                         widget._updateSlider("update");
+
+                        // Enable the code button
+                        widget.element.find(".gp-widget-job-reload").removeAttr("disabled");
                     },
                     error: function() {
                         // Clean the old data
@@ -2139,8 +2238,8 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                         widget.element.find(".gp-widget-job-task").text(" GenePattern Job: Error");
                         widget.element.find(".gp-widget-job-outputs").text("Error loading job: " + widget.options.jobNumber);
 
-                        // Update the slider
-                        widget._updateSlider("update");
+                        // Update the code button
+                        widget.element.find(".gp-widget-job-reload").attr("disabled", "disabled");
                     }
                 });
             }
