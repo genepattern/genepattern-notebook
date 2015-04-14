@@ -2089,19 +2089,35 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
          * Reloads the job in a Task widget
          */
         reloadJob: function() {
+            var dialog = require('base/js/dialog');
             var job = this.options.job;
             var widget = this;
             var cell = this.element.closest(".cell").data("cell");
 
-            job.code("Python").done(function(code) {
-                code = widget._stripUnwantedCode(code);
+            dialog.modal({
+                notebook: IPython.notebook,
+                keyboard_manager: this.keyboard_manager,
+                title : "Reload Job?",
+                body : "Are you sure you want to reload the job? This will detach the notebook" +
+                       "from the current job and replace it with the run task form.",
+                buttons : {
+                    Reload : {
+                        "class" : "btn-danger",
+                        "click" : function() {
+                            job.code("Python").done(function(code) {
+                                code = widget._stripUnwantedCode(code);
 
-                // Put the code in the cell
-                cell.code_mirror.setValue(code);
+                                // Put the code in the cell
+                                cell.code_mirror.setValue(code);
 
-                // Execute the cell
-                cell.execute();
-            })
+                                // Execute the cell
+                                cell.execute();
+                            });
+                        }
+                    },
+                    "Cancel" : {}
+                }
+            });
         },
 
         /**
