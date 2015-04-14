@@ -3454,12 +3454,18 @@ require(["widgets/js/widget"], function (WidgetManager) {
             this._task.params({
                 success: function(response, params) {
                     for (var i = 0; i < params.length; i++) {
-                        var param = params[i];
-                        var pDiv = widget._addParam(param);
+                        try {
+                            var param = params[i];
+                            var pDiv = widget._addParam(param);
 
-                        if (reloadVals[param.name()] !== undefined) {
-                            var pWidget = pDiv.data("widget");
-                            pWidget.value(reloadVals[param.name()]);
+                            if (reloadVals[param.name()] !== undefined) {
+                                var pWidget = pDiv.data("widget");
+                                pWidget.value(reloadVals[param.name()]);
+                            }
+                        }
+                        catch(exception) {
+                            alert(exception);
+                            console.log(exception);
                         }
                     }
                 },
@@ -3523,27 +3529,26 @@ require(["widgets/js/widget"], function (WidgetManager) {
                     $("<div></div>")
                         .addClass("col-sm-9 gp-widget-task-param-wrapper")
                         .append(
-                        $("<div></div>")
-                            .addClass("gp-widget-task-param-input")
+                            $("<div></div>")
+                                .addClass("gp-widget-task-param-input")
                         )
                         .append(
-                        $("<div></div>")
-                            .addClass("gp-widget-task-param-desc")
-                            .text(param.description())
+                            $("<div></div>")
+                                .addClass("gp-widget-task-param-desc")
+                                .text(param.description())
                         )
                 );
             if (required) paramBox.addClass("gp-widget-task-required");
-            form.append(paramBox);
 
             // Add the correct input widget
             if (param.type() === "java.io.File") {
-                return paramBox.find(".gp-widget-task-param-input").fileInput({
+                paramBox.find(".gp-widget-task-param-input").fileInput({
                     runTask: this,
                     param: param
                 });
             }
             else if (param.choices()) {
-                return paramBox.find(".gp-widget-task-param-input").choiceInput({
+                paramBox.find(".gp-widget-task-param-input").choiceInput({
                     runTask: this,
                     param: param,
                     choices: param.choices(),
@@ -3551,14 +3556,14 @@ require(["widgets/js/widget"], function (WidgetManager) {
                 });
             }
             else if (param.type() === "java.lang.String") {
-                return paramBox.find(".gp-widget-task-param-input").textInput({
+                paramBox.find(".gp-widget-task-param-input").textInput({
                     runTask: this,
                     param: param,
                     default: param.defaultValue()
                 });
             }
             else if (param.type() === "java.lang.Integer") {
-                return paramBox.find(".gp-widget-task-param-input").textInput({
+                paramBox.find(".gp-widget-task-param-input").textInput({
                     runTask: this,
                     param: param,
                     default: param.defaultValue(),
@@ -3568,6 +3573,9 @@ require(["widgets/js/widget"], function (WidgetManager) {
             else {
                 console.log("Unknown input type for Run Task widget");
             }
+
+            form.append(paramBox);
+            return paramBox.find(".gp-widget-task-param-input");
         },
 
         /**
