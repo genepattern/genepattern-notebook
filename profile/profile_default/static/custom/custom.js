@@ -833,10 +833,7 @@ require(["jquery"], function() {
                     type: 'POST',
                     data: JSON.stringify(this._submitJson_()),
                     dataType: 'json',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
+                    contentType: "application/json",
                     xhrFields: {
                         withCredentials: true
                     }
@@ -1375,6 +1372,18 @@ GenePattern.notebook.buildModuleCode = function(module) {
     return "# !AUTOEXEC\n\n" +
             "task = gp.GPTask(gpserver, '" + module["lsid"] + "')\n" +
             "GPTaskWidget(task)";
+};
+
+/**
+ * Build the basic code for displaying a job widget
+ *
+ * @param jobNumber
+ * @returns {string}
+ */
+GenePattern.notebook.buildJobCode = function(jobNumber) {
+    return "# !AUTOEXEC\n\n" +
+            "job = gp.GPJob(gpserver, " + jobNumber + ")\n" +
+            "GPJobWidget(job)";
 };
 
 /**
@@ -3294,8 +3303,14 @@ require(["widgets/js/widget"], function (WidgetManager) {
             if (GenePattern.authenticated) {
                 // Make call to build the header & form
                 this._task = this._loadTask(identifier);
-                this._buildHeader();
-                this._buildForm();
+                console.log(this._task);
+                if (this._task !== null) {
+                    this._buildHeader();
+                    this._buildForm();
+                }
+                else {
+                    this._showUninstalledMessage();
+                }
             }
             else {
                 this._showAuthenticationMessage();
@@ -3323,8 +3338,13 @@ require(["widgets/js/widget"], function (WidgetManager) {
             this._superApply(arguments);
             var identifier = this._getIdentifier();
             this._task = this._loadTask(identifier);
-            this._buildHeader();
-            this._buildForm();
+            if (this._task !== null) {
+                this._buildHeader();
+                this._buildForm();
+            }
+            else {
+                this._showUninstalledMessage();
+            }
         },
 
         /**
@@ -3364,6 +3384,18 @@ require(["widgets/js/widget"], function (WidgetManager) {
         },
 
         /**
+         * Display module not installed message
+         *
+         * @private
+         */
+        _showUninstalledMessage: function() {
+            this.element.find(".gp-widget-task-name").empty().text(" GenePattern Task: Module Not Installed");
+            this.element.find(".gp-widget-task-form").empty().text("The module used by this widget is not installed on this GenePattern server.");
+            this.element.find(".gp-widget-task-subheader").hide();
+            this.element.find(".gp-widget-task-footer").hide();
+        },
+
+        /**
          * Display the not authenticated message
          *
          * @private
@@ -3388,8 +3420,13 @@ require(["widgets/js/widget"], function (WidgetManager) {
                     // Make call to build the header & form
                     var identifier = widget._getIdentifier();
                     widget._task = widget._loadTask(identifier)
-                    widget._buildHeader();
-                    widget._buildForm();
+                    if (widget._task !== null) {
+                        widget._buildHeader();
+                        widget._buildForm();
+                    }
+                    else {
+                        widget._showUninstalledMessage();
+                    }
                 }
                 else {
                     // If not authenticated, poll again
@@ -3691,6 +3728,14 @@ require(["widgets/js/widget"], function (WidgetManager) {
                     jobInput.submit({
                         success: function(response, jobNumber) {
                             widget.successMessage("Job successfully submitted! Job ID: " + jobNumber);
+
+                            // Set the code for the job widget
+                            var cell = widget.element.closest(".cell").data("cell");
+                            var code = GenePattern.notebook.buildJobCode(jobNumber);
+                            cell.code_mirror.setValue(code);
+
+                            // Execute cell.
+                            cell.execute();
                         },
                         error: function(exception) {
                             widget.errorMessage("Error submitting job: " + exception.statusText);
