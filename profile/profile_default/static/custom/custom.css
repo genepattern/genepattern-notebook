@@ -103,8 +103,9 @@ body {
 .add-cell-container {
     text-align: right;
     position: fixed;
-    bottom: 15px;
+    bottom: 55px;
     padding-right: 15px;
+    height: 0;
 }
 
 .add-cell-button {

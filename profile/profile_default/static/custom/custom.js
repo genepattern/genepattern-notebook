@@ -1693,7 +1693,7 @@ require(["widgets/js/widget"], function (WidgetManager) {
                                                     .attr("value", "http://genepatternbeta.broadinstitute.org/gp")
                                                     .text("GenePattern @ gpbeta")
                                             )
-                                            .val(widget.getServerLabel("http://genepattern.broadinstitute.org/gp"))
+                                            .val(widget.getServerLabel("http://127.0.0.1:8080/gp"))
                                     )
                             )
                             .append(
@@ -2485,6 +2485,7 @@ require(["widgets/js/widget"], function (WidgetManager) {
                             .text("Add Path or URL...")
                             .click(function() {
                                 widget._pathBox(true);
+                                widget.element.find(".file-widget-path-input").focus();
                             })
                     )
                     .append(
@@ -2607,11 +2608,26 @@ require(["widgets/js/widget"], function (WidgetManager) {
                 event.preventDefault();
             }, false);
             dropTarget.addEventListener("drop", function(event) {
-                var files = event['dataTransfer'].files;
-                if (files.length > 0) {
+                // If there is are files assume this is a file drop
+                if (event['dataTransfer'].files.length > 0) {
+                    console.log(event);
+                    var files = event['dataTransfer'].files;
                     widget.value(files[0]);
                 }
+                // If not, assume this is a text drop
+                else {
+                    var html = event['dataTransfer'].getData('text/html');
+                    var dropList = $(html);
+                    $.each(dropList, function(i, e) {
+                        var text = $(e).attr("href");
+                        if (text) {
+                            widget.value(text);
+                        }
+                    });
+                }
+
                 widget.element.css("background-color", "");
+
                 event.stopPropagation();
                 event.preventDefault();
             }, false);
@@ -3584,15 +3600,9 @@ require(["widgets/js/widget"], function (WidgetManager) {
 
             // Add the correct input widget
             if (param.type() === "java.io.File") {
-                //TODO: FIXME
-                //paramBox.find(".gp-widget-task-param-input").fileInput({
-                //    runTask: this,
-                //    param: param
-                //});
-                paramBox.find(".gp-widget-task-param-input").textInput({
+                paramBox.find(".gp-widget-task-param-input").fileInput({
                     runTask: this,
-                    param: param,
-                    default: param.defaultValue()
+                    param: param
                 });
             }
             else if (param.choices()) {
