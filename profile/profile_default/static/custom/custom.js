@@ -1410,6 +1410,35 @@ GenePattern.notebook.statusIndicator = function(statusObj) {
 };
 
 /**
+ * Return whether the file URL is external, internal, upload
+ *
+ * @param value
+ * @returns {string}
+ */
+GenePattern.notebook.fileLocationType = function(value) {
+    if (typeof value === 'object') {
+        return "Upload";
+    }
+    else if (value.indexOf(GenePattern.server()) !== -1) {
+        return "Internal"
+    }
+    else {
+        return "External";
+    }
+};
+
+/**
+ * Return the name of a file from its url
+ *
+ * @param url
+ * @returns {string}
+ */
+GenePattern.notebook.nameFromUrl = function(url) {
+    var parts = url.split("/");
+    return decodeURIComponent(parts[parts.length - 1]);
+};
+
+/**
  * Remove a slider option representing a job from the slider
  *
  * @param jobNumber
@@ -1462,6 +1491,48 @@ GenePattern.notebook.updateSliderJob = function(job) {
 
         // Update the UI
         existingOption.find(".slider-option-anno").text(GenePattern.notebook.statusIndicator(job.status()));
+    }
+};
+
+/**
+ * Remove a slider option representing data from the slider
+ *
+ * @param value
+ */
+GenePattern.notebook.removeSliderData = function(name) {
+    // Update the UI
+    $("#slider-data").find(".slider-option[name='" + name + "']").remove();
+};
+
+/**
+ * Update a slider option representing data on the slider
+ *
+ * @param display
+ * @param value
+ */
+GenePattern.notebook.updateSliderData = function(url, value) {
+    // If the data does not yet exist in the list, add it
+    var dataSlider = $("#slider-data");
+    var existingOption = dataSlider.find(".slider-option[name='" + url + "']");
+    if (existingOption.length < 1) {
+        // Update the UI
+        var type = GenePattern.notebook.fileLocationType(value);
+        var name = GenePattern.notebook.nameFromUrl(url);
+        var urlWithPrefix = type === "Upload" ? "Ready to Upload: " + url : url;
+        var option = GenePattern.notebook.sliderOption(url, name, type, urlWithPrefix, []);
+        // TODO: Implement
+        //option.click(function() {
+        //    $('#site').animate({
+        //        scrollTop: $(".gp-widget-job[name='" + job.jobNumber() + "']").offset().top
+        //    }, 500);
+        //});
+        dataSlider.append(option);
+    }
+    // Otherwise update the view
+    else {
+        // Update the UI
+        // TODO: Implement
+        existingOption.find(".slider-option-anno").text("UPDATED");
     }
 };
 
@@ -2514,6 +2585,7 @@ require(["widgets/js/widget"], function (WidgetManager) {
 
                                     )
                                     .click(function() {
+                                        widget._updateSlider("destroy");
                                         widget.clear();
                                     })
                             )
@@ -2579,8 +2651,24 @@ require(["widgets/js/widget"], function (WidgetManager) {
          * @private
          */
         _destroy: function() {
+            this._updateSlider("destroy");
             this.element.removeClass("file-widget");
             this.element.empty();
+        },
+
+        /**
+         * Update the left-hand slider with data information
+         *
+         * @private
+         */
+        _updateSlider: function(method) {
+            if (method.toLowerCase() == "destroy") {
+                GenePattern.notebook.removeSliderData(this._display, this._value);
+            }
+            // Else assume "update"
+            else {
+                GenePattern.notebook.updateSliderData(this._display, this._value);
+            }
         },
 
         /**
@@ -2609,14 +2697,12 @@ require(["widgets/js/widget"], function (WidgetManager) {
             dropTarget.addEventListener("drop", function(event) {
                 // If there is are files assume this is a file drop
                 if (event['dataTransfer'].files.length > 0) {
-                    console.log(event);
                     var files = event['dataTransfer'].files;
                     widget.value(files[0]);
                 }
                 // If not, assume this is a text drop
                 else {
                     var html = event['dataTransfer'].getData('text/html');
-                    console.log(html);
                     var htmlList = $(html);
 
                     // Path for Firefox
@@ -2847,6 +2933,7 @@ require(["widgets/js/widget"], function (WidgetManager) {
                 this._value = val;
                 this._display = this._valueToDisplay(val);
                 this._fileBox(this._display);
+                this._updateSlider("update");
             }
             // Do getter
             else {
