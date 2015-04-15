@@ -2616,13 +2616,30 @@ require(["widgets/js/widget"], function (WidgetManager) {
                 // If not, assume this is a text drop
                 else {
                     var html = event['dataTransfer'].getData('text/html');
-                    var dropList = $(html);
-                    $.each(dropList, function(i, e) {
-                        var text = $(e).attr("href");
-                        if (text) {
+                    console.log(html);
+                    var htmlList = $(html);
+
+                    // Path for Firefox
+                    if (htmlList.length === 1) {
+                        var tag = $(htmlList).prop("tagName");
+                        if (tag.toLowerCase() !== "a") {
+                            htmlList = $(htmlList).find("a");
+                        }
+                        var text = $(htmlList).attr("href");
+                        if (text !== undefined && text !== null) {
                             widget.value(text);
                         }
-                    });
+                    }
+
+                    // Path for Chrome
+                    else if (htmlList.length > 1) {
+                        $.each(htmlList, function(i, e) {
+                            var text = $(e).attr("href");
+                            if (text !== undefined && text !== null) {
+                                widget.value(text);
+                            }
+                        });
+                    }
                 }
 
                 widget.element.css("background-color", "");
@@ -2714,17 +2731,17 @@ require(["widgets/js/widget"], function (WidgetManager) {
             }
             else if (!this.options.allowExternalUrls && this.options.allowFilePaths) {
                 this.element.find(".file-widget-url").show();
-                this.element.find(".file-widget-url").button("option", "label", "Add Path...");
+                this.element.find(".file-widget-url").text("Add Path...");
                 this.element.find(".file-widget-path-label").text("Enter Path");
             }
             else if (this.options.allowExternalUrls && !this.options.allowFilePaths) {
                 this.element.find(".file-widget-url").show();
-                this.element.find(".file-widget-url").button("option", "label", "Add URL...");
+                this.element.find(".file-widget-url").text("Add URL...");
                 this.element.find(".file-widget-path-label").text("Enter URL");
             }
             else if (this.options.allowExternalUrls && this.options.allowFilePaths) {
                 this.element.find(".file-widget-url").show();
-                this.element.find(".file-widget-url").button("option", "label", "Add Path or URL...");
+                this.element.find(".file-widget-url").text("Add Path or URL...");
                 this.element.find(".file-widget-path-label").text("Enter Path or URL");
             }
         },
