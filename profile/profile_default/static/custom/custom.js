@@ -71,7 +71,8 @@ require(["jquery"], function() {
      *      See http://api.jquery.com/jquery.deferred/ for details.
      */
     GenePattern.tasks = function(pObj) {
-        var forceRefresh = pObj && pObj.force && pObj.force.toLowerCase() === 'true';
+        var forceRefresh = pObj && ((typeof pObj.force === 'boolean' && pObj.force) ||
+                (typeof pObj.force === 'string' && pObj.force.toLowerCase() === 'true'));
         var useCache = GenePattern._tasks && !forceRefresh;
 
         if (useCache) {
@@ -250,7 +251,8 @@ require(["jquery"], function() {
      *      See http://api.jquery.com/jquery.deferred/ for details.
      */
     GenePattern.job = function(pObj) {
-        var forceRefresh = pObj && pObj.force && pObj.force.toLowerCase() === 'true';
+        var forceRefresh = pObj && ((typeof pObj.force === 'boolean' && pObj.force) ||
+                (typeof pObj.force === 'string' && pObj.force.toLowerCase() === 'true'));
         var jobNumber = pObj.jobNumber;
 
         // Try to find the job in the cache
@@ -397,7 +399,8 @@ require(["jquery"], function() {
          */
         this.params = function(pObj) {
             var task = this;
-            var forceRefresh = (pObj && pObj.force && pObj.force.toLowerCase() === 'true') ? true : false;
+            var forceRefresh = pObj && ((typeof pObj.force === 'boolean' && pObj.force) ||
+                (typeof pObj.force === 'string' && pObj.force.toLowerCase() === 'true'));
             var inCache = forceRefresh ? false : task._params !== null;
 
             if (inCache) {
@@ -2111,6 +2114,7 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                 body : "Are you sure you want to reload the job? This will detach the notebook" +
                        "from the current job and replace it with the run task form.",
                 buttons : {
+                    "Cancel" : {},
                     Reload : {
                         "class" : "btn-danger",
                         "click" : function() {
@@ -2124,8 +2128,7 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                                 cell.execute();
                             });
                         }
-                    },
-                    "Cancel" : {}
+                    }
                 }
             });
         },
@@ -2242,7 +2245,7 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
 
                 GenePattern.job({
                     jobNumber: this.options.jobNumber,
-                    forceRefresh: true,
+                    force: true,
                     success: function(response, job) {
                         // Set the job object
                         widget.options.job = job;
