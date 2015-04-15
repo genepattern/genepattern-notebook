@@ -2385,7 +2385,7 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
             // Double check to make sure that this is the correct cell
             if ($(this.options.cell.element).hasClass("running")) {
                 // Render the view.
-                this.setElement($('<div/></div>'));
+                this.setElement($('<div></div>'));
                 var jobNumber = this.model.get('job_number');
                 this.$el.jobResults({
                     jobNumber: jobNumber
@@ -3303,14 +3303,16 @@ require(["widgets/js/widget"], function (WidgetManager) {
             if (GenePattern.authenticated) {
                 // Make call to build the header & form
                 this._task = this._loadTask(identifier);
-                console.log(this._task);
-                if (this._task !== null) {
-                    this._buildHeader();
-                    this._buildForm();
-                }
-                else {
-                    this._showUninstalledMessage();
-                }
+
+                setTimeout(function() {
+                    if (widget._task !== null) {
+                        widget._buildHeader();
+                        widget._buildForm();
+                    }
+                    else {
+                        widget._showUninstalledMessage();
+                    }
+                }, 1);
             }
             else {
                 this._showAuthenticationMessage();
@@ -3419,7 +3421,7 @@ require(["widgets/js/widget"], function (WidgetManager) {
                 if (GenePattern.authenticated) {
                     // Make call to build the header & form
                     var identifier = widget._getIdentifier();
-                    widget._task = widget._loadTask(identifier)
+                    widget._task = widget._loadTask(identifier);
                     if (widget._task !== null) {
                         widget._buildHeader();
                         widget._buildForm();
@@ -3467,7 +3469,7 @@ require(["widgets/js/widget"], function (WidgetManager) {
                 if (line.indexOf("_job_spec.set_parameter") !== -1) {
                     var parts = line.split(",");
                     var first = parts[0].split("\"");
-                    var second = parts[1].split("\"")
+                    var second = parts[1].split("\"");
                     var key = first[1];
                     var value = second[1];
                     dict[key] = value;
@@ -3486,10 +3488,10 @@ require(["widgets/js/widget"], function (WidgetManager) {
             var widget = this;
             this.element.find(".gp-widget-task-form").empty();
 
-            var reloadVals = this._parseJobSpec();
-
             this._task.params({
                 success: function(response, params) {
+                    var reloadVals = widget._parseJobSpec();
+
                     for (var i = 0; i < params.length; i++) {
                         try {
                             var param = params[i];
@@ -3579,9 +3581,15 @@ require(["widgets/js/widget"], function (WidgetManager) {
 
             // Add the correct input widget
             if (param.type() === "java.io.File") {
-                paramBox.find(".gp-widget-task-param-input").fileInput({
+                //TODO: FIXME
+                //paramBox.find(".gp-widget-task-param-input").fileInput({
+                //    runTask: this,
+                //    param: param
+                //});
+                paramBox.find(".gp-widget-task-param-input").textInput({
                     runTask: this,
-                    param: param
+                    param: param,
+                    default: param.defaultValue()
                 });
             }
             else if (param.choices()) {
@@ -3789,7 +3797,7 @@ require(["widgets/js/widget"], function (WidgetManager) {
             // Double check to make sure that this is the correct cell
             if ($(this.options.cell.element).hasClass("running")) {
                 // Render the view.
-                this.setElement($('<div/></div>'));
+                this.setElement($('<div></div>'));
                 var lsid = this.model.get('lsid');
                 var name = this.model.get('name');
 
