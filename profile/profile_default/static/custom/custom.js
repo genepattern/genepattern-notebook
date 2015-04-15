@@ -328,9 +328,8 @@ require(["jquery"], function() {
                     "Content-Length": pObj.file.size
                 },
                 success: function(data, textStatus, request){
-                    var location = request.getResponseHeader('Location');
                     if (pObj && pObj.success) {
-                        pObj.success(textStatus, location);
+                        pObj.success(textStatus, data);
                     }
                 }
             })
@@ -2786,7 +2785,7 @@ require(["widgets/js/widget"], function (WidgetManager) {
                 });
                 currentlyUploading = true;
             }
-            // If the value is not ste, give an error
+            // If the value is not set, give an error
             else if (!this.value()) {
                 console.log("Cannot upload from file input: value is null.");
                 currentlyUploading = false;
