@@ -1547,12 +1547,6 @@ GenePattern.notebook.updateSliderData = function(url, value) {
         });
         dataSlider.append(option);
     }
-    // Otherwise update the view
-    else {
-        // Update the UI
-        // TODO: Implement
-        existingOption.find(".slider-option-anno").text("UPDATED");
-    }
 };
 
 /*
@@ -3823,7 +3817,7 @@ require(["widgets/js/widget"], function (WidgetManager) {
 
             // Display message to user
             if (validated) {
-                this.successMessage("All required parameters present.");
+                //this.successMessage("All required parameters present.");
             }
             else {
                 this.errorMessage("Missing required parameters: " + missing.join(", "));
@@ -3858,7 +3852,7 @@ require(["widgets/js/widget"], function (WidgetManager) {
                     // Submit the job input
                     jobInput.submit({
                         success: function(response, jobNumber) {
-                            widget.successMessage("Job successfully submitted! Job ID: " + jobNumber);
+                            //widget.successMessage("Job successfully submitted! Job ID: " + jobNumber);
 
                             // Set the code for the job widget
                             var cell = widget.element.closest(".cell").data("cell");
