@@ -1,6 +1,6 @@
 __authors__ = ['Thorin Tabor', 'Chet Birger']
 __copyright__ = 'Copyright 2015, Broad Institute'
-__version__ = '1.0.2'
+__version__ = '1.0.3'
 __status__ = 'Production'
 
 """ GenePattern Python Client
@@ -218,6 +218,7 @@ class GPJob(GPResource):
     polling the server until the job is completed.
     """
     json = None  # Define the backing JSON string
+    info = None
     server_data = None
     task_name = None
     task_lsid = None
@@ -258,7 +259,6 @@ class GPJob(GPResource):
         self.status = self.get_status_message()
 
     def is_finished(self):
-
         self.get_info()
 
         if 'status' not in self.info:
@@ -269,9 +269,17 @@ class GPJob(GPResource):
         return self.info['status']['isFinished']
 
     def get_status_message(self):
+        # Lazily load info
+        if self.info is None:
+            self.get_info()
+
         return self.info['status']['statusMessage']
 
     def get_output_files(self):
+        # Lazily load info
+        if self.info is None:
+            self.get_info()
+
         if 'outputFiles' in self.info:
             return [GPFile(self.server_data, f['link']['href']) for f in self.info['outputFiles']]
         else:
