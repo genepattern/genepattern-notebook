@@ -1419,7 +1419,7 @@ GenePattern.notebook.fileLocationType = function(value) {
     if (typeof value === 'object') {
         return "Upload";
     }
-    else if (value.indexOf(GenePattern.server()) !== -1) {
+    else if (value.indexOf(GenePattern.server()) !== -1 || value.indexOf("<GenePatternURL>") !== -1) {
         return "Internal"
     }
     else {
@@ -1436,6 +1436,16 @@ GenePattern.notebook.fileLocationType = function(value) {
 GenePattern.notebook.nameFromUrl = function(url) {
     var parts = url.split("/");
     return decodeURIComponent(parts[parts.length - 1]);
+};
+
+/**
+ * Encode text for HTML display
+ *
+ * @param text
+ * @returns {string}
+ */
+GenePattern.notebook.htmlEncode = function(text) {
+    return text.replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
 };
 
 /**
@@ -1476,6 +1486,9 @@ GenePattern.notebook.updateSliderJob = function(job) {
             $('#site').animate({
                 scrollTop: $(".gp-widget-job[name='" + job.jobNumber() + "']").position().top
             }, 500);
+
+            // Close the slider
+            $(".sidebar-button-slider").trigger("click");
         });
         jobsSlider.append(option);
     }
@@ -1518,14 +1531,20 @@ GenePattern.notebook.updateSliderData = function(url, value) {
         // Update the UI
         var type = GenePattern.notebook.fileLocationType(value);
         var name = GenePattern.notebook.nameFromUrl(url);
-        var urlWithPrefix = type === "Upload" ? "Ready to Upload: " + url : url;
+        var urlWithPrefix = type === "Upload" ? "Ready to Upload: " + GenePattern.notebook.htmlEncode(url) : GenePattern.notebook.htmlEncode(url);
         var option = GenePattern.notebook.sliderOption(url, name, type, urlWithPrefix, []);
         // TODO: Implement
-        //option.click(function() {
-        //    $('#site').animate({
-        //        scrollTop: $(".gp-widget-job[name='" + job.jobNumber() + "']").offset().top
-        //    }, 500);
-        //});
+        option.click(function() {
+            // Close the slider
+            $(".sidebar-button-slider").trigger("click");
+
+            var fileOffset = $(".file-widget-value-text:contains('" + url + "')").offset().top;
+            var notebookOffset = $("#notebook").offset().top;
+
+            $('#site').animate({
+                scrollTop: fileOffset - notebookOffset - 50
+            }, 500);
+        });
         dataSlider.append(option);
     }
     // Otherwise update the view
