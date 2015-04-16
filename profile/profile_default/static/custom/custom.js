@@ -1356,7 +1356,7 @@ GenePattern.notebook.authenticate = function(data) {
 
                 // Scroll to the new cell
                 $('#site').animate({
-                    scrollTop: $(IPython.notebook.get_selected_cell().element).offset().top - 100
+                    scrollTop: $(IPython.notebook.get_selected_cell().element).position().top
                 }, 500);
             });
             sliderModules.append(option);
@@ -1384,9 +1384,8 @@ GenePattern.notebook.buildModuleCode = function(module) {
  */
 GenePattern.notebook.buildJobCode = function(jobNumber) {
     return "# !AUTOEXEC\n\n" +
-            "job = gp.GPJob(gpserver, " + jobNumber + ")\n" +
-            //"job.get_info()\n" +
-            "GPJobWidget(job)";
+            "job" + jobNumber + " = gp.GPJob(gpserver, " + jobNumber + ")\n" +
+            "GPJobWidget(job" + jobNumber + ")";
 };
 
 /**
@@ -1475,7 +1474,7 @@ GenePattern.notebook.updateSliderJob = function(job) {
             GenePattern.notebook.statusIndicator(job.status()), "Submitted: " + job.dateSubmitted(), []);
         option.click(function() {
             $('#site').animate({
-                scrollTop: $(".gp-widget-job[name='" + job.jobNumber() + "']").offset().top
+                scrollTop: $(".gp-widget-job[name='" + job.jobNumber() + "']").position().top
             }, 500);
         });
         jobsSlider.append(option);
@@ -2661,7 +2660,7 @@ require(["widgets/js/widget"], function (WidgetManager) {
          */
         _updateSlider: function(method) {
             if (method.toLowerCase() == "destroy") {
-                GenePattern.notebook.removeSliderData(this._display, this._value);
+                GenePattern.notebook.removeSliderData(this._display);
             }
             // Else assume "update"
             else {
@@ -3583,8 +3582,7 @@ require(["widgets/js/widget"], function (WidgetManager) {
                     var first = parts[0].split("\"");
                     var second = parts[1].split("\"");
                     var key = first[1];
-                    var value = second[1];
-                    dict[key] = value;
+                    dict[key] = second[1];
                 }
             }
 
