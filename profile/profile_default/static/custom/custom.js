@@ -1385,6 +1385,7 @@ GenePattern.notebook.buildModuleCode = function(module) {
 GenePattern.notebook.buildJobCode = function(jobNumber) {
     return "# !AUTOEXEC\n\n" +
             "job = gp.GPJob(gpserver, " + jobNumber + ")\n" +
+            //"job.get_info()\n" +
             "GPJobWidget(job)";
 };
 
@@ -1497,7 +1498,7 @@ GenePattern.notebook.updateSliderJob = function(job) {
 /**
  * Remove a slider option representing data from the slider
  *
- * @param value
+ * @param name
  */
 GenePattern.notebook.removeSliderData = function(name) {
     // Update the UI
@@ -1507,7 +1508,7 @@ GenePattern.notebook.removeSliderData = function(name) {
 /**
  * Update a slider option representing data on the slider
  *
- * @param display
+ * @param url
  * @param value
  */
 GenePattern.notebook.updateSliderData = function(url, value) {
@@ -1813,7 +1814,7 @@ require(["widgets/js/widget"], function (WidgetManager) {
                                         widget.buildCode(server, username, password);
                                         widget.authenticate(server, username, password, function() {
                                             widget.executeCell();
-                                            widget.buildCode(server, "", "")
+                                            widget.buildCode(server, "", "");
                                         });
                                     })
                             )
@@ -1895,9 +1896,6 @@ require(["widgets/js/widget"], function (WidgetManager) {
                 xhrFields: {
                     withCredentials: true
                 },
-                //beforeSend: function (xhr) {
-                //    xhr.setRequestHeader("Authorization", "Basic " + btoa(username + ":" + password));
-                //},
                 success: function(data, status, xhr) {
                     // Set the authentication info on GenePattern object
                     GenePattern.authenticated = true;
@@ -2255,8 +2253,8 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
             setTimeout(function() {
                 // Check to see if the user is authenticated yet
                 if (GenePattern.authenticated) {
-                    // If authenticated, load job status
-                    widget._loadJobStatus();
+                    // If authenticated, execute cell again
+                    widget.element.closest(".cell").data("cell").execute();
                 }
                 else {
                     // If not authenticated, poll again
@@ -3541,16 +3539,8 @@ require(["widgets/js/widget"], function (WidgetManager) {
             setTimeout(function() {
                 // Check to see if the user is authenticated yet
                 if (GenePattern.authenticated) {
-                    // Make call to build the header & form
-                    var identifier = widget._getIdentifier();
-                    widget._task = widget._loadTask(identifier);
-                    if (widget._task !== null) {
-                        widget._buildHeader();
-                        widget._buildForm();
-                    }
-                    else {
-                        widget._showUninstalledMessage();
-                    }
+                    // If authenticated, execute cell again
+                    widget.element.closest(".cell").data("cell").execute();
                 }
                 else {
                     // If not authenticated, poll again
