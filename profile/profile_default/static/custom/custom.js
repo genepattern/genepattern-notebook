@@ -1884,8 +1884,16 @@ require(["widgets/js/widget"], function (WidgetManager) {
                 code.slideDown();
             }
             else {
-                view.slideDown();
-                code.slideUp();
+                // If normally collapsed
+                var collapsed = $(".widget-slide-indicator").find(".fa-arrow-down").length > 0;
+                if (collapsed) {
+                    code.slideUp();
+                }
+                // If otherwise expanded
+                else {
+                    view.slideDown();
+                    code.slideUp();
+                }
             }
         },
 
