@@ -1165,7 +1165,7 @@ GenePattern.notebook.bottomButton = function() {
 GenePattern.notebook.sliderTab = function() {
     var auth_view = GenePattern.authenticated ? "inline-block" : "none";
     return $("<span></span>")
-            .addClass("glyphicon glyphicon-ok sidebar-button sidebar-button-main")
+            .addClass("glyphicon glyphicon-th sidebar-button sidebar-button-main")
             .attr("title", "GenePattern Options")
             .attr("data-toggle", "tooltip")
             .attr("data-placement", "right")
@@ -1224,7 +1224,7 @@ GenePattern.notebook.slider = function() {
         // Append the navigation tab
         .append(
             $("<span></span>")
-                .addClass("glyphicon glyphicon-ok sidebar-button sidebar-button-slider")
+                .addClass("glyphicon glyphicon-th sidebar-button sidebar-button-slider")
                 .attr("title", "GenePattern Options")
                 .attr("data-toggle", "tooltip")
                 .attr("data-placement", "right")
