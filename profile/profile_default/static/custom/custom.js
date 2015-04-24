@@ -1533,7 +1533,6 @@ GenePattern.notebook.updateSliderData = function(url, value) {
         var name = GenePattern.notebook.nameFromUrl(url);
         var urlWithPrefix = type === "Upload" ? "Ready to Upload: " + GenePattern.notebook.htmlEncode(url) : GenePattern.notebook.htmlEncode(url);
         var option = GenePattern.notebook.sliderOption(url, name, type, urlWithPrefix, []);
-        // TODO: Implement
         option.click(function() {
             // Close the slider
             $(".sidebar-button-slider").trigger("click");
