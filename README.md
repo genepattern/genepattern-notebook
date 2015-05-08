@@ -7,82 +7,63 @@ Some notes on setup of GenePattern Notebook environment.
 
 ## Install Python
 
-Apple includes an older version of python with MAC OS X.  You will want to replace
-this with the most current version of Python 2.7 or Python 3.x
+In order to get the GenePattern Notebook working you will first need to install a compatible 
+version of Python. This means you will need either Python 2.7 or Python 3.4+.
 
-Updating python would have been straightforward if I had access to the
-Admin account on my laptop.  However, even though my user account had
-admin privileges, I ran into all sorts of issues when I attempted to
-update my python installation using homebrew (the recommended
-approach).   In particular, I did not have Homebrew installed on my
-system and I did not have the necessary privileges to install
-homebrew.  See
-http://docs.python-guide.org/en/latest/starting/install/osx/ if you
-are interested.  Bottom line was that I could not get Homebrew installed on my 
-laptop due to some permissions issue that running sudo did not address.
+**Note for Mac Users:** Mac comes with Python, but - depending on the version OSX you have - 
+you may have to update to a new version. To do this I would recommend using a package manager 
+such as Homebrew or MacPorts.
 
-I ended up installing the Anaconda Distribution of python from continuum analytics
-(see http://continuum.io/downloads).  Choose the Python 2.7 graphical
-installer for Mac OS X - 64 bit.  That seemed to do the trick.
-Another benefit of installing the Anaconda Distribution is that it is
-a scientific distribution of python which includes a very large
-number of the most popular Python packages for science, math and data
-analysis (e.g., NumPy, SciPy, Pandas, Matplotlib, IPython, etc.) 
+You may wish to install the Anaconda distribution of Python from Continuum Analytics. This is 
+a scientific version of Python that ships with many of the most popular Python packages for 
+science, math and data analysis (ex: NumPy, SciPy, Pandas, Matplotlib, IPython, etc.).
 
 ## Install PIP
 
-Install PIP if not already installed (may come with Anaconda installation); see https://pip.pypa.io/en/latest/installing.html
+Install PIP (Python Package Index) if not already installed (PIP may come with Anaconda 
+distribution; see https://pip.pypa.io/en/latest/installing.html). This is Python's preferred 
+package management system.
 
 ## Install IPython Notebook
-(3) Install IPython Notebook - see http://ipython.org/install.html
+Next install IPython Notebook. This can easily be done from PIP by executing the following 
+line of code from the terminal.
+
 > pip install "ipython[notebook]"
-
-(4) Install jsonpickle
-
-
-## Install JSONPickle (RNA-Seq Notebook Only)
-Needed for RNA-Seq notebook document - used to serialization of session state
-
->pip install -U jsonpickle
 
 ## Install GenePattern Notebook
 
-(5) clone onto your local system the broadinstitute/GenePatternNotebook private repository, available on GitHub.
+For the time being, the best way to install the GenePattern Notebook is by cloning the GitHub 
+repository and then copying over some files from the checkout to your IPython profile. The 
+GenePattern Notebook repository can be cloned by executing the following command:
 
-Check to see if git client tools are installed on your system.  If
-not, go to Github.com to see instructions for getting started with Git
-("Set up Git").
+> git clone https://github.com/broadinstitute/GenePatternNotebook.git
 
-You must be a member of the GenePattern Admin team to have access to
-the GenePatternNotebook private repository.   Current members are:
-Michael, Helga, Peter, Bobbie, Marc-Danie, Thorin, Chet, Ted.
+**As the GenePattern Notebook is not yet public, at this time you must be a member of the 
+GenePattern team to access the repository.**
 
-(6) Copy files to your ~/.ipython folder
+Next, you must copy over the GenePattern Notebook extension to your IPython profile. Your 
+profile is by default found at ~/.ipython - a hidden directory under your user directory.
+You will need to copy two sets of files: The first are the Python files needed for the 
+GenePattern library or its associated functions. The second set are the client-side files needed 
+to display the GenePattern widgets. From the cloned repository (whose root folder is 
+GenePatternNotebook):
 
-From the cloned repository (whose root folder is GenePatternNotebook):
+> cp GenePatternNotebook/profile/extensions/* ~/.ipython/extensions/
 
-- copy GenePatternNotebook/ipython/extensions/* to
-  ~/.ipython/extensions/
-
-- copy GenePatternNotebook/ipython/profile_default/status/custom/* to
-  ~/.ipython/profile_default/status/custom/*
-
-Before doing the second copy, you may want to first create backup
-copies of the original custom.css and custom.js files, although the
-original files are essentially contentless.
+> cp GenePatternNotebook/profile/profile_default/static/custom/* ~/.ipython/profile_default/static/custom/
 
 ## Launch IPython
 
-Launch the IPython notebook kernel by issuing the following command at
-the terminal:
+Finally, you may launch the IPython notebook by issuing the following command at the terminal:
 
 > ipython notebook
 
-This will start up the notebook kernel from and launch a web client
-connecting to that kernel.  Navigate into your cloned repository to
-the document GenePatternNotebook/NotebookDocuments/smoketest.ipynb
+This will start up the notebook kernel from and launch your web browser, pointing to the Notebook.
 
-Click on this document to bring it up in the Notebook client.  You can
-now run each cell individually or run them all sequentially by
-selecting Run All in the Cell dropdown menu.
+## Note for RNA-seq Notebook Users
 
+The RNA-seq Notebook requires an additional Python package known as jsonpickle. This package allows 
+the notebook to store results in memory using a JSON data format. This package may be installed by 
+executing the following line of code from a terminal.
+
+>pip install -U jsonpickle
