@@ -1601,8 +1601,20 @@ GenePattern.notebook.init.notebook_init_wrapper = function (evt) {
 GenePattern.notebook.init.buildCode = function(server, username, password) {
     return '# !AUTOEXEC\n\
 \n\
+# Don\'t have the GenePattern library? It can be downloaded from: \n\
+# http://genepattern.broadinstitute.org/gp/downloads/gp-python.zip \n\
 import gp\n\
-from gp_widgets import GPAuthWidget, GPJobWidget, GPTaskWidget\n\
+\n\
+# The following widgets are components of the GenePattern Notebook extension.\n\
+try:\n\
+    from gp_widgets import GPAuthWidget, GPJobWidget, GPTaskWidget\n\
+except:\n\
+    def GPAuthWidget(input):\n\
+        print "GP Widget Library not installed. Please visit http://genepattern.org"\n\
+    def GPJobWidget(input):\n\
+        print "GP Widget Library not installed. Please visit http://genepattern.org"\n\
+    def GPTaskWidget(input):\n\
+        print "GP Widget Library not installed. Please visit http://genepattern.org"\n\
 \n\
 # The gpserver object holds your authentication credentials and is used to\n\
 # make calls to the GenePattern server through the GenePattern Python library.\n\
@@ -1642,6 +1654,12 @@ GenePattern.notebook.init.launch_init = function() {
             }
         });
     });
+
+    // Add GenePattern "cell type"
+    $("#cell_type")
+        .append($("<option value='code'>GenePattern</option>"));
+    $("#change_cell_type").find("ul.dropdown-menu")
+        .append($("<li id='to_genepattern' title='Insert a GenePattern widget cell'><a href='#'>GenePattern</a></option>"));
 
     // Hide the loading screen
     setTimeout(function () {
@@ -1905,7 +1923,47 @@ require(["widgets/js/widget"], function (WidgetManager) {
             this.options.cell.execute();
         },
 
+        /**
+         * Call the authentication endpoint, then call afterAuthenticate();
+         *
+         * @param server
+         * @param username
+         * @param password
+         * @param done
+         */
         authenticate: function(server, username, password, done) {
+            var widget = this;
+            $.ajax({
+                type: "POST",
+                url: server + "/rest/v1/oauth2/token?grant_type=password&username=" + username + "&password=" + password + "&client_id=GenePatternNotebook",
+                cache: false,
+                xhrFields: {
+                    withCredentials: true
+                },
+                success: function(data, status, xhr) {
+                    console.log(data['access_token']);
+
+                    var token = data['access_token'];
+
+                    $.ajaxSetup({
+                        headers: {"Authorization": "Bearer " + token}
+                    });
+
+                    widget.afterAuthenticate(server, username, password, done);
+                },
+                error: function(xhr, status, e) {
+                    console.log("Error authenticating");
+                }
+            });
+        },
+
+        /**
+         * Assumes the authenticate endpoint has already been called,
+         * then does all the other stuff needed for authentication
+         *
+         * @param done
+         */
+        afterAuthenticate: function(server, username, password, done) {
             var widget = this;
             $.ajax({
                 type: "GET",
