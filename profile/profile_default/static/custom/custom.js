@@ -1812,6 +1812,11 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                                         .attr("placeholder", "Username")
                                         .attr("required", "required")
                                         .val(widget.getUserLabel(""))
+                                        .keyup(function (e) {
+                                            if (e.keyCode == 13) {
+                                                widget._enterPressed();
+                                            }
+                                        })
                                 )
                         )
                         .append(
@@ -1829,6 +1834,11 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                                         .attr("type", "password")
                                         .attr("placeholder", "Password")
                                         .val(widget.getPasswordLabel(""))
+                                        .keyup(function (e) {
+                                            if (e.keyCode == 13) {
+                                                widget._enterPressed();
+                                            }
+                                        })
                                 )
                         )
                         .append(
@@ -1907,6 +1917,15 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
          */
         _setOption: function(key, value) {
             this._super(key, value);
+        },
+
+        /**
+         * Click the login button if the enter key is pressed
+         *
+         * @private
+         */
+        _enterPressed: function() {
+            this.element.find(".gp-auth-button").trigger("click");
         },
 
         expandCollapse: function() {
