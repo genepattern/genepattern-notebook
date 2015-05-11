@@ -3,6 +3,10 @@ GenePatternNotebook
 
 Some notes on setup of GenePattern Notebook environment.
 
+**IMPORTANT: The current version of the code here only works with GenePattern 3.9.3 (the 
+as-yet-unreleased dev version) and up! This is because a number of changes have been made to
+the GenePattern REST API to support GenePattern Notebook.**
+
 # Installation
 
 ## Install Python
