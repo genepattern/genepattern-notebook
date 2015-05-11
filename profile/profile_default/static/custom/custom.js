@@ -1687,171 +1687,180 @@ require(["jquery"], function() {
 /**
  * Define the IPython GenePattern Authentication widget
  */
-require(["widgets/js/widget"], function (WidgetManager) {
+require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
+    $.widget("gp.auth", {
+        options: {
+            servers: [                                              // Expects a list of lists with [name, url] pairs
+                ['GenePattern @ localhost', 'http://127.0.0.1:8080/gp'],
+                ['GenePattern @ Broad Institute', 'http://genepattern.broadinstitute.org/gp'],
+                ['GenePattern @ gpbeta', 'http://genepatternbeta.broadinstitute.org/gp']
+            ],
+            cell: null                                              // Reference to the IPython cell
+        },
 
-    var AuthWidgetView = IPython.WidgetView.extend({
-        render: function () {
+        /**
+         * Constructor
+         *
+         * @private
+         */
+        _create: function() {
             var widget = this;
-            // Render the view.
-            this.setElement(
-                $("<div></div>")
-                    .addClass("panel panel-primary gp-widget gp-widget-auth")
-                    .append(
-                        $("<div></div>")
-                            .addClass("panel-heading")
-                            .append(
-                                $("<div></div>")
-                                    .addClass("widget-float-right")
-                                    .append(
-                                        $("<span></span>")
-                                            .addClass("widget-server-label")
-                                            .append(widget.getServerLabel(""))
-                                    )
-                                    .append(
-                                        $("<button></button>")
-                                            .addClass("btn btn-default btn-sm widget-slide-indicator")
-                                            .css("padding", "2px 7px")
-                                            .attr("title", "Expand or Collapse")
-                                            .attr("data-toggle", "tooltip")
-                                            .attr("data-placement", "bottom")
-                                            .append(
-                                                $("<span></span>")
-                                                    .addClass("fa fa-arrow-up")
-                                            )
-                                            .tooltip()
-                                            .click(function() {
-                                                widget.expandCollapse();
-                                            })
-                                    )
-                                    .append(" ")
-                                    .append(
-                                        $("<button></button>")
-                                            .addClass("btn btn-default btn-sm")
-                                            .css("padding", "2px 7px")
-                                            .attr("title", "Toggle Code View")
-                                            .attr("data-toggle", "tooltip")
-                                            .attr("data-placement", "bottom")
-                                            .append(
-                                                $("<span></span>")
-                                                    .addClass("fa fa-terminal")
-                                            )
-                                            .tooltip()
-                                            .click(function() {
-                                                widget.toggleCode();
-                                            })
-                                    )
-                            )
-                            .append(
-                                $("<h3></h3>")
-                                    .addClass("panel-title")
-                                    .append(
-                                        $("<span></span>")
-                                            .addClass("glyphicon glyphicon-th")
-                                    )
-                                    .append(" GenePattern: ")
-                                    .append(
-                                        $("<span></span>")
-                                            .addClass("widget-username-label")
-                                            .append(widget.getUserLabel("Login"))
-                                    )
-                            )
-                        )
-                    .append(
-                        $("<div></div>")
-                            .addClass("panel-body widget-code")
-                            .css("display", "none")
-                    )
-                    .append(
-                        $("<div></div>")
-                            .addClass("panel-body widget-view")
-                            .append(
-                                $("<div></div>")
-                                    .addClass("form-group")
-                                    .append(
-                                        $("<label></label>")
-                                            .attr("for", "server")
-                                            .text("GenePattern Server")
-                                    )
-                                    .append(
-                                        $("<select></select>")
-                                            .addClass("form-control")
-                                            .attr("name", "server")
-                                            .attr("type", "text")
-                                            .css("margin-left", "0")
-                                            .append(
-                                                $("<option></option>")
-                                                    .attr("value", "http://genepattern.broadinstitute.org/gp")
-                                                    .text("GenePattern @ Broad Institute")
-                                            )
-                                            .append(
-                                                $("<option></option>")
-                                                    .attr("value", "http://127.0.0.1:8080/gp")
-                                                    .text("GenePattern @ localhost")
-                                            )
-                                            .append(
-                                                $("<option></option>")
-                                                    .attr("value", "http://genepatternbeta.broadinstitute.org/gp")
-                                                    .text("GenePattern @ gpbeta")
-                                            )
-                                            .val(widget.getServerLabel("http://127.0.0.1:8080/gp"))
-                                    )
-                            )
-                            .append(
-                                $("<div></div>")
-                                    .addClass("form-group")
-                                    .append(
-                                        $("<label></label>")
-                                            .attr("for", "username")
-                                            .text("GenePattern Username")
-                                    )
-                                    .append(
-                                        $("<input/>")
-                                            .addClass("form-control")
-                                            .attr("name", "username")
-                                            .attr("type", "text")
-                                            .attr("placeholder", "Username")
-                                            .attr("required", "required")
-                                            .val(widget.getUserLabel(""))
-                                    )
-                            )
-                            .append(
-                                $("<div></div>")
-                                    .addClass("form-group")
-                                    .append(
-                                        $("<label></label>")
-                                            .attr("for", "password")
-                                            .text("GenePattern Password")
-                                    )
-                                    .append(
-                                        $("<input/>")
-                                            .addClass("form-control")
-                                            .attr("name", "password")
-                                            .attr("type", "password")
-                                            .attr("placeholder", "Password")
-                                            .val(widget.getPasswordLabel(""))
-                                    )
-                            )
-                            .append(
-                                $("<button></button>")
-                                    .addClass("btn btn-primary gp-auth-button")
-                                    .text("Login to GenePattern")
-                                    .click(function() {
-                                        var server = widget.$el.find("[name=server]").val();
-                                        var username = widget.$el.find("[name=username]").val();
-                                        var password = widget.$el.find("[name=password]").val();
 
-                                        widget.buildCode(server, username, password);
-                                        widget.authenticate(server, username, password, function() {
-                                            widget.executeCell();
-                                            widget.buildCode(server, "", "");
-                                        });
-                                    })
-                            )
+            // Add data pointer
+            this.element.data("widget", this);
+
+            // Render the view.
+            this.element
+                .addClass("panel panel-primary gp-widget gp-widget-auth")
+                .append(
+                    $("<div></div>")
+                        .addClass("panel-heading")
+                        .append(
+                            $("<div></div>")
+                                .addClass("widget-float-right")
+                                .append(
+                                    $("<span></span>")
+                                        .addClass("widget-server-label")
+                                        .append(widget.getServerLabel(""))
+                                )
+                                .append(
+                                    $("<button></button>")
+                                        .addClass("btn btn-default btn-sm widget-slide-indicator")
+                                        .css("padding", "2px 7px")
+                                        .attr("title", "Expand or Collapse")
+                                        .attr("data-toggle", "tooltip")
+                                        .attr("data-placement", "bottom")
+                                        .append(
+                                            $("<span></span>")
+                                                .addClass("fa fa-arrow-up")
+                                        )
+                                        .tooltip()
+                                        .click(function() {
+                                            widget.expandCollapse();
+                                        })
+                                )
+                                .append(" ")
+                                .append(
+                                    $("<button></button>")
+                                        .addClass("btn btn-default btn-sm")
+                                        .css("padding", "2px 7px")
+                                        .attr("title", "Toggle Code View")
+                                        .attr("data-toggle", "tooltip")
+                                        .attr("data-placement", "bottom")
+                                        .append(
+                                            $("<span></span>")
+                                                .addClass("fa fa-terminal")
+                                        )
+                                        .tooltip()
+                                        .click(function() {
+                                            widget.toggleCode();
+                                        })
+                                )
+                        )
+                        .append(
+                            $("<h3></h3>")
+                                .addClass("panel-title")
+                                .append(
+                                    $("<span></span>")
+                                        .addClass("glyphicon glyphicon-th")
+                                )
+                                .append(" GenePattern: ")
+                                .append(
+                                    $("<span></span>")
+                                        .addClass("widget-username-label")
+                                        .append(widget.getUserLabel("Login"))
+                                )
+                        )
                     )
+                .append(
+                    $("<div></div>")
+                        .addClass("panel-body widget-code")
+                        .css("display", "none")
+                )
+                .append(
+                    $("<div></div>")
+                        .addClass("panel-body widget-view")
+                        .append(
+                            $("<div></div>")
+                                .addClass("form-group")
+                                .append(
+                                    $("<label></label>")
+                                        .attr("for", "server")
+                                        .text("GenePattern Server")
+                                )
+                                .append(
+                                    $("<select></select>")
+                                        .addClass("form-control")
+                                        .attr("name", "server")
+                                        .attr("type", "text")
+                                        .css("margin-left", "0")
+                                )
+                        )
+                        .append(
+                            $("<div></div>")
+                                .addClass("form-group")
+                                .append(
+                                    $("<label></label>")
+                                        .attr("for", "username")
+                                        .text("GenePattern Username")
+                                )
+                                .append(
+                                    $("<input/>")
+                                        .addClass("form-control")
+                                        .attr("name", "username")
+                                        .attr("type", "text")
+                                        .attr("placeholder", "Username")
+                                        .attr("required", "required")
+                                        .val(widget.getUserLabel(""))
+                                )
+                        )
+                        .append(
+                            $("<div></div>")
+                                .addClass("form-group")
+                                .append(
+                                    $("<label></label>")
+                                        .attr("for", "password")
+                                        .text("GenePattern Password")
+                                )
+                                .append(
+                                    $("<input/>")
+                                        .addClass("form-control")
+                                        .attr("name", "password")
+                                        .attr("type", "password")
+                                        .attr("placeholder", "Password")
+                                        .val(widget.getPasswordLabel(""))
+                                )
+                        )
+                        .append(
+                            $("<button></button>")
+                                .addClass("btn btn-primary gp-auth-button")
+                                .text("Login to GenePattern")
+                                .click(function() {
+                                    var server = widget.element.find("[name=server]").val();
+                                    var username = widget.element.find("[name=username]").val();
+                                    var password = widget.element.find("[name=password]").val();
+
+                                    widget.buildCode(server, username, password);
+                                    widget.authenticate(server, username, password, function() {
+                                        widget.executeCell();
+                                        widget.buildCode(server, "", "");
+                                    });
+                                })
+                        )
             );
 
+            // Add servers to select
+            var serverSelect = this.element.find("[name=server]");
+            $.each(this.options.servers, function(i, e) {
+                serverSelect.append(
+                    $("<option></option>")
+                        .attr("value", e[1])
+                        .text(e[0])
+                );
+            });
+
             // Hide the code by default
-            var element = this.$el;
+            var element = this.element;
             setTimeout(function() {
                 element.closest(".cell").find(".input")
                     .css("height", "0")
@@ -1869,14 +1878,45 @@ require(["widgets/js/widget"], function (WidgetManager) {
             }
         },
 
+        /**
+         * Destructor
+         *
+         * @private
+         */
+        _destroy: function() {
+            this.element.removeClass("gp-widget-job-widget");
+            this.element.empty();
+        },
+
+        /**
+         * Update all options
+         *
+         * @param options - Object contain options to update
+         * @private
+         */
+        _setOptions: function(options) {
+            this._superApply(arguments);
+        },
+
+        /**
+         * Update for single options
+         *
+         * @param key - The name of the option
+         * @param value - The new value of the option
+         * @private
+         */
+        _setOption: function(key, value) {
+            this._super(key, value);
+        },
+
         expandCollapse: function() {
-            var toSlide = this.$el.find(".panel-body.widget-view");
-            var indicator = this.$el.find(".widget-slide-indicator").find("span");
+            var toSlide = this.element.find(".panel-body.widget-view");
+            var indicator = this.element.find(".widget-slide-indicator").find("span");
             if (toSlide.is(":hidden")) {
                 toSlide.slideDown();
                 indicator.removeClass("fa-arrow-down");
                 indicator.addClass("fa-arrow-up");
-                this.$el.find(".widget-code").slideUp();
+                this.element.find(".widget-code").slideUp();
             }
             else {
                 toSlide.slideUp();
@@ -1886,12 +1926,12 @@ require(["widgets/js/widget"], function (WidgetManager) {
         },
 
         toggleCode: function() {
-            var code = this.$el.find(".widget-code");
-            var view = this.$el.find(".widget-view");
+            var code = this.element.find(".widget-code");
+            var view = this.element.find(".widget-view");
 
             if (code.is(":hidden")) {
                 this.options.cell.code_mirror.refresh();
-                var raw = this.$el.closest(".cell").find(".input").html();
+                var raw = this.element.closest(".cell").find(".input").html();
                 code.html(raw);
 
                 // Fix the issue where the code couldn't be selected
@@ -1981,8 +2021,8 @@ require(["widgets/js/widget"], function (WidgetManager) {
                     GenePattern.password = password;
 
                     // Make authenticated UI changes to auth widget
-                    widget.$el.find(".widget-username-label").text(username);
-                    widget.$el.find(".widget-server-label").text(server);
+                    widget.element.find(".widget-username-label").text(username);
+                    widget.element.find(".widget-server-label").text(server);
 
                     // Enable authenticated nav elsewhere in notebook
                     GenePattern.notebook.authenticate(data);
@@ -2027,6 +2067,29 @@ require(["widgets/js/widget"], function (WidgetManager) {
             }
             else {
                 return alt
+            }
+        }
+    });
+
+
+    var AuthWidgetView = IPython.WidgetView.extend({
+        render: function () {
+            // Double check to make sure that this is the correct cell
+            if ($(this.options.cell.element).hasClass("running")) {
+                // Render the view.
+                this.setElement($('<div></div>'));
+                //var jobNumber = this.model.get('job_number');
+                this.$el.auth({
+                    cell: this.options.cell
+                });
+
+                // Hide the code by default
+                var element = this.$el;
+                setTimeout(function() {
+                    element.closest(".cell").find(".input")
+                        .css("height", "0")
+                        .css("overflow", "hidden");
+                }, 1);
             }
         }
     });
@@ -2557,7 +2620,7 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
 /**
  * Define the IPython GenePattern Task widget
  */
-require(["widgets/js/widget"], function (WidgetManager) {
+require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
 
     /**
      * Widget for file input into a GenePattern Notebook.
