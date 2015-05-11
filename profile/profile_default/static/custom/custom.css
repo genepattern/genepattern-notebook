@@ -284,6 +284,36 @@ body {
     background-color: rgba(10, 45, 105, 1);
 }
 
+.widget-view {
+    position: relative;
+}
+
+.gp-widget-loading, .gp-widget-logged-in {
+    position: absolute;
+    text-align: center;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    background: rgba(255,255,255,0.75);
+}
+
+.gp-widget-loading img {
+    width: 100px;
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.gp-widget-logged-in div {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-block;
+    line-height: 40px;
+    font-size: 1.2em;
+}
+
 .widget-code {
     -moz-box-align: stretch;
     -moz-box-orient: horizontal;

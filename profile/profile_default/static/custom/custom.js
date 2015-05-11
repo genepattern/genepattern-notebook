@@ -1782,6 +1782,35 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                         .addClass("panel-body widget-view")
                         .append(
                             $("<div></div>")
+                                .addClass("gp-widget-loading")
+                                .append("<img src='/static/custom/loader.gif' />")
+                                .hide()
+                        )
+                        .append(
+                            $("<div></div>")
+                                .addClass("gp-widget-logged-in")
+                                .append(
+                                    $("<div></div>")
+                                        .text("You are already logged in.")
+                                        .append($("<br/>"))
+                                        .append(
+                                            $("<button></button>")
+                                                .text("Login Again")
+                                                .addClass("btn btn-warning btn-lg")
+                                                .click(function() {
+                                                    widget.element.find(".gp-widget-logged-in").hide();
+                                                })
+                                        )
+                                )
+                                .hide()
+                        )
+                        .append(
+                            $("<div></div>")
+                                .addClass("alert alert-danger gp-widget-error")
+                                .hide()
+                        )
+                        .append(
+                            $("<div></div>")
                                 .addClass("form-group")
                                 .append(
                                     $("<label></label>")
@@ -1850,10 +1879,16 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                                     var username = widget.element.find("[name=username]").val();
                                     var password = widget.element.find("[name=password]").val();
 
+                                    // Display the loading animation
+                                    widget._displayLoading();
+
                                     widget.buildCode(server, username, password);
                                     widget.authenticate(server, username, password, function() {
                                         widget.executeCell();
                                         widget.buildCode(server, "", "");
+
+                                        // Done loading
+                                        widget._displayLoggedIn();
                                     });
                                 })
                         )
@@ -1884,6 +1919,9 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                     var indicator = element.find(".widget-slide-indicator").find("span");
                     indicator.removeClass("fa-arrow-up");
                     indicator.addClass("fa-arrow-down");
+
+                    // Display the logged in message
+                    widget._displayLoggedIn();
                 }, 1);
             }
         },
@@ -1917,6 +1955,50 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
          */
         _setOption: function(key, value) {
             this._super(key, value);
+        },
+
+        /**
+         * Display the loading animation
+         *
+         * @private
+         */
+        _displayLoading: function() {
+            this.hideError();
+            this.element.find(".gp-widget-loading").show();
+        },
+
+        _displayLoggedIn: function() {
+            this.element.find(".gp-widget-loading").hide();
+            this.element.find(".gp-widget-logged-in").show();
+        },
+
+        /**
+         * Hide the error message
+         *
+         * @param message
+         */
+        hideError: function(message) {
+            this.element.find(".gp-widget-error").hide();
+        },
+
+        /**
+         * Show an error message
+         *
+         * @param message
+         */
+        errorMessage: function(message) {
+            // Get into the correct view
+            var code = this.element.find(".widget-code");
+            var view = this.element.find(".widget-view");
+            view.slideDown();
+            code.slideUp();
+
+            // Display the error
+            var messageBox = this.element.find(".gp-widget-error");
+            messageBox.removeClass("alert-success");
+            messageBox.addClass("alert-danger");
+            messageBox.text(message);
+            messageBox.show("shake", {}, 500);
         },
 
         /**
@@ -2011,7 +2093,7 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                     widget.afterAuthenticate(server, username, password, done);
                 },
                 error: function(xhr, status, e) {
-                    console.log("Error authenticating");
+                    widget.errorMessage("Error authenticating");
                 }
             });
         },
@@ -2057,7 +2139,7 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                     if (done) { done(); }
                 },
                 error: function(xhr, status, e) {
-                    console.log("Error authenticating");
+                    widget.errorMessage("Error loading server info");
                 }
             });
         },
