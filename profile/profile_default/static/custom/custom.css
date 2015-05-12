@@ -30,7 +30,7 @@
 }
 
 /* Don't expand header on main notebook listing page */
-body[data-notebook-path=''] #header {
+body[data-terminals-available='True'] #header {
     min-height: unset;
 }
 
