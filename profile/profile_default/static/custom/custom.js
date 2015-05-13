@@ -243,6 +243,7 @@ require(["jquery"], function() {
      * @param pObj - An object specifying this property:
      *                  jobNumber: the job number of the job
      *                  force: do not use cache, force a new query
+     *                  permissions: whether to include permissions info (default: false)
      *                  success: callback function for a done() event,
      *                          expects response and a Job object as arguments
      *                  error: callback function for an fail() event, expects exception as argument
@@ -253,6 +254,8 @@ require(["jquery"], function() {
     GenePattern.job = function(pObj) {
         var forceRefresh = pObj && ((typeof pObj.force === 'boolean' && pObj.force) ||
                 (typeof pObj.force === 'string' && pObj.force.toLowerCase() === 'true'));
+        var getPermissions = pObj && ((typeof pObj.permissions === 'boolean' && pObj.permissions) ||
+                (typeof pObj.permissions === 'string' && pObj.permissions.toLowerCase() === 'true'));
         var jobNumber = pObj.jobNumber;
 
         // Try to find the job in the cache
@@ -272,9 +275,11 @@ require(["jquery"], function() {
         }
 
         // Otherwise, if not cached or refreshed forced
+        var permissionsParam = getPermissions ? "?includePermissions=true" : "";
         var REST_ENDPOINT = "/rest/v1/jobs/";
+
         return $.ajax({
-                url: GenePattern.server() + REST_ENDPOINT + jobNumber,
+                url: GenePattern.server() + REST_ENDPOINT + jobNumber + permissionsParam,
                 type: 'GET',
                 dataType: 'json',
                 xhrFields: {
@@ -665,6 +670,45 @@ require(["jquery"], function() {
 
         this.permissions = function() {
             return this._permissions;
+        };
+
+        /**
+         * Save the job's permissions to the server
+         *
+         * @param pObj - The following parameters may be set
+         *                  bundle: This is a JSON object of permissions
+         *                  success: callback function for a done() event,
+         *                          expects response and a Job Number as arguments
+         *                  error: callback function for an fail() event, expects exception as argument
+         *
+         * @returns {*}
+         */
+        this.savePermissions = function(pObj) {
+            var REST_ENDPOINT = "/rest/v1/jobs/" + this.jobNumber() + "/permissions";
+
+            return $.ajax({
+                    url: GenePattern.server() + REST_ENDPOINT,
+                    type: 'PUT',
+                    data: JSON.stringify(pObj['bundle']),
+                    dataType: 'json',
+                    contentType: "application/json",
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                })
+                .done(function(response) {
+                    // Create Job object from JSON response
+                    var jobNumber = response['jobId'];
+
+                    if (pObj && pObj.success) {
+                        pObj.success(response, jobNumber);
+                    }
+                })
+                .fail(function(exception) {
+                    if (pObj && pObj.error) {
+                        pObj.error(exception);
+                    }
+                });
         };
 
         /**
@@ -1993,6 +2037,10 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
             view.slideDown();
             code.slideUp();
 
+            // Hide the loading message & logged in
+            this.element.find(".gp-widget-loading").hide();
+            this.element.find(".gp-widget-logged-in").hide();
+
             // Display the error
             var messageBox = this.element.find(".gp-widget-error");
             messageBox.removeClass("alert-success");
@@ -2250,11 +2298,25 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                             .addClass("widget-float-right")
                             .append(
                                 $("<div></div>")
-                                    .addClass("gp-widget-job-status")
-                            )
-                            .append(
-                                $("<div></div>")
                                     .addClass("gp-widget-job-buttons")
+                                    .append(
+                                        $("<button></button>")
+                                            .addClass("btn btn-default btn-sm gp-widget-job-share")
+                                            .css("padding", "2px 7px")
+                                            .attr("title", "Share Job")
+                                            .attr("data-toggle", "tooltip")
+                                            .attr("data-placement", "bottom")
+                                            .attr("disabled", "disabled")
+                                            .append(
+                                                $("<span></span>")
+                                                    .addClass("fa fa-share")
+                                            )
+                                            .tooltip()
+                                            .click(function() {
+                                                widget.toggleShareJob();
+                                            })
+                                    )
+                                    .append(" ")
                                     .append(
                                         $("<button></button>")
                                             .addClass("btn btn-default btn-sm gp-widget-job-reload")
@@ -2302,22 +2364,35 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                                     .addClass("gp-widget-job-task")
                             )
                     )
-                    .append(
-                        $("<div></div>")
-                            .addClass("gp-widget-job-submitted")
-                    )
             );
             this.element.append(
                 $("<div></div>")
                     .addClass("panel-body")
                     .append(
                         $("<div></div>")
-                            .addClass("widget-code gp-widget-job-code")
-                            .css("display", "none")
+                            .addClass("gp-widget-job-body-wrapper")
+                            .append(
+                                $("<div></div>")
+                                    .addClass("widget-float-right gp-widget-job-status")
+                            )
+                            .append(
+                                $("<div></div>")
+                                    .addClass("gp-widget-job-share-options")
+                                    .css("display", "none")
+                            )
+                            .append(
+                                $("<div></div>")
+                                    .addClass("gp-widget-job-submitted")
+                            )
+                            .append(
+                                $("<div></div>")
+                                    .addClass("gp-widget-job-outputs")
+                            )
                     )
                     .append(
                         $("<div></div>")
-                            .addClass("gp-widget-job-outputs")
+                            .addClass("widget-code gp-widget-job-code")
+                            .css("display", "none")
                     )
             );
 
@@ -2364,6 +2439,235 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
          */
         _setOption: function(key, value) {
             this._super(key, value);
+        },
+
+        /**
+         * Construct the sharing panel from the job permissions
+         *
+         * @param job
+         */
+        buildSharingPanel: function(job) {
+            var widget = this;
+            var optionsPane = this.element.find(".gp-widget-job-share-options");
+            var permissions = job.permissions();
+
+            // Make sure that the permissions exist, if not return an error
+            if (permissions === undefined || permissions === null) {
+                optionsPane
+                    .addClass("alert alert-danger")
+                    .text("Job Permissions Not Found");
+                return;
+            }
+
+            // Build alert box
+            optionsPane.append(
+                $("<div></div>").addClass("gp-widget-job-share-alert")
+            );
+
+            // Build the header
+            optionsPane.append(
+                $("<h4></h4>").text("Job Sharing")
+            );
+
+            // Build the permissions table
+            var table = $("<table></table>")
+                .addClass("gp-widget-job-share-table");
+            table.append(
+                $("<tr></tr>")
+                    .append(
+                        $("<th></th>")
+                            .text("Group")
+                    )
+                    .append(
+                        $("<th></th>")
+                            .text("Permissions")
+                    )
+            );
+
+            var groups = permissions['groups'];
+            $.each(groups, function(i, e) {
+                var groupDisplayName = e['id'];
+                if (groupDisplayName === "*") {
+                    groupDisplayName = "Public";
+                }
+                var row = $("<tr></tr>")
+                    .attr('name', e['id']);
+                row.append(
+                    $("<td></td>")
+                        .text(groupDisplayName)
+                );
+                row.append(
+                    $("<td></td>")
+                        .append(
+                            $("<input/>")
+                                .attr("type", "radio")
+                                .attr("name", e['id'])
+                                .attr("id", "radio-" + job.jobNumber() + "-" + i + "-None")
+                                .val("None")
+                        )
+                        .append(
+                            $("<label></label>")
+                                .attr("for", "radio-" + job.jobNumber() + "-" + i + "-None")
+                                .text("None")
+                        )
+                        .append(
+                            $("<input/>")
+                                .attr("type", "radio")
+                                .attr("name", e['id'])
+                                .attr("id", "radio-" + job.jobNumber() + "-" + i + "-Read")
+                                .val("Read")
+                        )
+                        .append(
+                            $("<label></label>")
+                                .attr("for", "radio-" + job.jobNumber() + "-" + i + "-Read")
+                                .text("Read")
+                        )
+                        .append(
+                            $("<input/>")
+                                .attr("type", "radio")
+                                .attr("name", e['id'])
+                                .attr("id", "radio-" + job.jobNumber() + "-" + i + "-Write")
+                                .val("Write")
+                        )
+                        .append(
+                            $("<label></label>")
+                                .attr("for", "radio-" + job.jobNumber() + "-" + i + "-Write")
+                                .text("Read & Write")
+                        )
+                );
+                table.append(row);
+
+                // Select the right radio buttons
+                if (!e["read"]) {
+                    row.find("#radio-" + job.jobNumber() + "-" + i + "-None")
+                        .attr("checked", "checked")
+                }
+                else if (e["read"] && !e["write"]) {
+                    row.find("#radio-" + job.jobNumber() + "-" + i + "-Read")
+                        .attr("checked", "checked")
+                }
+                else if (e["write"]) {
+                    row.find("#radio-" + job.jobNumber() + "-" + i + "-Write")
+                        .attr("checked", "checked")
+                }
+            });
+            optionsPane.append(table);
+
+            // Attach button group
+            optionsPane
+                .append(
+                    $("<button></button>")
+                        .addClass("btn btn-success")
+                        .text("Save")
+                        .click(function() {
+                            // Bundle up permissions to save
+                            var bundle = widget._bundlePermissions();
+
+                            // Call to save permissions
+                            widget._savePermissions(bundle,
+                                // On success
+                                function() {
+                                    // Success message
+                                    widget.element.find(".gp-widget-job-share-alert")
+                                        .removeClass("alert-danger")
+                                        .addClass("alert alert-success")
+                                        .text("Permissions saved!");
+                                    widget.toggleShareJob();
+                                },
+                                // On fail
+                                function() {
+                                    // Error message
+                                    widget.element.find(".gp-widget-job-share-alert")
+                                        .removeClass("alert-success")
+                                        .addClass("alert alert-danger")
+                                        .text("Error saving permissions.")
+                                        .show("shake", {}, 500);
+                                });
+                        })
+                )
+                .append(" ")
+                .append(
+                    $("<button></button>")
+                        .addClass("btn btn-default")
+                        .text("Cancel")
+                        .click(function() {
+                            // Hide sharing panel
+                            widget.element.find(".gp-widget-job-share-options").slideUp();
+
+                            // Display other parts of the panel
+                            widget.element.find(".gp-widget-job-submitted").slideDown();
+                            widget.element.find(".gp-widget-job-outputs-list").slideDown();
+                        })
+                )
+        },
+
+        /**
+         * Save the permissions bundle back to the GenePattern server
+         *
+         * @private
+         */
+        _savePermissions: function(bundle, success, fail) {
+            this.options.job.savePermissions({
+                bundle: bundle,
+                success: success,
+                error: fail
+            });
+        },
+
+        /**
+         * Bundle the sharing permissions into a JSON object
+         *
+         * @private
+         */
+        _bundlePermissions: function() {
+            var rawGroups = this.element.find(".gp-widget-job-share-table").find("tr");
+            var toReturn = [];
+            $.each(rawGroups, function(i, e) {
+                var name = $(e).attr("name");
+                // Skip the header row
+                if (name === undefined || name === null || name === "") {
+                    return;
+                }
+                // Get the radio value
+                var group = {"id": name};
+                var value = $(e).find("input:radio:checked").val();
+                if (value === "Read") {
+                    group["read"] = true;
+                    group["write"] = false;
+                    toReturn.push(group);
+                }
+                else if (value === "Write") {
+                    group["read"] = true;
+                    group["write"] = true;
+                    toReturn.push(group);
+                }
+            });
+
+            return toReturn;
+        },
+
+        /**
+         * Prompt for sharing the job
+         */
+        toggleShareJob: function() {
+            var sharePanel = this.element.find(".gp-widget-job-share-options");
+
+            if (sharePanel.is(":visible")) {
+                // Hide sharing panel
+                sharePanel.slideUp();
+
+                // Display other parts of the panel
+                this.element.find(".gp-widget-job-submitted").slideDown();
+                this.element.find(".gp-widget-job-outputs-list").slideDown();
+            }
+            else {
+                // Display sharing panel
+                sharePanel.slideDown();
+
+                // Hide other parts of the panel
+                this.element.find(".gp-widget-job-submitted").slideUp();
+                this.element.find(".gp-widget-job-outputs-list").slideUp();
+            }
         },
 
         /**
@@ -2447,7 +2751,7 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
          */
         toggleCode: function() {
             var code = this.element.find(".gp-widget-job-code");
-            var view = this.element.find(".gp-widget-job-outputs");
+            var view = this.element.find(".gp-widget-job-body-wrapper");
 
             if (code.is(":hidden")) {
                 this.element.closest(".cell").data("cell").code_mirror.refresh();
@@ -2530,9 +2834,11 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
          */
         _showAuthenticationMessage: function() {
             this.element.find(".gp-widget-job-task").text(" GenePattern Job: Not Authenticated");
-            this.element.find(".gp-widget-job-outputs").text("You must be authenticated before the job information can be displayed. After you authenticate it may take a few seconds for the job information to appear.");
+            this.element.find(".gp-widget-job-outputs")
+                .addClass("alert alert-danger")
+                .text("You must be authenticated before the job information can be displayed. After you authenticate it may take a few seconds for the job information to appear.");
 
-            // Update the code button
+            // Update the reload button
             this.element.find(".gp-widget-job-reload").attr("disabled", "disabled");
         },
 
@@ -2555,6 +2861,7 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                 GenePattern.job({
                     jobNumber: this.options.jobNumber,
                     force: true,
+                    permissions: true,
                     success: function(response, job) {
                         // Set the job object
                         widget.options.job = job;
@@ -2615,6 +2922,15 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
             // Display the log files
             var logList = this._outputsList(job.logFiles());
             this.element.find(".gp-widget-job-outputs").append(logList);
+
+            // Enable sharing button, if necessary
+            var permissions = job.permissions();
+            if (permissions !== undefined && permissions !== null && permissions['canSetPermissions']) {
+                this.element.find(".gp-widget-job-share").removeAttr("disabled");
+            }
+
+            // Build the sharing pane
+            this.buildSharingPanel(job);
 
             // Initialize status polling
             this._initPoll(job.status());
@@ -3765,9 +4081,14 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
          */
         _showAuthenticationMessage: function() {
             this.element.find(".gp-widget-task-name").empty().text(" GenePattern Task: Not Authenticated");
-            this.element.find(".gp-widget-task-form").empty().text("You must be authenticated before the task information can be displayed. After you authenticate it may take a few seconds for the task information to appear.");
+            this.element.find(".gp-widget-task-form").empty()
+                .addClass("alert alert-danger")
+                .text("You must be authenticated before the task information can be displayed. After you authenticate it may take a few seconds for the task information to appear.");
             this.element.find(".gp-widget-task-subheader").hide();
             this.element.find(".gp-widget-task-footer").hide();
+
+            // Update the doc button
+            this.element.find(".gp-widget-task-doc").attr("disabled", "disabled");
         },
 
         /**

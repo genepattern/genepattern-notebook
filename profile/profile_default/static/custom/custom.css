@@ -301,14 +301,12 @@ body {
 .gp-widget-loading img {
     width: 100px;
     position: relative;
-    top: 50%;
-    transform: translateY(-50%);
+    top: 75px;
 }
 
 .gp-widget-logged-in div {
     position: relative;
-    top: 50%;
-    transform: translateY(-50%);
+    top: 75px;
     display: inline-block;
     line-height: 40px;
     font-size: 1.2em;
@@ -339,7 +337,6 @@ body {
 }
 
 .gp-widget-job-submitted {
-    padding-top: 5px;
     font-style: italic;
     font-size:0.9em;
 }
@@ -348,11 +345,14 @@ body {
     text-align: right;
 }
 
+.gp-widget-job-share-table {
+    width: 50%;
+}
 
-
-
-
-
+.gp-widget-job-share-table input[type=radio] {
+    margin-left: 20px;
+    margin-right: 5px;
+}
 
 /*
  * File Input Styles
