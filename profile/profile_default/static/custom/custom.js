@@ -1393,7 +1393,9 @@ GenePattern.notebook.authenticate = function(data) {
                 var cell = IPython.notebook.get_selected_cell();
                 var code = GenePattern.notebook.buildModuleCode(module);
                 cell.set_text(code);
-                cell.execute();
+                setTimeout(function() {
+                    cell.execute();
+                }, 10);
 
                 // Close the slider
                 $(".sidebar-button-slider").trigger("click");
