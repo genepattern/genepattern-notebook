@@ -1671,8 +1671,7 @@ GenePattern.notebook.widgetSelectDialog = function(cell) {
     $.each(modules.find(".slider-option"), function(index, element) {
         $(element).click(function() {
             var lsid = $(element).attr("name");
-            var module = {"lsid":lsid};
-            var code = GenePattern.notebook.buildModuleCode(module);
+            var code = GenePattern.notebook.buildModuleCode({"lsid":lsid});
             cell.set_text(code);
             setTimeout(function() {
                 cell.execute();
@@ -1840,7 +1839,12 @@ require(["jquery"], function() {
 
     // If the notebook listing page, display with alternate event model
     if ($(document).find("#notebooks").length > 0) {
-        setTimeout(GenePattern.notebook.init.main_init_wrapper, 1000);
+        setTimeout(GenePattern.notebook.init.main_init_wrapper, 100);
+    }
+
+    // If the notebook text edit page, display with alternate event model
+    if ($("#texteditor-container").length > 0) {
+        setTimeout(GenePattern.notebook.init.main_init_wrapper, 100);
     }
 });
 

@@ -30,7 +30,8 @@
 }
 
 /* Don't expand header on main notebook listing page */
-body[data-terminals-available='True'] #header {
+body[data-terminals-available='True'] #header,
+body.edit_app #header {
     min-height: unset;
 }
 
@@ -72,6 +73,10 @@ body {
 
 #kernel_indicator, #modal_indicator.modal_indicator {
 	text-shadow: none;
+}
+
+#current-mode {
+    text-shadow: none;
 }
 
 #maintoolbar-container .btn-group:last-of-type {
