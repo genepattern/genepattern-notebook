@@ -1671,7 +1671,7 @@ GenePattern.notebook.widgetSelectDialog = function(cell) {
     $.each(modules.find(".slider-option"), function(index, element) {
         $(element).click(function() {
             var lsid = $(element).attr("name");
-            var module = {"lsid":lsid}
+            var module = {"lsid":lsid};
             var code = GenePattern.notebook.buildModuleCode(module);
             cell.set_text(code);
             setTimeout(function() {
@@ -1720,10 +1720,8 @@ GenePattern.notebook.init.main_init_wrapper = function(evt) {
 
 /**
  * Initialize GenePattern Notebook from the notebook page
- *
- * @param evt
  */
-GenePattern.notebook.init.notebook_init_wrapper = function (evt) {
+GenePattern.notebook.init.notebook_init_wrapper = function () {
     if (!GenePattern.notebook.init.launch_init.done_init  && IPython.notebook.kernel) {
         // Call the core init function
         GenePattern.notebook.init.launch_init();
@@ -2136,8 +2134,6 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
 
         /**
          * Hide the error message
-         *
-         * @param message
          */
         hideError: function() {
             this.element.find(".gp-widget-error").hide();
@@ -2247,7 +2243,7 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                 xhrFields: {
                     withCredentials: true
                 },
-                success: function(data, status, xhr) {
+                success: function(data) {
                     console.log(data['access_token']);
 
                     var token = data['access_token'];
@@ -2258,7 +2254,7 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
 
                     widget.afterAuthenticate(server, username, password, done);
                 },
-                error: function(xhr, status, e) {
+                error: function() {
                     widget.errorMessage("Error authenticating");
                 }
             });
