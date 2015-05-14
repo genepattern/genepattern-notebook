@@ -1727,7 +1727,21 @@ GenePattern.notebook.init.notebook_init_wrapper = function () {
 
         // If no auth widget exists, add it
         setTimeout(function() {
-            if ($(".gp-widget-auth").length < 1) {
+            var authWidgetFound = $(".gp-widget-auth").length < 1;
+
+            // If jQuery didn't find the widget, does it exist as code?
+            if (!authWidgetFound) {
+                var cells = IPython.notebook.get_cells();
+                $.each(cells, function(i, cell) {
+                    var code = cell.get_text();
+                    if (IPython.notebook.get_cells()[0].get_text().indexOf("GPAuthWidget(") > -1) {
+                        authWidgetFound = true;
+                    }
+                });
+            }
+
+            // Add a new auth widget
+            if (!authWidgetFound) {
                 var cell = IPython.notebook.insert_cell_above("code", 0);
                 var code = GenePattern.notebook.init.buildCode("http://genepattern.broadinstitute.org/gp", "", "");
                 cell.code_mirror.setValue(code);
