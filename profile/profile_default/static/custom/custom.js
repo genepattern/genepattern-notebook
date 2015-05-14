@@ -332,7 +332,7 @@ require(["jquery"], function() {
                 headers: {
                     "Content-Length": pObj.file.size
                 },
-                success: function(data, textStatus, request){
+                success: function(data, textStatus){
                     if (pObj && pObj.success) {
                         pObj.success(textStatus, data);
                     }
@@ -616,7 +616,6 @@ require(["jquery"], function() {
             }
 
             var REST_ENDPOINT = "/rest/v1/jobs/" + this.jobNumber() + "/code?language=" + language;
-            var job = this;
 
             return $.ajax({
                     url: GenePattern.server() + REST_ENDPOINT,
@@ -1289,7 +1288,7 @@ GenePattern.notebook.slider = function() {
                         .keydown(function(event) {
                             event.stopPropagation();
                         })
-                        .keyup(function(event) {
+                        .keyup(function() {
                             var search = $("#slider-filter").val().toLowerCase();
                             $.each($("#slider-tabs").find(".slider-option"), function(index, element) {
                                 var raw = $(element).text().toLowerCase();
@@ -1594,6 +1593,113 @@ GenePattern.notebook.updateSliderData = function(url, value) {
     }
 };
 
+GenePattern.notebook.changeGenePatternPrompt = function() {
+    var dialog = require('base/js/dialog');
+    if (GenePattern.authenticated) {
+        var cell = IPython.notebook.get_selected_cell();
+
+        dialog.modal({
+            notebook: IPython.notebook,
+            keyboard_manager: this.keyboard_manager,
+            title : "Change to GenePattern Widget?",
+            body : "Are you sure you want to change this cell's type to a GenePattern widget? This will cause " +
+                    "you to lose any code or other information already entered into the cell.",
+            buttons : {
+                "Cancel" : {},
+                "Change Cell Type" : {
+                    "class" : "btn-danger",
+                    "click" : function() {
+                        GenePattern.notebook.widgetSelectDialog(cell);
+                    }
+                }
+            }
+        });
+    }
+    else {
+        dialog.modal({
+            notebook: IPython.notebook,
+            keyboard_manager: this.keyboard_manager,
+            title : "Authentication Required",
+            body : "You must first authenticate with a GenePattern server before creating a GenePattern widget.",
+            buttons : {
+                "OK" : {}
+            }
+        });
+    }
+};
+
+/**
+ * Display the dialog for selecting a GenePattern widget to add
+ *
+ * @param cell
+ */
+GenePattern.notebook.widgetSelectDialog = function(cell) {
+    var modules = $("#slider-modules").clone();
+    modules.css("height", $(window).height() - 200);
+    modules.css("overflow-y", "auto");
+    modules.css("padding-right", "10px");
+
+    // Create filter
+    var filterBox = $("<div></div>")
+        .css("position", "absolute")
+        .css("right", "40px")
+        .css("top", "14px")
+        .hide();
+    filterBox.append(
+        $("<input/>")
+            .attr("id", "dialog-slider-filter")
+            .attr("type", "search")
+            .attr("placeholder", "Type to Filter")
+            .keydown(function(event) {
+                event.stopPropagation();
+            })
+            .keyup(function() {
+                var search = $("#dialog-slider-filter").val().toLowerCase();
+                $.each($(".modal-body").find(".slider-option"), function(index, element) {
+                    var raw = $(element).text().toLowerCase();
+                    if (raw.indexOf(search) === -1) {
+                        $(element).hide();
+                    }
+                    else {
+                        $(element).show();
+                    }
+                });
+            })
+    );
+
+    // Attach the click functionality to modules
+    $.each(modules.find(".slider-option"), function(index, element) {
+        $(element).click(function() {
+            var lsid = $(element).attr("name");
+            var module = {"lsid":lsid}
+            var code = GenePattern.notebook.buildModuleCode(module);
+            cell.set_text(code);
+            setTimeout(function() {
+                cell.execute();
+            }, 10);
+            $(".modal-footer").find("button").trigger("click");
+        });
+    });
+
+    // Create the dialog
+    var dialog = require('base/js/dialog');
+    dialog.modal({
+        notebook: IPython.notebook,
+        keyboard_manager: this.keyboard_manager,
+        title : "Select Widget Type",
+        body : modules,
+        buttons : {
+            "Cancel" : {}
+        }
+    });
+
+    // Add the filter
+    setTimeout(function() {
+        $(".modal-header").append(filterBox);
+        filterBox.show("fade");
+    }, 500);
+};
+
 /*
  * Initialization functions
  */
@@ -1703,9 +1809,19 @@ GenePattern.notebook.init.launch_init = function() {
 
     // Add GenePattern "cell type"
     $("#cell_type")
-        .append($("<option value='code'>GenePattern</option>"));
+        .append(
+            $("<option value='code'>GenePattern</option>")
+                .click(function() {
+                    GenePattern.notebook.changeGenePatternPrompt();
+                })
+        );
     $("#change_cell_type").find("ul.dropdown-menu")
-        .append($("<li id='to_genepattern' title='Insert a GenePattern widget cell'><a href='#'>GenePattern</a></option>"));
+        .append(
+            $("<li id='to_genepattern' title='Insert a GenePattern widget cell'><a href='#'>GenePattern</a></option>")
+                .click(function() {
+                    GenePattern.notebook.changeGenePatternPrompt();
+                })
+        );
 
     // Hide the loading screen
     setTimeout(function () {
@@ -1733,7 +1849,7 @@ require(["jquery"], function() {
 /**
  * Define the IPython GenePattern Authentication widget
  */
-require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
+require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
     $.widget("gp.auth", {
         options: {
             servers: [                                              // Expects a list of lists with [name, url] pairs
@@ -2023,7 +2139,7 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
          *
          * @param message
          */
-        hideError: function(message) {
+        hideError: function() {
             this.element.find(".gp-widget-error").hide();
         },
 
@@ -2152,6 +2268,9 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
          * Assumes the authenticate endpoint has already been called,
          * then does all the other stuff needed for authentication
          *
+         * @param server
+         * @param username
+         * @param password
          * @param done
          */
         afterAuthenticate: function(server, username, password, done) {
@@ -2164,7 +2283,7 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                 xhrFields: {
                     withCredentials: true
                 },
-                success: function(data, status, xhr) {
+                success: function(data) {
                     // Set the authentication info on GenePattern object
                     GenePattern.authenticated = true;
                     GenePattern.setServer(server);
@@ -2188,7 +2307,7 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                     // If a function to execute when done has been passed in, execute it
                     if (done) { done(); }
                 },
-                error: function(xhr, status, e) {
+                error: function() {
                     widget.errorMessage("Error loading server info");
                 }
             });
@@ -2252,7 +2371,7 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
 /**
  * Define the IPython GenePattern Job widget
  */
-require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
+require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
     /**
      * Widget for viewing the job results of a launched job.
      *
@@ -3039,7 +3158,7 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
 /**
  * Define the IPython GenePattern Task widget
  */
-require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
+require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
 
     /**
      * Widget for file input into a GenePattern Notebook.
@@ -4178,7 +4297,6 @@ require(["widgets/js/widget", "jqueryui"], function (WidgetManager) {
                             }
                         }
                         catch(exception) {
-                            alert(exception);
                             console.log(exception);
                         }
                     }
