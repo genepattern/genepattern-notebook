@@ -1194,8 +1194,10 @@ GenePattern.notebook.bottomButton = function() {
                     .attr("data-toggle", "tooltip")
                     .attr("data-placement", "top")
                     .click(function() {
-                        $(".sidebar-button-main").trigger("click");
-                        $("#slider-tabs").find("[href='#slider-modules']").trigger("click");
+                        var index = IPython.notebook.get_selected_index();
+                        var cell = IPython.notebook.insert_cell_below('code', index);
+                        IPython.notebook.select_next();
+                        GenePattern.notebook.widgetSelectDialog(cell);
                     })
             );
 };
