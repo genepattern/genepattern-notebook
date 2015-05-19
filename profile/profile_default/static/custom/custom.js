@@ -1766,6 +1766,10 @@ GenePattern.notebook.init.notebook_init_wrapper = function () {
 GenePattern.notebook.init.buildCode = function(server, username, password) {
     return '# !AUTOEXEC\n\
 \n\
+%reload_ext gp\n\
+%reload_ext gp_widgets\n\
+%reload_ext gp_magics\n\
+\n\
 # Don\'t have the GenePattern library? It can be downloaded from: \n\
 # http://genepattern.broadinstitute.org/gp/downloads/gp-python.zip \n\
 import gp\n\
