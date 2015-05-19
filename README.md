@@ -56,6 +56,18 @@ GenePatternNotebook):
 
 > cp GenePatternNotebook/profile/profile_default/static/custom/* ~/.ipython/profile_default/static/custom/
 
+### A Note for IPython/Jupyter 3.1 Users
+
+In IPython 3.0 it used to be sufficient to add libraries which were to be imported to the 
+profile/extensions directory. As of IPython 3.1 this no longer appears to be the case. Users of 
+IPython 3.1 will need to install the gp and gp_widgets libraries on their general PYTHONPATH.
+This can be accomplished by running the setup.py script found in GenePatternNotebook/profile/extensions.
+Just run the commands below.
+
+> cd GenePatternNotebook/profile/extensions
+
+> sudo python setup.py install
+
 ## Launch IPython
 
 Finally, you may launch the IPython notebook by issuing the following command at the terminal:
