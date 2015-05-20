@@ -1779,11 +1779,11 @@ try:\n\
     from gp_widgets import GPAuthWidget, GPJobWidget, GPTaskWidget\n\
 except:\n\
     def GPAuthWidget(input):\n\
-        print "GP Widget Library not installed. Please visit http://genepattern.org"\n\
+        print("GP Widget Library not installed. Please visit http://genepattern.org")\n\
     def GPJobWidget(input):\n\
-        print "GP Widget Library not installed. Please visit http://genepattern.org"\n\
+        print("GP Widget Library not installed. Please visit http://genepattern.org")\n\
     def GPTaskWidget(input):\n\
-        print "GP Widget Library not installed. Please visit http://genepattern.org"\n\
+        print("GP Widget Library not installed. Please visit http://genepattern.org")\n\
 \n\
 # The gpserver object holds your authentication credentials and is used to\n\
 # make calls to the GenePattern server through the GenePattern Python library.\n\
