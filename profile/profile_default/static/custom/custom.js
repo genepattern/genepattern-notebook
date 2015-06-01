@@ -4283,7 +4283,7 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                 var line = lines[i];
 
                 // Here is a line to parse
-                if (line.indexOf("_job_spec.set_parameter") !== -1) {
+                if (line.indexOf(".set_parameter") !== -1) {
                     var parts = line.split(",");
                     var first = parts[0].split("\"");
                     var second = parts[1].split("\"");
