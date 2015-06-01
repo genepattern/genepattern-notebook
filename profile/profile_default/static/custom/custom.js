@@ -1432,6 +1432,7 @@ GenePattern.notebook.buildModuleCode = function(module) {
 GenePattern.notebook.buildJobCode = function(jobNumber) {
     return "# !AUTOEXEC\n\n" +
             "job" + jobNumber + " = gp.GPJob(gpserver, " + jobNumber + ")\n" +
+            "job" + jobNumber + ".job_number = " + jobNumber + "\n" +
             "GPJobWidget(job" + jobNumber + ")";
 };
 
@@ -1729,7 +1730,7 @@ GenePattern.notebook.init.notebook_init_wrapper = function () {
 
         // If no auth widget exists, add it
         setTimeout(function() {
-            var authWidgetFound = $(".gp-widget-auth").length < 1;
+            var authWidgetFound = $(".gp-widget-auth").length >= 1;
 
             // If jQuery didn't find the widget, does it exist as code?
             if (!authWidgetFound) {
