@@ -1,9 +1,0 @@
-{
-  "secure": false, 
-  "url": "http://localhost:8889/", 
-  "hostname": "localhost", 
-  "pid": 49384, 
-  "base_url": "/", 
-  "notebook_dir": "/Users/tabor/PycharmProjects/GenePatternNotebook/ipython/IPython/html/notebook", 
-  "port": 8889
-}
