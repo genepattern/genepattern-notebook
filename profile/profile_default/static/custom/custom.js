@@ -1773,6 +1773,7 @@ GenePattern.notebook.init.buildCode = function(server, username, password) {
 \n\
 # Don\'t have the GenePattern library? It can be downloaded from: \n\
 # http://genepattern.broadinstitute.org/gp/downloads/gp-python.zip \n\
+# or installed through PIP: pip install genepattern-python \n\
 import gp\n\
 \n\
 # The following widgets are components of the GenePattern Notebook extension.\n\
