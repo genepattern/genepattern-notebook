@@ -540,6 +540,7 @@ require(["jquery"], function() {
         this._logFiles = null;
         this._outputFiles = null;
         this._numOutputFiles = null;
+        this._launchUrl = null;
 
         /**
          * Constructor-like initialization for the Job class
@@ -559,6 +560,7 @@ require(["jquery"], function() {
                 this._outputFiles = jobJson.outputFiles;
                 this._numOutputFiles = typeof jobJson.numOutputFiles === 'string' ? parseInt(jobJson.numOutputFiles) : jobJson.numOutputFiles;
                 this._task = GenePattern.task(this._taskLsid);
+                this._launchUrl = jobJson.launchUrl;
             }
         };
         this._init_();
@@ -667,6 +669,20 @@ require(["jquery"], function() {
             return this._userId;
         };
 
+        /**
+         * Returns the launch URL of a JavaScript Visualizer
+         *
+         * @returns {string}
+         */
+        this.launchUrl = function() {
+            return this._launchUrl;
+        };
+
+        /**
+         * Returns the permissions object for the job
+         *
+         * @returns {string}
+         */
         this.permissions = function() {
             return this._permissions;
         };
@@ -739,6 +755,7 @@ require(["jquery"], function() {
 
         /**
          * Returns the date the job was submitted
+         *
          * @returns {null|string|Date}
          */
         this.dateSubmitted = function() {
@@ -747,6 +764,7 @@ require(["jquery"], function() {
 
         /**
          * Returns an array of log files associated with the job
+         *
          * @returns {Array}
          */
         this.logFiles = function() {
@@ -775,6 +793,7 @@ require(["jquery"], function() {
 
     /**
      * Declaration of Job Input class
+     *
      * @constructor
      */
     GenePattern.JobInput = function(task) {
@@ -2531,6 +2550,10 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                                 $("<div></div>")
                                     .addClass("gp-widget-job-outputs")
                             )
+                            .append(
+                                $("<div></div>")
+                                    .addClass("gp-widget-job-visualize")
+                            )
                     )
                     .append(
                         $("<div></div>")
@@ -2735,11 +2758,7 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                         .text("Cancel")
                         .click(function() {
                             // Hide sharing panel
-                            widget.element.find(".gp-widget-job-share-options").slideUp();
-
-                            // Display other parts of the panel
-                            widget.element.find(".gp-widget-job-submitted").slideDown();
-                            widget.element.find(".gp-widget-job-outputs-list").slideDown();
+                            widget.toggleShareJob();
                         })
                 )
         },
@@ -2802,6 +2821,7 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                 // Display other parts of the panel
                 this.element.find(".gp-widget-job-submitted").slideDown();
                 this.element.find(".gp-widget-job-outputs-list").slideDown();
+                this.element.find(".gp-widget-job-visualize").slideDown();
             }
             else {
                 // Display sharing panel
@@ -2810,6 +2830,7 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                 // Hide other parts of the panel
                 this.element.find(".gp-widget-job-submitted").slideUp();
                 this.element.find(".gp-widget-job-outputs-list").slideUp();
+                this.element.find(".gp-widget-job-visualize").slideUp();
             }
         },
 
@@ -3075,8 +3096,33 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
             // Build the sharing pane
             this.buildSharingPanel(job);
 
+            // Build the visualizer display, if necessary
+            var launchUrl = job.launchUrl();
+            if (launchUrl !== undefined && launchUrl !== null) {
+                this._displayVisualizer(launchUrl);
+            }
+
             // Initialize status polling
             this._initPoll(job.status());
+        },
+
+        /**
+         * Build the display of the JavaScript Visualizer
+         *
+         * @param launchUrl - The URL to visualize
+         * @private
+         */
+        _displayVisualizer: function(launchUrl) {
+            var viewerDiv = this.element.find(".gp-widget-job-visualize");
+            viewerDiv.append(
+                $("<iframe/>")
+                    .css("width", "100%")
+                    .css("height", "500px")
+                    .css("overflow", "auto")
+                    .css("margin-top", "10px")
+                    .css("border", "1px solid rgba(10, 45, 105, 0.80)")
+                    .attr("src", launchUrl)
+            );
         },
 
         /**
