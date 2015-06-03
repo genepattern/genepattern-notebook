@@ -1,6 +1,6 @@
 __authors__ = ['Thorin Tabor', 'Chet Birger']
 __copyright__ = 'Copyright 2015, Broad Institute'
-__version__ = '1.0.3'
+__version__ = '1.0.5'
 __status__ = 'Production'
 
 """ GenePattern Python Client
@@ -36,6 +36,7 @@ class GPServer(object):
         self.username = username
         self.password = password
         self.auth_header = None
+        self.last_job = None
 
         # Handle Basic Auth differences in Python 2 vs. Python 3
         if sys.version_info.major == 2:
@@ -135,6 +136,7 @@ class GPServer(object):
         data = json.loads(response.read().decode('utf-8'))
         job = GPJob(self, data['jobId'])
         job.get_info()
+        self.last_job = job # Set the last job
         if wait_until_done:
             job.wait_until_done()
         return job
