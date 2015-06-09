@@ -22,8 +22,8 @@ class GenePatternAuthenticator(Authenticator):
         username = data['username']
         password = data['password']
 
-        if not self.check_whitelist(username):
-            return
+        # if not self.check_whitelist(username):
+        #     return
 
         # GitHub specifies a POST request yet requires URL parameters
         params = dict(
