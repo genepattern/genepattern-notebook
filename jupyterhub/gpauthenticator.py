@@ -6,7 +6,7 @@ Adapted from OAuthenticator code
 
 from tornado import gen, web
 from tornado.httputil import url_concat
-from tornado.httpclient import HTTPRequest, AsyncHTTPClient
+from tornado.httpclient import HTTPRequest, AsyncHTTPClient, HTTPError
 from jupyterhub.auth import Authenticator, LocalAuthenticator
 
 
@@ -41,9 +41,14 @@ class GenePatternAuthenticator(Authenticator):
                           body=''  # Body is required for a POST...
                           )
 
-        resp = yield http_client.fetch(req)
+        resp = None
+        try:
+            resp = yield http_client.fetch(req)
+        except HTTPError as e:
+            # This is likely a 400 Bad Request error due to an invalid username or password
+            return
 
-        if resp.code == 200:
+        if resp is not None and resp.code == 200:
             return username
         else:
             return
