@@ -1,5 +1,5 @@
-GenePatternNotebook
-===================
+GenePattern Notebook
+====================
 
 Some notes on setup of GenePattern Notebook environment.
 
