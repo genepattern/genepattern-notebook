@@ -882,6 +882,7 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
             this.element.append( // Attach header
                 $("<div></div>")
                     .addClass("panel-body")
+                    .css("position", "relative")
                     .append(
                         $("<div></div>")
                             .addClass("widget-code gp-widget-task-code")
@@ -937,6 +938,60 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                                     )
                                     .append("* Required Field")
                             )
+                    )
+                    .append(
+                        $("<div></div>")
+                            .addClass("gp-widget-logged-in gp-widget-task-eula")
+                            .append(
+                                $("<div></div>")
+                                    .addClass("gp-widget-loading")
+                                    .append("<img src='/static/custom/loader.gif' />")
+                                    .hide()
+                            )
+                            .append(
+                                $("<div></div>")
+                                    .text("You must agree below to the following End-User license agreements before you can run this task.")
+                            )
+                            .append(
+                                $("<div></div>")
+                                    .addClass("gp-widget-task-eula-box")
+                            )
+                            .append(
+                                $("<div></div>")
+                                    .text("Do you accept the license agreements?")
+                            )
+                            .append(
+                                $("<div></div>")
+                                    .append(
+                                        $("<button></button>")
+                                            .addClass("btn btn-primary btn-lg gp-widget-task-eula-accept")
+                                            .text("Accept")
+                                            .click(function() {
+                                                var url = $(this).data("url");
+                                                var lsid = $(this).data("lsid");
+
+                                                // Hide the info and show loading icon
+                                                widget.element.find(".gp-widget-task-eula").find("div").hide();
+                                                widget.element.find(".gp-widget-loading").show();
+
+                                                $.ajax({
+                                                    url: url + "?lsid=" + encodeURIComponent(lsid),
+                                                    type: 'GET',
+                                                    xhrFields: {
+                                                        withCredentials: true
+                                                    },
+                                                    success: function() {
+                                                        widget.element.find(".gp-widget-task-eula").hide();
+                                                    },
+                                                    error: function(xhr, error) {
+                                                        // widget.element.find(".gp-widget-task-eula").hide();
+                                                        widget.errorMessage(error);
+                                                    }
+                                                });
+                                            })
+                                    )
+                            )
+                            .hide()
                     )
             );
 
@@ -1076,6 +1131,35 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
         },
 
         /**
+         * Build the EULA pane and display if necessary
+         *
+         * @private
+         */
+        _buildEula: function() {
+            var eula = this._task.eula();   // Get the EULAs
+            // Only build the EULA display if necessary
+            if (eula !== undefined && eula !== null && eula['pendingEulas'] !== undefined && eula['pendingEulas'].length > 0) {
+                var box = this.element.find(".gp-widget-task-eula-box");
+
+                // Attach each of the EULAs
+                for (var i = 0; i < eula['pendingEulas'].length; i++) {
+                    var license = eula['pendingEulas'][i];
+                    var licenseBox = $("<pre></pre>")
+                        .addClass("gp-widget-task-eula-license")
+                        .text(license['content']);
+                    box.append(licenseBox);
+                }
+
+                // Attach the callback info to the accept button
+                var accept = this.element.find(".gp-widget-task-eula-accept");
+                accept.data("lsid", eula.acceptData.lsid);
+                accept.data("url", eula.acceptUrl);
+
+                this.element.find(".gp-widget-task-eula").show();
+            }
+        },
+
+        /**
          * Build the header and return the Task object
          *
          * @private
@@ -1143,6 +1227,9 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                             console.log(exception);
                         }
                     }
+
+                    // Build the EULA, too
+                    widget._buildEula();
                 },
                 error: function(exception) {
                     widget.errorMessage("Could not load task: " + exception.statusText);
@@ -1157,6 +1244,7 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
             var code = this.element.find(".gp-widget-task-code");
             var form = this.element.find(".gp-widget-task-form");
             var headers = this.element.find(".gp-widget-task-subheader, .gp-widget-task-footer");
+            var eula = this.element.find(".gp-widget-task-eula");
 
             if (code.is(":hidden")) {
                 this.element.closest(".cell").data("cell").code_mirror.refresh();
@@ -1168,10 +1256,16 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
 
                 form.slideUp();
                 headers.slideUp();
+                eula.slideUp();
                 code.slideDown();
             }
             else {
                 form.slideDown();
+
+                // Only show the EULA if there is one to display
+                if (this._task && this._task.eula() && this._task.eula().pendingEulas && this._task.eula().pendingEulas.length > 0) {
+                    eula.slideDown();
+                }
 
                 // Only show these bits if authenticated
                 if (GenePattern.authenticated) {

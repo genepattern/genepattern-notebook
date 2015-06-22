@@ -357,6 +357,7 @@ require(["jquery"], function() {
         this._version = null;
         this._lsid = null;
         this._params = null;
+        this._eula = null;
 
         /**
          * Constructor-like initialization for the Task class
@@ -373,6 +374,7 @@ require(["jquery"], function() {
                 this._suites = taskJson.suites;
                 this._version = taskJson.version;
                 this._lsid = taskJson.lsid;
+                this._eula = taskJson.eulaInfo;
             }
         };
         this._init_();
@@ -433,6 +435,9 @@ require(["jquery"], function() {
                                 task._params.push(new GenePattern.Param(param));
                             }
                         }
+
+                        // Add updated EULA info to Task Object
+                        task._eula = response['eulaInfo'];
 
                         if (pObj && pObj.success) {
                             pObj.success(response, task._params);
@@ -516,6 +521,15 @@ require(["jquery"], function() {
          */
         this.lsid = function() {
             return this._lsid;
+        };
+
+        /**
+         * Getter for EULA info
+         *
+         * @returns {null|string}
+         */
+        this.eula = function() {
+            return this._eula;
         };
     };
 
