@@ -1,0 +1,241 @@
+/**
+ * Loading screen styles
+ */
+
+.loading-screen {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 40pt;
+    background: #eeeeee url("/static/custom/aurora5.png") center center;
+    background-size: cover;
+    color: white;
+    padding-top: 200px;
+
+}
+
+/**
+ * General theme styles
+ */
+
+#header {
+    background: url("/static/custom/aurora5.png") center center;
+    padding: 10px;
+    min-height: 130px;
+}
+
+/* Don't expand header on main notebook listing page */
+body[data-terminals-available='True'] #header,
+body.edit_app #header {
+    min-height: unset;
+}
+
+.header-bar {
+	display: none;
+}
+
+img.current_kernel_logo {
+    display: none !important;
+}
+
+body {
+    background-color: white;
+    color: #333333;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    line-height: 1.42857;
+    overflow: hidden;
+}
+
+/* Hide the clusters tab */
+#tabs li:last-of-type {
+	display:none
+}
+
+#save_widget {
+	color: white;
+	text-shadow: 0 0 6px #002244;
+}
+
+#save_widget #notebook_name:hover {
+	color: #f1f2f2;
+}
+
+.navbar-text {
+	color: white;
+	text-shadow: 0 0 6px #002244;
+}
+
+#kernel_indicator, #modal_indicator.modal_indicator {
+	text-shadow: none;
+}
+
+#current-mode {
+    text-shadow: none;
+}
+
+#maintoolbar-container .btn-group:last-of-type {
+    display: none;
+}
+
+#notebook, #site {
+	background-color: #f1f2f2;
+}
+
+#ipython-main-app {
+	background-color: #fff;
+    box-shadow: 0 0 12px 1px rgba(87, 87, 87, 0.2);
+    min-height: 0;
+    height: auto;
+}
+
+#tab_content {
+    padding: 15px;
+}
+
+.widget-subarea {
+    max-width: 100%;
+}
+
+/*
+ * Styles for navigation
+ */
+
+.add-cell-container {
+    text-align: right;
+    position: fixed;
+    bottom: 55px;
+    padding-right: 15px;
+    height: 0;
+}
+
+.add-cell-button {
+    color: white;
+    margin-right: 10px;
+    z-index: 5;
+    box-shadow: 2px 2px 1px #cecece;
+    height: 40px;
+    opacity: 0.5;
+    width: 40px;
+    background-color: #0a2d69;
+    display: inline-block;
+    font-size: 1.7em;
+    line-height: 1.6;
+    text-align: center;
+    border: medium none;
+    border-radius: 50%;
+}
+
+.add-cell-button:hover, .sidebar-button:hover {
+    opacity: 0.8;
+    cursor: pointer;
+}
+
+#slider {
+    display: none;
+    position: fixed;
+    top: 129px;
+    bottom: 0px;
+    left: 0%;
+    z-index: 5;
+    width: 50%;
+    min-width: 400px;
+    background-color: #f8f8f8;
+    border: 1px solid rgba(10, 45, 105, 0.8);
+}
+
+#slider-tabs, #slider .tab-content {
+    flex: auto;
+    -ms-flex: auto;
+    -moz-flex: auto;
+    -webkit-flex: auto;
+    height: 100%;
+}
+
+#slider-tabs .active {
+    background-color: #ffffff;
+}
+
+#slider-tabs .tab-pane {
+    padding: 10px;
+    overflow: auto;
+    position: absolute;
+    top: 43px;
+    bottom: 0;
+    width: 100%;
+}
+
+#slider-filter-box {
+    float: right;
+    padding: 7px;
+}
+
+.sidebar-button-main {
+    position: fixed;
+    left: 0px;
+    top: 230px;
+}
+
+.sidebar-button-slider {
+    position: absolute;
+    right: -40px;
+    top: 100px;
+}
+
+.sidebar-button {
+    color: white;
+    z-index: 5;
+    box-shadow: 2px 2px 1px #cecece;
+    height: 40px;
+    opacity: 0.5;
+    width: 40px;
+    background-color: #0a2d69;
+    display: inline-block;
+    font-size: 1.7em;
+    line-height: 1.6;
+    text-align: center;
+    border: medium none;
+    border-top-right-radius: 50%;
+    border-bottom-right-radius: 50%;
+}
+
+.slider-option {
+    cursor: pointer;
+    position: relative;
+}
+
+.slider-option:hover {
+    background-color: #e4e4e4;
+}
+
+.slider-option-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.slider-option-anno {
+    color: gray;
+    position: absolute;
+    right: 15px;
+    top: 10px;
+}
+
+.slider-option-desc {
+    color: #333366;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+}
+
+.slider-option-tags {
+    display: block;
+    color: rgba(10, 45, 105, 1);
+    padding: 5px;
+}
