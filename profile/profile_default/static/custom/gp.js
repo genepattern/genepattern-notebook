@@ -531,6 +531,45 @@ require(["jquery"], function() {
         this.eula = function() {
             return this._eula;
         };
+
+
+        /**
+         * Accepts any pending EULAs for this task
+         *
+         * Executes the error function if there are no pending EULAs
+         * or no EULA info attached to the Task object.
+         *
+         * @param success - function to execute upon success
+         * @param error - function to execute upon error
+         */
+        this.acceptEula = function(success, error) {
+            var eula = this.eula();
+
+            // Execute error if no eula object
+            if (eula == undefined || eula == null) {
+                error(null, "no EULA object defined");
+            }
+
+            // Execute error if no pending EULAs to accept
+            if (eula['pendingEulas'] == undefined || eula['pendingEulas'] == null || eula['pendingEulas'].length < 1) {
+                error(null, "no pending EULAs to accept");
+            }
+
+            // Call the accept endpoint
+            var lsid = eula.acceptData.lsid;
+            var url = eula.acceptUrl;
+            var method = eula.acceptType;
+
+            $.ajax({
+                url: url + "?lsid=" + encodeURIComponent(lsid),
+                type: method,
+                xhrFields: {
+                    withCredentials: true
+                },
+                success: success,
+                error: error
+            });
+        };
     };
 
 

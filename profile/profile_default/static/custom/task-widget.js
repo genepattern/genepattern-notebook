@@ -967,27 +967,15 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                                             .addClass("btn btn-warning btn-lg gp-widget-task-eula-accept")
                                             .text("Accept")
                                             .click(function() {
-                                                var url = $(this).data("url");
-                                                var lsid = $(this).data("lsid");
+                                                var success = function() {
+                                                    widget.element.find(".gp-widget-task-eula").hide();
+                                                };
+                                                var error = function(xhr, error) {
+                                                    // widget.element.find(".gp-widget-task-eula").hide();
+                                                    widget.errorMessage(error);
+                                                };
 
-                                                // Hide the info and show loading icon
-                                                widget.element.find(".gp-widget-task-eula").find("div").hide();
-                                                widget.element.find(".gp-widget-loading").show();
-
-                                                $.ajax({
-                                                    url: url + "?lsid=" + encodeURIComponent(lsid),
-                                                    type: 'PUT',
-                                                    xhrFields: {
-                                                        withCredentials: true
-                                                    },
-                                                    success: function() {
-                                                        widget.element.find(".gp-widget-task-eula").hide();
-                                                    },
-                                                    error: function(xhr, error) {
-                                                        // widget.element.find(".gp-widget-task-eula").hide();
-                                                        widget.errorMessage(error);
-                                                    }
-                                                });
+                                                widget._task.acceptEula(success, error);
                                             })
                                     )
                             )
@@ -1149,11 +1137,6 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                         .text(license['content']);
                     box.append(licenseBox);
                 }
-
-                // Attach the callback info to the accept button
-                var accept = this.element.find(".gp-widget-task-eula-accept");
-                accept.data("lsid", eula.acceptData.lsid);
-                accept.data("url", eula.acceptUrl);
 
                 this.element.find(".gp-widget-task-eula").show();
             }
