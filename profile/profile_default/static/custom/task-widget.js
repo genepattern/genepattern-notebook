@@ -964,7 +964,7 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                                 $("<div></div>")
                                     .append(
                                         $("<button></button>")
-                                            .addClass("btn btn-primary btn-lg gp-widget-task-eula-accept")
+                                            .addClass("btn btn-warning btn-lg gp-widget-task-eula-accept")
                                             .text("Accept")
                                             .click(function() {
                                                 var url = $(this).data("url");
@@ -976,7 +976,7 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
 
                                                 $.ajax({
                                                     url: url + "?lsid=" + encodeURIComponent(lsid),
-                                                    type: 'GET',
+                                                    type: 'PUT',
                                                     xhrFields: {
                                                         withCredentials: true
                                                     },
