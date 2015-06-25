@@ -15,7 +15,7 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
      *
      * Non-Supported Features:
      *      GenomeSpace Files
-     *      GenePattern Uploaded Files
+     *      Browsing GenePattern Uploaded Files
      */
     $.widget("gp.fileInput", {
         options: {
@@ -39,8 +39,8 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
 
             // Set variables
             var widget = this;
-            this._value = null;
-            this._display = null;
+            this._values = null;
+            this._displays = null;
 
             // Add data pointer
             this.element.data("widget", this);
@@ -63,8 +63,19 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                             .addClass("file-widget-input-file")
                             .attr("type", "file")
                             .change(function () {
-                                var newValue = widget.element.find(".file-widget-input-file")[0].files[0];
-                                widget.value(newValue);
+                                var files = widget.element.find(".file-widget-input-file")[0].files;
+                                var list = [];
+                                for (var i = 0; i < files.length; i++) {
+                                    list.push(files[i]);
+                                }
+
+                                // Throw an error if this would overflow max values
+                                if (!widget._valNumGood(list)) {
+                                    widget._runTask.errorMessage(widget._param.name() + " cannot handle that many values. Max values: " + widget._param.maxValues());
+                                    return;
+                                }
+
+                                widget.addValues(list);
                             })
                     )
                     .append(
@@ -92,27 +103,6 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                 $("<div></div>")
                     .addClass("file-widget-listing")
                     .css("display", "none")
-                    .append(
-                        $("<div></div>")
-                            .addClass("file-widget-value")
-                            .append(
-                                $("<div></div>")
-                                    .addClass("btn btn-default btn-sm file-widget-value-erase")
-                                    .append(
-                                        $("<span></span>")
-                                            .addClass("fa fa-times")
-
-                                    )
-                                    .click(function() {
-                                        widget._updateSlider("destroy");
-                                        widget.clear();
-                                    })
-                            )
-                            .append(
-                                $("<span></span>")
-                                    .addClass("file-widget-value-text")
-                            )
-                    )
             );
             this.element.append(
                 $("<div></div>")
@@ -139,7 +129,14 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                                         var boxValue = widget.element.find(".file-widget-path-input").val();
                                         widget.element.find(".file-widget-path-input").val("");
                                         widget._pathBox(false);
-                                        widget.value(boxValue);
+
+                                        // Throw an error if this would overflow max values
+                                        if (!widget._valNumGood(boxValue)) {
+                                            widget._runTask.errorMessage(widget._param.name() + " cannot handle that many values. Max values: " + widget._param.maxValues());
+                                            return;
+                                        }
+
+                                        widget.addValues(boxValue);
                                     })
                             )
                             .append(" ")
@@ -170,7 +167,11 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
          * @private
          */
         _destroy: function() {
-            this._updateSlider("destroy");
+            var that = this;
+            $.each(this._values, function(i, e) {
+                that._updateSlider("destroy", e);
+            });
+
             this.element.removeClass("file-widget");
             this.element.empty();
         },
@@ -180,13 +181,15 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
          *
          * @private
          */
-        _updateSlider: function(method) {
+        _updateSlider: function(method, value) {
             if (method.toLowerCase() == "destroy") {
-                GenePattern.notebook.removeSliderData(this._display);
+                var display = this._singleDisplay(value);
+                GenePattern.notebook.removeSliderData(display);
             }
             // Else assume "update"
             else {
-                GenePattern.notebook.updateSliderData(this._display, this._value);
+                var display = this._singleDisplay(value);
+                GenePattern.notebook.updateSliderData(display, value);
             }
         },
 
@@ -217,7 +220,22 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                 // If there is are files assume this is a file drop
                 if (event['dataTransfer'].files.length > 0) {
                     var files = event['dataTransfer'].files;
-                    widget.value(files[0]);
+                    var list = [];
+                    for (var i = 0; i < files.length; i++) {
+                        list.push(files[i]);
+                    }
+
+                    // Throw an error if this would overflow max values
+                    if (!widget._valNumGood(list)) {
+                        widget._runTask.errorMessage(widget._param.name() + " cannot handle that many values. Max values: " + widget._param.maxValues());
+
+                        widget.element.css("background-color", "");
+                        event.stopPropagation();
+                        event.preventDefault();
+                        return;
+                    }
+
+                    widget.addValues(list);
                 }
                 // If not, assume this is a text drop
                 else {
@@ -232,7 +250,18 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                         }
                         var text = $(htmlList).attr("href");
                         if (text !== undefined && text !== null) {
-                            widget.value(text);
+
+                            // Throw an error if this would overflow max values
+                            if (!widget._valNumGood(text)) {
+                                widget._runTask.errorMessage(widget._param.name() + " cannot handle that many values. Max values: " + widget._param.maxValues());
+
+                                widget.element.css("background-color", "");
+                                event.stopPropagation();
+                                event.preventDefault();
+                                return;
+                            }
+
+                            widget.addValues(text);
                         }
                     }
 
@@ -241,7 +270,18 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                         $.each(htmlList, function(i, e) {
                             var text = $(e).attr("href");
                             if (text !== undefined && text !== null) {
-                                widget.value(text);
+
+                                // Throw an error if this would overflow max values
+                                if (!widget._valNumGood(text)) {
+                                    widget._runTask.errorMessage(widget._param.name() + " cannot handle that many values. Max values: " + widget._param.maxValues());
+
+                                    widget.element.css("background-color", "");
+                                    event.stopPropagation();
+                                    event.preventDefault();
+                                    return;
+                                }
+
+                                widget.addValues(text);
                             }
                         });
                     }
@@ -255,37 +295,157 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
         },
 
         /**
-         * Shows or hides the box of selected files
+         * Ensures that new values won't violate max value constraints.
+         * Return true if it's all good, false otherwise.
          *
-         * @param file - A string if to show, undefined or null if to hide
+         * @param newVals
+         * @returns {boolean}
          * @private
          */
-        _fileBox: function(file) {
-            if (file) {
-                this.element.find(".file-widget-value-text").text(file);
+        _valNumGood: function(newVals) {
+            // Ensure newVals is a list
+            if (newVals.constructor !== Array) {
+                newVals = [newVals];
+            }
+
+            var maxVals = this._param.maxValues();
+            var currentVals = this._values ? this._values.length : 0;
+            var addVals = newVals.length;
+
+            // Handle case of unlimited max
+            if (maxVals === -1) return true;
+
+            return currentVals + addVals <= maxVals;
+        },
+
+        /**
+         * Creates or destroys the box of selected files
+         *
+         * @param files - A string if to show, undefined or null if to hide
+         * @private
+         */
+        _fileBox: function(files) {
+            if (files) {
+                var widget = this;
+                $.each(files, function (i, e) {
+                    widget.element.find(".file-widget-listing").append(widget._createFileBox(e));
+                });
                 this.element.find(".file-widget-listing").show();
-                this.element.find(".file-widget-upload").hide();
+
+                // Hide upload stuff if at max
+                var maxVals = this._param.maxValues();
+                var currentVals = this._values ? this._values.length : 0;
+                if (maxVals === currentVals) {
+                    this.element.find(".file-widget-upload").hide();
+                }
             }
             else {
                 this.element.find(".file-widget-upload").show();
                 this.element.find(".file-widget-listing").hide();
+                this.element.find(".file-widget-listing").empty();
             }
         },
 
         /**
-         * Takes a value and returns the display string for the value
+         * Creates a file box element for the selected file value
          *
-         * @param value - the value, either a string or File object
-         * @returns {string} - the display value
+         * @param file
+         * @returns {jQuery} - the jQuery wrapped file box element
          * @private
          */
-        _valueToDisplay: function(value) {
+        _createFileBox: function(file) {
+            var widget = this;
+            return $("<div></div>")
+                .addClass("file-widget-value")
+                .attr("name", file)
+                .append(
+                    $("<div></div>")
+                        .addClass("btn btn-default btn-sm file-widget-value-erase")
+                        .append(
+                            $("<span></span>")
+                                .addClass("fa fa-times")
+                        )
+                        .click(function() {
+                            widget._updateSlider("destroy", file);
+                            widget._updateSlider("destroy", file);
+                            widget._removeValue(file);
+                            widget.element.find(".file-widget-value[name='" + file + "']").remove();
+                            widget.element.find(".file-widget-upload").show();
+                        })
+                )
+                .append(
+                    $("<span></span>")
+                        .addClass("file-widget-value-text")
+                        .text(file)
+                );
+        },
+
+        /**
+         * Takes a set of values and returns the display strings for the values
+         *
+         * @param values - the list of values
+         * @returns {Array} - the display value list
+         * @private
+         */
+         _valuesToDisplay: function(values) {
+            var displays = [];
+            var that = this;
+            $.each(values, function(index, val) {
+                var aDisplay = that._singleDisplay(val);
+                displays.push(aDisplay);
+            });
+            return displays;
+        },
+
+        /**
+         * Turns a single value for the file into a display value
+         *
+         * @param value - the value, either a string or File object
+         * @returns {string}
+         * @private
+         */
+        _singleDisplay: function(value) {
             if (typeof value === 'string') {
                 return value;
             }
             else {
                 return value.name;
             }
+        },
+
+        /**
+         * Removes the specified display value from the values list
+         *
+         * @param value
+         * @private
+         */
+        _removeValue: function(value) {
+            var widget = this;
+            $.each(this._values, function(i, e) {
+                var display = widget._singleDisplay(e);
+                if (display === value) {
+                    widget._values.splice(i, 1);
+                    return false;
+                }
+            });
+        },
+
+        /**
+         * Replace the indicated display value with the new value
+         *
+         * @param value
+         * @param replacement
+         * @private
+         */
+        _replaceValue: function(value, replacement) {
+            var widget = this;
+            $.each(this._values, function(i, e) {
+                var display = widget._singleDisplay(e);
+                if (display === value) {
+                    widget._values[i] = replacement;
+                    return false;
+                }
+            });
         },
 
         /**
@@ -298,10 +458,14 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
             if (showPathBox) {
                 this.element.find(".file-widget-path").show();
                 this.element.find(".file-widget-upload").hide();
+                this.element.find(".file-widget-listing").hide();
             }
             else {
                 this.element.find(".file-widget-path").hide();
                 this.element.find(".file-widget-upload").show();
+                if (this._values && this._values.length > 0) {
+                    this.element.find(".file-widget-listing").show();
+                }
             }
         },
 
@@ -377,23 +541,31 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
         },
 
         /**
-         * Upload the selected file to the server
+         * Upload the specified file file to the server. If this file widget
+         * holds a list with multiple files awaiting upload, this function
+         * will need to be called repeatedly for all files awaiting upload.
          *
          * @param pObj - Object containing the following params:
+         *                  file: the file to upload
          *                  success: Callback for success, expects url to file
          *                  error: Callback on error, expects exception
-         * @returns {boolean} - Whether an upload was just initiated or not
+         * @returns {object} - Returns a reference to the file which was just
+         *      uploaded, returns null if no file upload was initiated
          */
         upload: function(pObj) {
+            var file = pObj.file;
             var currentlyUploading = null;
             var widget = this;
 
             // Value is a File object
-            if (typeof this.value() === 'object' && this.value()) {
+            if (typeof file === 'object' && file) {
                 GenePattern.upload({
-                    file: this.value(),
+                    file: file,
                     success: function(response, url) {
-                        widget._value = url;
+                        // Mark the file as uploaded
+                        var display = widget._singleDisplay(file);
+                        widget._replaceValue(display, url);
+
                         if (pObj.success) {
                             pObj.success(response, url);
                         }
@@ -405,12 +577,11 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                         }
                     }
                 });
-                currentlyUploading = true;
+                currentlyUploading = file;
             }
             // If the value is not set, give an error
-            else if (!this.value()) {
+            else if (!file) {
                 console.log("Cannot upload from file input: value is null.");
-                currentlyUploading = false;
                 if (pObj.error) {
                     pObj.error({statusText: "Cannot upload from file input: value is null."});
                 }
@@ -418,8 +589,8 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
             // If the value is a string, do nothing
             else {
                 // Else assume we have a non-upload value selected
-                currentlyUploading = false;
             }
+
             return currentlyUploading;
         },
 
@@ -441,23 +612,77 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
         },
 
         /**
-         * Gets or sets the value of this widget
+         * This is just a clone of values() for compatibility with other widgets
+         *
+         * @param val
+         * @returns {object|string|null}
+         */
+        value: function(val) {
+            return this.values(val);
+        },
+
+        /**
+         * Gets or sets the values of this widget
          *
          * @param [val=optional] - String value for file (undefined is getter)
          * @returns {object|string|null} - The value of this widget
          */
-        value: function(val) {
+        values: function(val) {
             // Do setter
             if (val) {
-                this._value = val;
-                this._display = this._valueToDisplay(val);
-                this._fileBox(this._display);
-                this._updateSlider("update");
+                // Handle wrapping lists
+                if (val.constructor !== Array) {
+                    val = [val];
+                }
+
+                this._values = val;
+                this._displays = this._valuesToDisplay(val);
+                this._fileBox(null);
+                this._fileBox(this._displays);
+
+                var that = this;
+                $.each(this._values, function(i, e) {
+                    that._updateSlider("update", e);
+                });
             }
             // Do getter
             else {
-                return this._value;
+                return this._values;
             }
+        },
+
+        /**
+         * Adds the indicated values to the existing value array
+         *
+         * @param val
+         */
+        addValues: function(val) {
+            // Handle wrapping lists
+            if (val.constructor !== Array) {
+                val = [val];
+            }
+
+            // Handle null or undefined value array
+            if (this._values === undefined || this._values === null) {
+                this._values = [];
+            }
+
+            // Handle null or undefined display array
+            if (this._displays === undefined || this._displays === null) {
+                this._displays = [];
+            }
+
+            // Display list
+            var displayList = this._valuesToDisplay(val);
+
+            this._values = this._values.concat(val);
+            this._displays = this._displays.concat(displayList);
+            this._fileBox(displayList);
+
+            var that = this;
+            $.each(this._values, function(i, e) {
+                that._updateSlider("update", e);
+            });
         },
 
         /**
@@ -465,7 +690,7 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
          * @private
          */
         clear: function() {
-            this._value = null;
+            this._values = null;
             this._fileBox(null);
         }
     });
@@ -791,14 +1016,13 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
      *      File Inputs
      *      Text Inputs
      *      Choice Inputs
+     *      EULA support
+     *      Reloaded Jobs
+     *      File Lists
      *
      * Non-Supported Features:
      *      Batch Parameters
-     *      EULA support
      *      Dynamic Dropdowns
-     *      Reloaded Jobs
-     *      File Lists
-     *      Task Source
      */
     $.widget("gp.runTask", {
         options: {
@@ -1434,8 +1658,13 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                         var uiValue = widget._getInputValue(uiInput);
 
                         if (uiValue !== null) {
+                            // Wrap value in list if not already wrapped
+                            if (uiValue.constructor !== Array) {
+                                uiValue = [uiValue];
+                            }
+
                             var objParam = jobInput.params()[i];
-                            objParam.values([uiValue]);
+                            objParam.values(uiValue);
                         }
                     }
 
@@ -1472,30 +1701,124 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
          * @returns {boolean} - Whether an upload was just initiated or not
          */
         uploadAll: function(pObj) {
-            var files = this.element.find(".file-widget");
+            var fileWidgets = this.element.find(".file-widget");
             var widget = this;
+            var uploadList = [];
+            var error = false;
 
-            // Cycle through all files
-            for (var i = 0; i < files.length; i++) {
-                var fileWidget = $(files[i]);
-                var value = fileWidget.fileInput("value");
-
-                // If one needs to be uploaded, upload, recheck
-                if (typeof value === 'object' && value !== null) {
-                    widget.successMessage("Uploading file: " + value.name);
-                    fileWidget.fileInput("upload", {
-                        success: function() {
-                            widget.uploadAll(pObj);
-                        },
-                        error: pObj.error
-                    });
-                    return true
-                }
+            // Create upload list
+            for (var i = 0; i < fileWidgets.length; i++) {
+                var fileWidget = $(fileWidgets[i]).data("widget");
+                var values = fileWidget.values();
+                $.each(values, function(i, e) {
+                    if (typeof e == 'object') {
+                        uploadList.push({
+                            file: e,
+                            widget: fileWidget
+                        });
+                    }
+                })
             }
 
-            // If none need to be uploaded, call success function
-            pObj.success();
-            return false;
+            // Declare finalizeUploads()
+            var finalizeUploads = function() {
+                if (error) {
+                    pObj.error(error);
+                }
+                else {
+                    pObj.success();
+                }
+            };
+
+            // Declare grabNextUpload()
+            var grabNextUpload = function() {
+                // Pop the upload off the list
+                var upload = uploadList.shift();
+
+                // If it's not undefined, upload
+                if (upload !== undefined) {
+                    widget.successMessage("Uploading file " + upload.file.name);
+                    upload.widget.upload({
+                        file: upload.file,
+                        success: function(response, url) {
+                            // On the success callback call grabNextUpload()
+                            grabNextUpload();
+                        },
+                        error: function(exception) {
+                            // On the error callback set the error and call finalize
+                            error = exception;
+                            finalizeUploads();
+                        }
+                    });
+                }
+
+                // If it is undefined, call finalizeUploads()
+                else {
+                    finalizeUploads();
+                }
+            };
+
+            // Start the uploads
+            grabNextUpload();
+
+
+        //
+        //
+        //
+        //    var fileWidgets = this.element.find(".file-widget");
+        //    var widget = this;
+        //    var filesToUpload = 0;
+        //    var uploaded = 0;
+        //
+        //    // Cycle through all file widgets
+        //    for (var i = 0; i < fileWidgets.length; i++) {
+        //        var fileWidget = $(fileWidgets[i]).data("widget");
+        //        var file = undefined;
+        //
+        //        var initUpload = function() {
+        //            var complete = false;
+        //            file = fileWidget.upload({
+        //                success: function(response, url) {
+        //                    complete = true;
+        //                },
+        //                error: function(exception) {
+        //                    complete = true;
+        //                    pObj.error(exception);
+        //                }
+        //            });
+        //
+        //            if (!complete) initUpload();
+        //            else pObj.success();
+        //        };
+        //
+        //        setTimeout(initUpload, 500);
+        //
+        //        while (file !== null) {
+        //            file = fileWidget.upload({
+        //                success: function(response, url) {
+        //                    uploaded += 1;
+        //                },
+        //                error: function(exception) {
+        //                    uploaded += 1;
+        //                    pObj.error(exception);
+        //                }
+        //            });
+        //
+        //            if (file !== null) {
+        //                widget.successMessage("Uploading files for " + file.name);
+        //                filesToUpload++;
+        //            }
+        //            file = null;
+        //        }
+        //    }
+        //
+        //    var checkUploadComplete = function() {
+        //        var complete = uploaded === filesToUpload;
+        //        if (!complete) checkUploadComplete();
+        //        else pObj.success();
+        //    };
+        //
+        //    setTimeout(checkUploadComplete, 500);
         }
     });
 

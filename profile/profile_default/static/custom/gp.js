@@ -983,6 +983,7 @@ require(["jquery"], function() {
         this._optional = null;
         this._prefixWhenSpecified = null;
         this._type = null;
+        this._numValues = null;
 
         /**
          * Constructor-like initialization for the Param class
@@ -1002,6 +1003,7 @@ require(["jquery"], function() {
                     this._optional = paramJson[this._name]['attributes']['optional'] === 'on';
                     this._prefixWhenSpecified = paramJson[this._name]['attributes']['prefix_when_specified'];
                     this._type = paramJson[this._name]['attributes']['type'];
+                    this._numValues = paramJson[this._name]['attributes']['numValues'];
                 }
             }
         };
@@ -1193,6 +1195,65 @@ require(["jquery"], function() {
             }
             else {
                 return this._type;
+            }
+        };
+
+        /**
+         * Returns or sets the number of values the parameter expects
+         *
+         * @param [numVal=optional] - A string describing the number of expected values
+         *                              1 - a single required value
+         *                              0..1 - A single optional value
+         *                              1..n - A required list of 1 to n files
+         *                              0..n - An optional list of 1 to n files
+         *                              n..m - A list of n to m files
+         *                              1+ - Required value, unlimited files
+         *                              0+ - Optional value, unlimited files
+         * @returns {string}
+         */
+        this.numValues = function(numVal) {
+            if (numVal !== undefined) {
+                this._numValues = numVal;
+            }
+            else {
+                return this._numValues;
+            }
+        };
+
+        /**
+         * Returns the max number of values this parameter will accept.
+         * If numValues is not defined, it will assume 1 max.
+         * If there is no max it will return -1.
+         *
+         * @returns {number}
+         */
+        this.maxValues = function() {
+            var numVal = this.numValues();
+
+            // If not defined, assume 1
+            if (numVal === undefined || numVal === null) return 1;
+
+            // If numValues is unlimited
+            var unlimited = numVal.indexOf("+") > 0;
+            if (unlimited) return -1;
+
+            // If numValues is a range
+            var range = numVal.indexOf("..") > 0;
+            if (range) {
+                var parts = numVal.split("..");
+                if (parts.length > 1) numVal = parts[1];
+            }
+
+            // If numValues is a single number
+            try {
+                var actualNum = parseInt(numVal);
+                if (isNaN(actualNum)) throw "numValues is not a number: " + numVal;
+                else return actualNum;
+            }
+            catch(err) {
+                // Log error, assume 1
+                console.log(err);
+                return 1;
             }
         };
 
