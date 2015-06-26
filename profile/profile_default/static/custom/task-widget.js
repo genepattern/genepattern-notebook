@@ -1760,65 +1760,6 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
 
             // Start the uploads
             grabNextUpload();
-
-
-        //
-        //
-        //
-        //    var fileWidgets = this.element.find(".file-widget");
-        //    var widget = this;
-        //    var filesToUpload = 0;
-        //    var uploaded = 0;
-        //
-        //    // Cycle through all file widgets
-        //    for (var i = 0; i < fileWidgets.length; i++) {
-        //        var fileWidget = $(fileWidgets[i]).data("widget");
-        //        var file = undefined;
-        //
-        //        var initUpload = function() {
-        //            var complete = false;
-        //            file = fileWidget.upload({
-        //                success: function(response, url) {
-        //                    complete = true;
-        //                },
-        //                error: function(exception) {
-        //                    complete = true;
-        //                    pObj.error(exception);
-        //                }
-        //            });
-        //
-        //            if (!complete) initUpload();
-        //            else pObj.success();
-        //        };
-        //
-        //        setTimeout(initUpload, 500);
-        //
-        //        while (file !== null) {
-        //            file = fileWidget.upload({
-        //                success: function(response, url) {
-        //                    uploaded += 1;
-        //                },
-        //                error: function(exception) {
-        //                    uploaded += 1;
-        //                    pObj.error(exception);
-        //                }
-        //            });
-        //
-        //            if (file !== null) {
-        //                widget.successMessage("Uploading files for " + file.name);
-        //                filesToUpload++;
-        //            }
-        //            file = null;
-        //        }
-        //    }
-        //
-        //    var checkUploadComplete = function() {
-        //        var complete = uploaded === filesToUpload;
-        //        if (!complete) checkUploadComplete();
-        //        else pObj.success();
-        //    };
-        //
-        //    setTimeout(checkUploadComplete, 500);
         }
     });
 
