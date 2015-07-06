@@ -1710,8 +1710,12 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
             for (var i = 0; i < fileWidgets.length; i++) {
                 var fileWidget = $(fileWidgets[i]).data("widget");
                 var values = fileWidget.values();
+
+                // Protect against nulls
+                if (values === null || values === undefined) values = [];
+
                 $.each(values, function(i, e) {
-                    if (typeof e == 'object') {
+                    if (typeof e === 'object') {
                         uploadList.push({
                             file: e,
                             widget: fileWidget
