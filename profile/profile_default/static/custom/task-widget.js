@@ -1437,11 +1437,67 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
 
                     // Build the EULA, too
                     widget._buildEula();
+
+                    // Build the job_spec if necessary
+                    if (Object.keys(reloadVals).length == 0) {
+                        widget._addJobSpec(params);
+                    }
                 },
                 error: function(exception) {
                     widget.errorMessage("Could not load task: " + exception.statusText);
                 }
             });
+        },
+
+        /**
+         * Adds parameters to job_spec in the code for the widget
+         *
+         * @param params
+         * @private
+         */
+        _addJobSpec: function(params) {
+            var code = this.element.closest(".cell").data("cell").code_mirror.getValue();
+            var lines = code.split("\n");
+            var jobSpecName = null;
+            var insertAfter = null;
+
+            // Get the job_spec name
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+
+                // Obtain the variable name of the job_spec
+                if (line.indexOf("_job_spec = ") !== -1) {
+                    var parts = line.split(" ");
+                    jobSpecName = parts[0];
+                    insertAfter = i;
+                    break;
+                }
+            }
+
+            // If job_spec name is still null, return
+            if (jobSpecName === null) {
+                console.log("Error setting job_spec params, no job_spec name found");
+                return;
+            }
+
+            // Generate the .set_parameter code
+            var newLines = [];
+            for (var i = 0; i < params.length; i++) {
+                var param = params[i];
+                var newLine = jobSpecName + '.set_parameter("' + param.name() + '", "' + param.defaultValue() + '")';
+                newLines.unshift(newLine);
+            }
+
+            // Insert the generated code
+            $.each(newLines, function(i, line) {
+                lines.splice(insertAfter+1, 0, line);
+            });
+
+            // Set the new code
+            code = lines.join("\n");
+            this.element.closest(".cell").data("cell").code_mirror.setValue(code);
+
+            return code;
         },
 
         /**

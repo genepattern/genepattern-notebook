@@ -73,4 +73,4 @@ The RNA-seq Notebook requires an additional Python package known as jsonpickle. 
 the notebook to store results in memory using a JSON data format. This package may be installed by 
 executing the following line of code from a terminal.
 
->pip install -U jsonpickle
+> pip install -U jsonpickle

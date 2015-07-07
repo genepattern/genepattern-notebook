@@ -102,6 +102,8 @@ GenePattern.notebook.sliderOption = function(id, name, anno, desc, tags) {
     return $("<div></div>")
         .addClass("well well-sm slider-option")
         .attr("name", id)
+        .attr("data-id", id)
+        .attr("data-name", name)
         .append(
             $("<h4></h4>")
                 .addClass("slider-option-name")
@@ -285,9 +287,14 @@ GenePattern.notebook.authenticate = function(data) {
  * @param module
  */
 GenePattern.notebook.buildModuleCode = function(module) {
+    var baseName = module["name"].toLowerCase().replace(/\./g, '_');
+    var taskName = baseName + "_task";
+    var specName = baseName + "_job_spec";
+
     return "# !AUTOEXEC\n\n" +
-            "task = gp.GPTask(gpserver, '" + module["lsid"] + "')\n" +
-            "GPTaskWidget(task)";
+            taskName + " = gp.GPTask(gpserver, '" + module["lsid"] + "')\n" +
+            specName + " = " + taskName + ".make_job_spec()\n" +
+            "GPTaskWidget(" + taskName + ")";
 };
 
 /**
@@ -540,8 +547,10 @@ GenePattern.notebook.widgetSelectDialog = function(cell) {
     // Attach the click functionality to modules
     $.each(modules.find(".slider-option"), function(index, element) {
         $(element).click(function() {
-            var lsid = $(element).attr("name");
-            var code = GenePattern.notebook.buildModuleCode({"lsid":lsid});
+            var lsid = $(element).attr("data-id");
+            var name = $(element).attr("data-name");
+            console.log(element);
+            var code = GenePattern.notebook.buildModuleCode({"lsid":lsid, "name": name});
             cell.set_text(code);
             setTimeout(function() {
                 cell.execute();
