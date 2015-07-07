@@ -512,6 +512,7 @@ GenePattern.notebook.changeGenePatternPrompt = function() {
  */
 GenePattern.notebook.widgetSelectDialog = function(cell) {
     var modules = $("#slider-modules").clone();
+    modules.attr("id", "dialog-modules");
     modules.css("height", $(window).height() - 200);
     modules.css("overflow-y", "auto");
     modules.css("padding-right", "10px");
@@ -575,6 +576,8 @@ GenePattern.notebook.widgetSelectDialog = function(cell) {
     setTimeout(function() {
         $(".modal-header").append(filterBox);
         filterBox.show("fade");
+        filterBox.find("#dialog-slider-filter").trigger("keyup")
+        modules.scrollTop(0);
     }, 500);
 };
 
