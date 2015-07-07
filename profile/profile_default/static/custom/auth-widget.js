@@ -354,6 +354,11 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                 // Fix the issue where the code couldn't be selected
                 code.find(".CodeMirror-scroll").attr("draggable", "false");
 
+                // Fix the issue with the bogus scrollbars
+                code.find(".CodeMirror-hscrollbar").remove();
+                code.find(".CodeMirror-vscrollbar").remove();
+                code.find(".CodeMirror-sizer").css("min-width", "").css("overflow", "auto");
+
                 view.slideUp();
                 code.slideDown();
             }
