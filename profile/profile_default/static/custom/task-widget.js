@@ -595,6 +595,15 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
         },
 
         /**
+         * Updates the Run Task Widget code to include the new value
+         *
+         * @private
+         */
+        _updateCode: function() {
+            this._runTask.updateCode(this._param.name(), this._values);
+        },
+
+        /**
          * Getter for associated RunTask object
          *
          * @returns {object|null}
@@ -747,6 +756,7 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                     .val(this._value)
                     .change(function() {
                         widget._value = $(this).val();
+                        widget._updateCode();
                     })
             );
 
@@ -828,6 +838,15 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
         },
 
         /**
+         * Updates the Run Task Widget code to include the new value
+         *
+         * @private
+         */
+        _updateCode: function() {
+            this._runTask.updateCode(this._param.name(), this._value);
+        },
+
+        /**
          * Gets or sets the value of the input
          *
          * @param val - the value for the setter
@@ -890,6 +909,7 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                     .addClass("form-control choice-widget-select")
                     .change(function() {
                         widget._value = $(this).val();
+                        widget._updateCode();
                     })
             );
 
@@ -987,6 +1007,15 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
         _applyDefault: function() {
             this.element.find(".choice-widget-select").val(this.options.default);
             this._value = this.element.find(".choice-widget-select").val();
+        },
+
+        /**
+         * Updates the Run Task Widget code to include the new value
+         *
+         * @private
+         */
+        _updateCode: function() {
+            this._runTask.updateCode(this._param.name(), this._value);
         },
 
         /**
@@ -1398,9 +1427,9 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                 if (line.indexOf(".set_parameter") !== -1) {
                     var parts = line.split(",");
                     var first = parts[0].split("\"");
-                    var second = parts[1].split("\"");
+                    var second = parts[1].trim().substring(1, parts[1].trim().length-2);
                     var key = first[1];
-                    dict[key] = second[1];
+                    dict[key] = this._unescapeQuotes(second);
                 }
             }
 
@@ -1450,6 +1479,28 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
         },
 
         /**
+         * Escape the quotes in a string so it can be safely included in code generation
+         *
+         * @param srcString
+         * @returns {string}
+         * @private
+         */
+        _escapeQuotes: function(srcString) {
+            return (srcString + '').replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0');
+        },
+
+        /**
+         * Unescape quotes in a string so an escaped value can be retrieved from code
+         *
+         * @param srcString
+         * @returns {string}
+         * @private
+         */
+        _unescapeQuotes: function(srcString) {
+            return (srcString + '').replace(/\\/g, "");
+        },
+
+        /**
          * Adds parameters to job_spec in the code for the widget
          *
          * @param params
@@ -1484,7 +1535,7 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
             var newLines = [];
             for (var i = 0; i < params.length; i++) {
                 var param = params[i];
-                var newLine = jobSpecName + '.set_parameter("' + param.name() + '", "' + param.defaultValue() + '")';
+                var newLine = jobSpecName + '.set_parameter("' + param.name() + '", "' + this._escapeQuotes(param.defaultValue()) + '")';
                 newLines.unshift(newLine);
             }
 
@@ -1492,6 +1543,66 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
             $.each(newLines, function(i, line) {
                 lines.splice(insertAfter+1, 0, line);
             });
+
+            // Set the new code
+            code = lines.join("\n");
+            this.element.closest(".cell").data("cell").code_mirror.setValue(code);
+
+            return code;
+        },
+
+        /**
+         * Updates the parameter value in the code's job_spec
+         *
+         * @param paramName
+         * @param value
+         */
+        updateCode: function(paramName, value) {
+            var code = this.element.closest(".cell").data("cell").code_mirror.getValue();
+            var lines = code.split("\n");
+            var jobSpecName = null;
+            var codeToLookFor = '.set_parameter("' + paramName + '"';
+            var lineToSwap = null;
+
+            // Get the job_spec name
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+
+                // Obtain the variable name of the job_spec
+                if (line.indexOf("_job_spec = ") !== -1) {
+                    var parts = line.split(" ");
+                    jobSpecName = parts[0];
+                    break;
+                }
+            }
+
+            // If job_spec name is still null, return
+            if (jobSpecName === null) {
+                console.log("Error setting job_spec params, no job_spec name found");
+                return;
+            }
+
+            // Find correct line to replace
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+
+                // Found the line!
+                if (line.indexOf(codeToLookFor) !== -1) {
+                    lineToSwap = i;
+                }
+            }
+
+            // If the line wasn't found, error and return
+            if (lineToSwap === null) {
+                console.log("Could not find code line to update: " + paramName);
+                return;
+            }
+
+            // Generate new code line
+            var newLine = jobSpecName + '.set_parameter("' + paramName + '", "' + this._escapeQuotes(value) + '")';
+
+            // Add new code to lines
+            lines.splice(lineToSwap, 1, newLine);
 
             // Set the new code
             code = lines.join("\n");
