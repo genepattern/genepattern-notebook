@@ -576,7 +576,7 @@ GenePattern.notebook.widgetSelectDialog = function(cell) {
     setTimeout(function() {
         $(".modal-header").append(filterBox);
         filterBox.show("fade");
-        filterBox.find("#dialog-slider-filter").trigger("keyup")
+        filterBox.find("#dialog-slider-filter").trigger("keyup");
         modules.scrollTop(0);
     }, 500);
 };
