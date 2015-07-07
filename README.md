@@ -39,7 +39,7 @@ line of code from the terminal.
 The GenePattern Notebook uses the GenePattern Python Library for many of its calls. This 
 library can be installed from PIP by running the following command:
 
-> pip install genepattern-notebook
+> pip install genepattern-python
 
 ## Install GenePattern Notebook
 
