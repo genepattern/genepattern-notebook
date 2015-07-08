@@ -130,6 +130,11 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                                         widget.element.find(".file-widget-path-input").val("");
                                         widget._pathBox(false);
 
+                                        // Disregard if the value is blank
+                                        if (boxValue.trim() === "") {
+                                            return;
+                                        }
+
                                         // Throw an error if this would overflow max values
                                         if (!widget._valNumGood(boxValue)) {
                                             widget._runTask.errorMessage(widget._param.name() + " cannot handle that many values. Max values: " + widget._param.maxValues());
@@ -137,6 +142,7 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                                         }
 
                                         widget.addValues(boxValue);
+                                        widget._updateCode();
                                     })
                             )
                             .append(" ")
@@ -371,6 +377,7 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                             widget._removeValue(file);
                             widget.element.find(".file-widget-value[name='" + file + "']").remove();
                             widget.element.find(".file-widget-upload").show();
+                            widget._updateCode();
                         })
                 )
                 .append(
