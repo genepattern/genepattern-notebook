@@ -1432,15 +1432,72 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
 
                 // Here is a line to parse
                 if (line.indexOf(".set_parameter") !== -1) {
-                    var parts = line.split(",");
-                    var first = parts[0].split("\"");
-                    var second = parts[1].trim().substring(1, parts[1].trim().length-2);
-                    var key = first[1];
-                    dict[key] = this._unescapeQuotes(second);
+                    var key = this._parseKeyFromLine(line);
+                    var value = this._parseValueFromLine(line);
+                    dict[key] = value;
                 }
             }
 
             return dict;
+        },
+
+        /**
+         * Given a line of code with job_spec.set_parameter, parse and return the value
+         *
+         * @param line
+         * @returns {object}
+         * @private
+         */
+        _parseValueFromLine: function(line) {
+            // Pull the text out of the parentheses
+            var pullFromParen = /\(([^)]+)\)/;
+            var match = line.match(pullFromParen);
+            var insideParen = match && match[1];
+
+            // If it couldn't find the correct text, abort
+            if (insideParen === null) {
+                console.log("Couldn't find parameters in: " + line);
+                return null;
+            }
+
+            // Pull out the value substring
+            var commaIndex = insideParen.indexOf(",");
+            var valueStr = insideParen.substring(commaIndex+1).trim();
+
+            // Determine whether this represents a list or not
+            var firstChar = valueStr.charAt(0);
+            var isList = firstChar === "[";
+
+            // If not, trim the quotes and return the unescaped string
+            if (!isList) {
+                var withoutQuotes = valueStr.substring(1, valueStr.length-1);
+                return this._unescapeQuotes(withoutQuotes);
+            }
+
+            // If this is a list, parse into constituent strings
+            if (isList) {
+                try {
+                    var valueList = eval(valueStr);
+                    return valueList;
+                }
+                catch (e) {
+                    console.log("Error parsing list from: " + valueStr);
+                    return null;
+                }
+            }
+        },
+
+        /**
+         * Given a line of code with job_spec.set_parameter, parse and return the key
+         *
+         * @param line
+         * @returns {string}
+         * @private
+         */
+        _parseKeyFromLine: function(line) {
+            var parts = line.split(",");
+            var first = parts[0].split("\"");
+            return first[1];
         },
 
         /**
@@ -1605,8 +1662,23 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                 return;
             }
 
+            // Convert values to a string for inclusion
+            var valueString = null;
+            if (value.constructor === Array && value.length > 1) {
+                var escapedStrings = [];
+                valueString = '[';
+                for (var i = 0; i < value.length; i++) {
+                    var aValue = value[i];
+                    escapedStrings.push('"' + this._escapeQuotes(aValue) + '"');
+                }
+                valueString += escapedStrings.join(", ") + ']';
+            }
+            else {
+                valueString = '"' + this._escapeQuotes(value) + '"';
+            }
+
             // Generate new code line
-            var newLine = jobSpecName + '.set_parameter("' + paramName + '", "' + this._escapeQuotes(value) + '")';
+            var newLine = jobSpecName + '.set_parameter("' + paramName + '", ' + valueString + ')';
 
             // Add new code to lines
             lines.splice(lineToSwap, 1, newLine);
