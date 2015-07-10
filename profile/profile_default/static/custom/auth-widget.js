@@ -397,7 +397,8 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
             var widget = this;
             $.ajax({
                 type: "POST",
-                url: server + "/rest/v1/oauth2/token?grant_type=password&username=" + username + "&password=" + password + "&client_id=GenePatternNotebook",
+                url: server + "/rest/v1/oauth2/token?grant_type=password&username=" + encodeURIComponent(username) +
+                        "&password=" + encodeURIComponent(password) + "&client_id=GenePatternNotebook",
                 cache: false,
                 xhrFields: {
                     withCredentials: true
