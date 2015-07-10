@@ -1079,6 +1079,9 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
             // Add data pointer
             this.element.data("widget", this);
 
+            // By default assume the module is installed
+            this._installed = true;
+
             // Add classes and scaffolding
             this.element.addClass("panel panel-default gp-widget gp-widget-task");
             this.element.append( // Attach header
@@ -1335,8 +1338,12 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
          * @private
          */
         _showUninstalledMessage: function() {
+            // Mark the module as not installed
+            this._installed = false;
+
+            // Show the message
             this.element.find(".gp-widget-task-name").empty().text(" GenePattern Task: Module Not Installed");
-            this.element.find(".gp-widget-task-form").empty().text("The module used by this widget is not installed on this GenePattern server.");
+            this.errorMessage("The module used by this widget is not installed on this GenePattern server.");
             this.element.find(".gp-widget-task-subheader").hide();
             this.element.find(".gp-widget-task-footer").hide();
         },
@@ -1725,8 +1732,8 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                     eula.slideDown();
                 }
 
-                // Only show these bits if authenticated
-                if (GenePattern.authenticated) {
+                // Only show these bits if authenticated and installed
+                if (GenePattern.authenticated && this._installed) {
                     headers.slideDown();
                 }
 
