@@ -115,7 +115,6 @@ require(["jquery"], function() {
         }
     };
 
-
     /**
      * Returns a cached Task() object matching the provided LSID or module name
      *
@@ -145,6 +144,68 @@ require(["jquery"], function() {
         return null;
     };
 
+    /**
+     * Queries the server for a task object and its parameters. Useful for obtaining
+     * alternate versions of modules, as well as hidden modules or modules otherwise
+     * not in the cache.
+     *
+     * @param pObj - An object specifying the following properties:
+     *                  lsid: the LSID of the task to load from the server
+     *                  name: the name of the task to load from the server
+     *                          If neither LSID nor name is defined, an error will
+     *                          be thrown.
+     *                  success: callback to call upon successful load, passes in
+     *                          the new Task() object as a parameter
+     *                  error: callback for when something went wrong creating the
+     *                          task object, passes in the exception as a parameter
+     *
+     * @returns {jQuery.Deferred} - Returns a jQuery Deferred object for event chaining.
+     *      See http://api.jquery.com/jquery.deferred/ for details.
+     */
+    GenePattern.taskQuery = function(pObj) {
+        // Ensure either lsid or name is defined
+        if (!pObj) throw "GenePattern.taskQuery() parameter either null or undefined";
+        if (typeof pObj === 'object' && !pObj.lsid && !pObj.name) throw "GenePattern.taskQuery() parameter does not contain lsid or name";
+        if (typeof pObj !== 'object') throw "GenePattern.taskQuery() parameter must be object";
+
+        var identifier = pObj.lsid ? pObj.lsid : pObj.name;
+        var REST_ENDPOINT = "/rest/v1/tasks/";
+
+        return $.ajax({
+            url: GenePattern.server() + REST_ENDPOINT + encodeURIComponent(identifier),
+            type: 'GET',
+            dataType: 'json',
+            xhrFields: {
+                withCredentials: true
+            },
+            success: function (response) {
+                // Create the Task object
+                var task = GenePattern.Task(response);
+
+                // Add params to Task object
+                var params = response['params'];
+                if (params) {
+                    task._params = [];
+                    for (var i = 0; i < params.length; i++) {
+                        var param = params[i];
+                        task._params.push(new GenePattern.Param(param));
+                    }
+                }
+
+                // Add updated EULA info to Task Object
+                task._eula = response['eulaInfo'];
+
+                if (pObj && pObj.success) {
+                    pObj.success(task);
+                }
+            },
+            error: function (exception) {
+                if (pObj && pObj.error) {
+                    pObj.error(exception);
+                }
+            }
+        });
+    };
 
     /**
      * Returns a list of jobs on the server and caches those jobs.
@@ -532,7 +593,6 @@ require(["jquery"], function() {
             return this._eula;
         };
 
-
         /**
          * Accepts any pending EULAs for this task
          *
@@ -570,6 +630,8 @@ require(["jquery"], function() {
                 error: error
             });
         };
+
+        return this;
     };
 
 

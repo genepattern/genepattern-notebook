@@ -1249,17 +1249,22 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
             // Check to see if the user is authenticated yet
             if (GenePattern.authenticated) {
                 // Make call to build the header & form
-                this._task = this._loadTask(identifier);
-
-                setTimeout(function() {
-                    if (widget._task !== null) {
-                        widget._buildHeader();
-                        widget._buildForm();
-                    }
-                    else {
+                this._loadTask({
+                    identifier: identifier,
+                    success: function(task) {
+                        widget._task = task;
+                        if (widget._task !== null) {
+                            widget._buildHeader();
+                            widget._buildForm();
+                        }
+                        else {
+                            widget._showUninstalledMessage();
+                        }
+                    },
+                    error: function(exception) {
                         widget._showUninstalledMessage();
                     }
-                }, 1);
+                });
             }
             else {
                 this._showAuthenticationMessage();
@@ -1285,15 +1290,25 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
          */
         _setOptions: function(options) {
             this._superApply(arguments);
+            var widget = this;
             var identifier = this._getIdentifier();
-            this._task = this._loadTask(identifier);
-            if (this._task !== null) {
-                this._buildHeader();
-                this._buildForm();
-            }
-            else {
-                this._showUninstalledMessage();
-            }
+
+            this._loadTask({
+                identifier: identifier,
+                success: function(task) {
+                    widget._task = task;
+                    if (widget._task !== null) {
+                        widget._buildHeader();
+                        widget._buildForm();
+                    }
+                    else {
+                        widget._showUninstalledMessage();
+                    }
+                },
+                error: function(exception) {
+                    widget._showUninstalledMessage();
+                }
+            });
         },
 
         /**
@@ -1322,14 +1337,28 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
         },
 
         /**
-         * Returns the Task object based on the identifier
+         * Gets the Task object based on the identifier and makes the given callbacks
          *
-         * @param identifier - String containing name or LSID
-         * @returns {GenePattern.Task|null}
+         * @param pObj - An object specifying the following properties:
+         *                  identifier: the LSID or name of the task to load from the server
+         *                  success: callback to call upon successful load, passes in
+         *                          the new Task() object as a parameter
+         *                  error: callback for when something went wrong creating the
+         *                          task object, passes in the exception as a parameter
+         *
+         * @returns {jQuery.Deferred} - Returns a jQuery Deferred object for event chaining.
+         *      See http://api.jquery.com/jquery.deferred/ for details.
          * @private
          */
-        _loadTask: function(identifier) {
-            return GenePattern.task(identifier);
+        _loadTask: function(pObj) {
+            if (!pObj) throw "Task._loadTask() parameter either null or undefined";
+            if (typeof pObj === 'object' && !pObj.identifier) throw "Task._loadTask() parameter does not contain an identifier";
+
+            return GenePattern.taskQuery({
+                lsid: pObj.identifier,
+                success: pObj.success,
+                error: pObj.error
+            });
         },
 
         /**
