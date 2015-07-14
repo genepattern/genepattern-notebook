@@ -1134,7 +1134,7 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                             .addClass("panel-title")
                             .append(
                                 $("<span></span>")
-                                    .addClass("glyphicon glyphicon-th")
+                                    .addClass("fa fa-th")
                             )
                             .append(
                                 $("<span></span>")
