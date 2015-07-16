@@ -1,7 +1,7 @@
 /**
  * Define the IPython GenePattern Authentication widget
  */
-require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
+require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widget, manager) {
     $.widget("gp.auth", {
         options: {
             servers: [                                              // Expects a list of lists with [name, url] pairs
@@ -498,7 +498,7 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
     });
 
 
-    var AuthWidgetView = IPython.WidgetView.extend({
+    var AuthWidgetView = widget.DOMWidgetView.extend({
         render: function () {
             // Double check to make sure that this is the correct cell
             if ($(this.options.cell.element).hasClass("running")) {
@@ -521,5 +521,5 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
     });
 
     // Register the JobWidgetView with the widget manager.
-    IPython.WidgetManager.register_widget_view('AuthWidgetView', AuthWidgetView);
+    manager.WidgetManager.register_widget_view('AuthWidgetView', AuthWidgetView);
 });

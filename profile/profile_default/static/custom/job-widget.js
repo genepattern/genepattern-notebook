@@ -1,7 +1,7 @@
 /**
  * Define the IPython GenePattern Job widget
  */
-require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
+require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widget, manager) {
     /**
      * Widget for viewing the job results of a launched job.
      *
@@ -791,7 +791,7 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
         }
     });
 
-    var JobWidgetView = IPython.WidgetView.extend({
+    var JobWidgetView = widget.DOMWidgetView.extend({
         render: function () {
             // Double check to make sure that this is the correct cell
             if ($(this.options.cell.element).hasClass("running")) {
@@ -805,6 +805,10 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
                 // Hide the code by default
                 var element = this.$el;
                 setTimeout(function() {
+                    // Protect against the "double render" bug in Jupyter 3.2.1
+                    element.parent().find(".gp-widget-job:not(:first-child)").remove();
+
+                    // Hide the code
                     element.closest(".cell").find(".input")
                         .css("height", "0")
                         .css("overflow", "hidden");
@@ -814,5 +818,5 @@ require(["widgets/js/widget", "jqueryui"], function (/* WidgetManager */) {
     });
 
     // Register the JobWidgetView with the widget manager.
-    IPython.WidgetManager.register_widget_view('JobWidgetView', JobWidgetView);
+    manager.WidgetManager.register_widget_view('JobWidgetView', JobWidgetView);
 });
