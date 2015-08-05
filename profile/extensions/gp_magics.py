@@ -34,5 +34,4 @@ def load_ipython_extension(ipython):
     # The `ipython` argument is the currently active `InteractiveShell`
     # instance, which can be used in any way. This allows you to register
     # new magics or aliases, for example.
-    print "GenePattern IPython Module Loaded!"
     ipython.register_magics(GenePatternMagic)
