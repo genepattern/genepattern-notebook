@@ -708,15 +708,22 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
          */
         _displayVisualizer: function(launchUrl) {
             var viewerDiv = this.element.find(".gp-widget-job-visualize");
-            viewerDiv.append(
-                $("<iframe/>")
-                    .css("width", "100%")
-                    .css("height", "500px")
-                    .css("overflow", "auto")
-                    .css("margin-top", "10px")
-                    .css("border", "1px solid rgba(10, 45, 105, 0.80)")
-                    .attr("src", launchUrl)
-            );
+
+            // Check if the visualizer has already been displayed
+            var displayed = viewerDiv.find("iframe").length > 0;
+
+            // Display the visualizer if not already displayed
+            if (!displayed) {
+                viewerDiv.append(
+                    $("<iframe/>")
+                        .css("width", "100%")
+                        .css("height", "500px")
+                        .css("overflow", "auto")
+                        .css("margin-top", "10px")
+                        .css("border", "1px solid rgba(10, 45, 105, 0.80)")
+                        .attr("src", launchUrl)
+                );
+            }
         },
 
         /**
