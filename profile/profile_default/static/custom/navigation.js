@@ -250,32 +250,35 @@ GenePattern.notebook.authenticate = function(data) {
     sliderModules.empty();
     if (data['all_modules']) {
         $.each(data['all_modules'], function(index, module) {
-            var tags = module['categories'];
-            $.each(module['tags'], function(i, e) {
-                tags.push(e['tag'])
-            });
-            tags.sort();
-            var option = GenePattern.notebook.sliderOption(module['lsid'], module['name'], "v" + module['version'], module['description'], tags);
-            option.click(function() {
-                var index = IPython.notebook.get_selected_index();
-                IPython.notebook.insert_cell_below('code', index);
-                IPython.notebook.select_next();
-                var cell = IPython.notebook.get_selected_cell();
-                var code = GenePattern.notebook.buildModuleCode(module);
-                cell.set_text(code);
-                setTimeout(function() {
-                    cell.execute();
-                }, 10);
+            // Only add module if it is not a Java visualizer
+            if (module['categories'].indexOf("Visualizer") === -1) {
+                var tags = module['categories'];
+                $.each(module['tags'], function(i, e) {
+                    tags.push(e['tag'])
+                });
+                tags.sort();
+                var option = GenePattern.notebook.sliderOption(module['lsid'], module['name'], "v" + module['version'], module['description'], tags);
+                option.click(function() {
+                    var index = IPython.notebook.get_selected_index();
+                    IPython.notebook.insert_cell_below('code', index);
+                    IPython.notebook.select_next();
+                    var cell = IPython.notebook.get_selected_cell();
+                    var code = GenePattern.notebook.buildModuleCode(module);
+                    cell.set_text(code);
+                    setTimeout(function() {
+                        cell.execute();
+                    }, 10);
 
-                // Close the slider
-                $(".sidebar-button-slider").trigger("click");
+                    // Close the slider
+                    $(".sidebar-button-slider").trigger("click");
 
-                // Scroll to the new cell
-                $('#site').animate({
-                    scrollTop: $(IPython.notebook.get_selected_cell().element).position().top
-                }, 500);
-            });
-            sliderModules.append(option);
+                    // Scroll to the new cell
+                    $('#site').animate({
+                        scrollTop: $(IPython.notebook.get_selected_cell().element).position().top
+                    }, 500);
+                });
+                sliderModules.append(option);
+            }
         });
         sliderModules.append($("<p>&nbsp;</p>"))
     }
