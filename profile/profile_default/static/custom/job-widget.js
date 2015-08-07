@@ -122,6 +122,11 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                     .append(
                         $("<div></div>")
                             .addClass("gp-widget-job-body-wrapper")
+                            .append( // Attach message box
+                                $("<div></div>")
+                                    .addClass("alert gp-widget-job-message")
+                                    .css("display", "none")
+                            )
                             .append(
                                 $("<div></div>")
                                     .addClass("widget-float-right gp-widget-job-status")
@@ -592,9 +597,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
          */
         _showAuthenticationMessage: function() {
             this.element.find(".gp-widget-job-task").text(" GenePattern Job: Not Authenticated");
-            this.element.find(".gp-widget-job-outputs")
-                .addClass("alert alert-danger")
-                .text("You must be authenticated before the job information can be displayed. After you authenticate it may take a few seconds for the job information to appear.");
+            this.errorMessage("You must be authenticated before the job information can be displayed. After you authenticate it may take a few seconds for the job information to appear.");
 
             // Update the reload button
             this.element.find(".gp-widget-job-reload").attr("disabled", "disabled");
@@ -649,7 +652,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
         },
 
         /**
-         * Display the widget from the job object
+         * Display the widget for the job object
          *
          * @param job
          * @private
@@ -687,6 +690,15 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                 this.element.find(".gp-widget-job-share").removeAttr("disabled");
             }
 
+            // Display error if Java visualizer
+            var task = job.task();
+            if (task !== null && task !== undefined) {
+                var categories = task.categories();
+                if (categories.indexOf("Visualizer") !== -1) {
+                    this.errorMessage("This job appears to be a deprecated Java-based visualizer. These visualizers are not supported in the GenePattern Notebook.");
+                }
+            }
+
             // Build the sharing pane
             this.buildSharingPanel(job);
 
@@ -698,6 +710,32 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
 
             // Initialize status polling
             this._initPoll(job.status());
+        },
+
+        /**
+         * Show a success message to the user
+         *
+         * @param message - String containing the message to show
+         */
+        successMessage: function(message) {
+            var messageBox = this.element.find(".gp-widget-job-message");
+            messageBox.removeClass("alert-danger");
+            messageBox.addClass("alert-success");
+            messageBox.text(message);
+            messageBox.show("shake", {}, 500);
+        },
+
+        /**
+         * Display an error message in the job widget
+         *
+         * @param message - String containing the message to show
+         */
+        errorMessage: function(message) {
+            var messageBox = this.element.find(".gp-widget-job-message");
+            messageBox.removeClass("alert-success");
+            messageBox.addClass("alert-danger");
+            messageBox.text(message);
+            messageBox.show("shake", {}, 500);
         },
 
         /**

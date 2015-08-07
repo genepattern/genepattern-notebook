@@ -1451,6 +1451,12 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
             this.element.find(".gp-widget-task-version").empty().text("Version " + this._task.version());
             this.element.find(".gp-widget-task-doc").attr("data-href", GenePattern.server() + this._task.documentation().substring(3));
             this.element.find(".gp-widget-task-desc").empty().text(this._task.description());
+
+            // Display error if Java visualizer
+            var categories = this._task.categories();
+            if (categories.indexOf("Visualizer") !== -1) {
+                this.errorMessage("This job appears to be a deprecated Java-based visualizer. These visualizers are not supported in the GenePattern Notebook.");
+            }
         },
 
         /**
