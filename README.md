@@ -3,13 +3,12 @@ GenePattern Notebook
 
 Some notes on setup of GenePattern Notebook environment.
 
-**IMPORTANT: The current version of the code here only works with GenePattern 3.9.3 (the 
-most recent version) and up! This is because a number of changes have been made to
-the GenePattern REST API to support GenePattern Notebook. Use of modules requiring a EULA
-or file lists requires GenePattern 3.9.4 (also due to REST API changes).**
-
-**IMPORTANT: There is a known error in GenePattern 3.9.3 OAuth2 code that requires that you
-sign into GenePattern in your browser before making use of the GenePattern Notebook.**
+**IMPORTANT: The current version of the code here only works with GenePattern 3.9.3 and up! 
+We recommend GenePattern 3.9.4 (the latest version), as this version fixs  bug in the 
+server than can cause the Notebook to double prompt for authentication.  This is because a 
+number of changes have been made to the GenePattern REST API to support GenePattern 
+Notebook. Use of modules requiring a EULA or file lists requires GenePattern 3.9.4 (also 
+due to REST API changes).**
 
 # Installation
 
