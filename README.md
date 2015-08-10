@@ -4,7 +4,7 @@ GenePattern Notebook
 Some notes on setup of GenePattern Notebook environment.
 
 **IMPORTANT: The current version of the code here only works with GenePattern 3.9.3 and up! 
-We recommend GenePattern 3.9.4 (the latest version), as this version fixs  bug in the 
+We recommend GenePattern 3.9.4 (the latest version), as this version fixes  bug in the 
 server than can cause the Notebook to double prompt for authentication.**
 
 # Installation
