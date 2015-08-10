@@ -644,6 +644,18 @@ GenePattern.notebook.init.notebook_init_wrapper = function () {
             }}
         );
 
+        // Set event for hiding popovers when user clicks away
+        $(document).on("click", function (e) {
+            var $target = $(e.target),
+                isPopover = $(e.target).is("[data-toggle=popover]"),
+                inPopover = $(e.target).closest(".popover").length > 0;
+
+            // Hide only if not inside popover
+            if (!isPopover && !inPopover) {
+                $(".popover").popover("hide");
+            }
+        });
+
         // Mark init as done
         GenePattern.notebook.init.launch_init.done_init = true;
     }

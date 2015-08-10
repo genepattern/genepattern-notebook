@@ -564,11 +564,6 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
             setTimeout(function() {
                 // Check to see if the user is authenticated yet
                 if (GenePattern.authenticated) {
-                    console.log ( widget );
-                    console.log ( widget.element );
-                    console.log ( widget.element.closest(".cell") );
-                    console.log ( widget.element.closest(".cell").data("cell") );
-
                     // If authenticated, execute cell again
                     widget.element.closest(".cell").data("cell").execute();
                 }
@@ -809,9 +804,37 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                 for (var i = 0; i < outputs.length; i++) {
                     var output = outputs[i];
                     $("<a></a>")
-                        .text(output["link"]["name"])
+                        .text(output["link"]["name"] + " ")
                         .attr("href", output["link"]["href"])
                         .attr("target", "_blank")
+                        .attr("onclick", "return false;")
+                        .attr("data-toggle", "popover")
+                        .append(
+                            $("<i></i>")
+                                .addClass("fa fa-info-circle")
+                                .css("color", "gray")
+                        )
+                        .click(function() {
+                            $(".popover").popover("hide");
+                        })
+                        .popover({
+                            title: output["link"]["name"],
+                            content: $("<div></div>")
+                                .append(
+                                    $("<ul></ul>")
+                                        .append(
+                                            $("<li></li>")
+                                                .text("Open in New Tab")
+                                        )
+                                        .append(
+                                            $("<li></li>")
+                                                .text("See Code Use")
+                                        )
+                                ),
+                            html: true,
+                            placement: "right",
+                            trigger: "click"
+                        })
                         .appendTo(outputsList);
                 }
             }
