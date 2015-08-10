@@ -3,7 +3,7 @@ GenePattern Notebook
 
 Some notes on setup of GenePattern Notebook environment.
 
-**IMPORTANT: The current version of the code here only works with GenePattern 3.9.3 and up! 
+**IMPORTANT: The current version of the code only works with GenePattern 3.9.3 and up! 
 We recommend GenePattern 3.9.4 (the latest version), as this version fixes a bug in the 
 server than can cause the Notebook to double prompt for authentication.**
 
@@ -74,6 +74,13 @@ executing the following line of code from a terminal.
 
 > pip install -U jsonpickle
 
+# Known Issues
+
+There is a known issue that can cause JavaScript visualizers to not display propertly unless a user 
+first logs into the main GenePattern interface from the same browser before using them in the 
+GenePattern Notebook. This is due to a security model issue in the GenePattern server. A fix is 
+planned for the upcoming GenePattern 3.9.5 release.
+
 # Feature Support
 
 Most common GenePattern features are supported from the GenePattern Notebook. A few, however, have 
@@ -82,3 +89,5 @@ yet to be implemented. GenePattern features that are not yet supported are:
 * Batch job submission
 * GenomeSpace integration
 * Pipeline child job output
+* Dynamically updated choice parameters
+* Parameter groups
