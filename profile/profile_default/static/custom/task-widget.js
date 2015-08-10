@@ -1840,7 +1840,14 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                 });
             }
             else {
-                console.log("Unknown input type for Run Task widget");
+                console.log("Unknown input type for Run Task widget: " + param.name() + " " + param.type());
+                this.errorMessage("Type error in parameter " + param.name() + ", defaulting to text input.");
+
+                paramBox.find(".gp-widget-task-param-input").textInput({
+                    runTask: this,
+                    param: param,
+                    default: param.defaultValue()
+                });
             }
 
             form.append(paramBox);
