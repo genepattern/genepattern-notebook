@@ -634,6 +634,16 @@ GenePattern.notebook.init.notebook_init_wrapper = function () {
             }
         }, 1000);
 
+        // Initialize the GenePattern cell type keyboard shortcut
+        IPython.keyboard_manager.command_shortcuts.add_shortcut('g', {
+            help : 'to GenePattern',
+            help_index : 'cc',
+            handler : function (event) {
+                GenePattern.notebook.changeGenePatternPrompt()
+                return false;
+            }}
+        );
+
         // Mark init as done
         GenePattern.notebook.init.launch_init.done_init = true;
     }
