@@ -166,6 +166,8 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                 this._showAuthenticationMessage();
                 this._pollForAuth();
             }
+
+            return this;
         },
 
         /**
@@ -562,6 +564,11 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
             setTimeout(function() {
                 // Check to see if the user is authenticated yet
                 if (GenePattern.authenticated) {
+                    console.log ( widget );
+                    console.log ( widget.element );
+                    console.log ( widget.element.closest(".cell") );
+                    console.log ( widget.element.closest(".cell").data("cell") );
+
                     // If authenticated, execute cell again
                     widget.element.closest(".cell").data("cell").execute();
                 }

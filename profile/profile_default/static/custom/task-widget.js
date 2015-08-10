@@ -1270,6 +1270,8 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                 this._showAuthenticationMessage();
                 this._pollForAuth();
             }
+
+            return this;
         },
 
         /**

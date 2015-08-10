@@ -238,6 +238,8 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                     widget._displayLoggedIn();
                 }, 1);
             }
+
+            return this;
         },
 
         /**
