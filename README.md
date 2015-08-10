@@ -5,10 +5,7 @@ Some notes on setup of GenePattern Notebook environment.
 
 **IMPORTANT: The current version of the code here only works with GenePattern 3.9.3 and up! 
 We recommend GenePattern 3.9.4 (the latest version), as this version fixs  bug in the 
-server than can cause the Notebook to double prompt for authentication.  This is because a 
-number of changes have been made to the GenePattern REST API to support GenePattern 
-Notebook. Use of modules requiring a EULA or file lists requires GenePattern 3.9.4 (also 
-due to REST API changes).**
+server than can cause the Notebook to double prompt for authentication.**
 
 # Installation
 
@@ -76,3 +73,12 @@ the notebook to store results in memory using a JSON data format. This package m
 executing the following line of code from a terminal.
 
 > pip install -U jsonpickle
+
+# Feature Support
+
+Most common GenePattern features are supported from the GenePattern Notebook. A few, however, have 
+yet to be implemented. GenePattern features that are not yet supported are:
+
+* Batch job submission
+* GenomeSpace integration
+* Pipeline child job output

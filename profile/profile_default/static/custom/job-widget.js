@@ -9,9 +9,9 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
      *      Job Status
      *      Access to Job Results
      *      Access to Logs
+     *      Job Sharing & Permissions
      *
      * Non-Supported Features:
-     *      Job Sharing & Permissions
      *      Access to Job Inputs
      *      Visibility into Child Jobs
      *      Batch Jobs
