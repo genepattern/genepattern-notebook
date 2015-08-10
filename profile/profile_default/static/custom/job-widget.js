@@ -476,14 +476,14 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
             var dialog = require('base/js/dialog');
             var job = this.options.job;
             var widget = this;
-            var cell = this.element.closest(".cell").data("cell");
+            //var cell = this.element.closest(".cell").data("cell");
 
             dialog.modal({
                 notebook: IPython.notebook,
                 keyboard_manager: this.keyboard_manager,
                 title : "Reload Job?",
-                body : "Are you sure you want to reload the job? This will detach the notebook" +
-                       "from the current job and replace it with the run task form.",
+                body : "Are you sure you want to reload the job? This will leave the current " +
+                       "job widget in place and insert a copy of its task widget below.",
                 buttons : {
                     "Cancel" : {},
                     Reload : {
@@ -491,6 +491,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                         "click" : function() {
                             job.code("Python").done(function(code) {
                                 code = widget._stripUnwantedCode(code);
+                                var cell = IPython.notebook.insert_cell_below();
 
                                 // Put the code in the cell
                                 cell.code_mirror.setValue(code);
