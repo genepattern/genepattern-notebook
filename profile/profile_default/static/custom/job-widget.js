@@ -680,11 +680,11 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
             this.element.find(".gp-widget-job-status").text(statusText);
 
             // Display the job results
-            var outputsList = this._outputsList(job.outputFiles());
+            var outputsList = this._outputsList(job.outputFiles(), true);
             this.element.find(".gp-widget-job-outputs").append(outputsList);
 
             // Display the log files
-            var logList = this._outputsList(job.logFiles());
+            var logList = this._outputsList(job.logFiles(), false);
             this.element.find(".gp-widget-job-outputs").append(logList);
 
             // Enable sharing button, if necessary
@@ -792,21 +792,23 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
         /**
          * Return a div containing the file outputs formatted for display
          *
-         * @param outputs
+         * @param outputs - structure containing the output file data
+         * @fullMenu - whether to include more menu options than simple viewing
          * @returns {*|jQuery|HTMLElement}
          * @private
          */
-        _outputsList: function(outputs) {
+        _outputsList: function(outputs, fullMenu) {
+            var widget = this;
             var outputsList = $("<div></div>")
                 .addClass("gp-widget-job-outputs-list");
 
             if (outputs) {
                 for (var i = 0; i < outputs.length; i++) {
+                    var indexString = i.toString();
                     var output = outputs[i];
-                    $("<a></a>")
+                    var link = $("<a></a>")
                         .text(output["link"]["name"] + " ")
                         .attr("href", output["link"]["href"])
-                        .attr("target", "_blank")
                         .attr("onclick", "return false;")
                         .attr("data-toggle", "popover")
                         .append(
@@ -816,26 +818,64 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                         )
                         .click(function() {
                             $(".popover").popover("hide");
-                        })
-                        .popover({
-                            title: output["link"]["name"],
+                        });
+
+                    // Attach simple menu
+                    if (!fullMenu) {
+                        link.popover({
+                            title: "",
                             content: $("<div></div>")
+                                .addClass("list-group")
                                 .append(
-                                    $("<ul></ul>")
-                                        .append(
-                                            $("<li></li>")
-                                                .text("Open in New Tab")
-                                        )
-                                        .append(
-                                            $("<li></li>")
-                                                .text("See Code Use")
-                                        )
+                                    $("<label></label>")
+                                        .text(output["link"]["name"])
+                                )
+                                .append(
+                                    $("<a></a>")
+                                        .addClass("list-group-item")
+                                        .text("Open in New Tab")
+                                        .attr("href", output["link"]["href"])
+                                        .attr("target", "_blank")
                                 ),
                             html: true,
                             placement: "right",
                             trigger: "click"
-                        })
-                        .appendTo(outputsList);
+                        });
+                    }
+                    // Attach advanced menu
+                    else {
+                        link.popover({
+                            title: "",
+                            content: $("<div></div>")
+                                .addClass("list-group")
+                                .append(
+                                    $("<label></label>")
+                                        .text(output["link"]["name"])
+                                )
+                                .append(
+                                    $("<a></a>")
+                                        .addClass("list-group-item")
+                                        .text("Open in New Tab")
+                                        .attr("href", output["link"]["href"])
+                                        .attr("target", "_blank")
+                                )
+                                .append(
+                                    $("<a></a>")
+                                        .addClass("list-group-item")
+                                        .text("See Code Use")
+                                        .attr("href", "#")
+                                        .click(function() {
+                                            widget.codeDialog(widget.options.job, indexString);
+                                            $(".popover").popover("hide");
+                                        })
+                                ),
+                            html: true,
+                            placement: "right",
+                            trigger: "click"
+                        });
+                    }
+
+                    link.appendTo(outputsList);
                 }
             }
             else {
@@ -843,6 +883,55 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
             }
 
             return outputsList;
+        },
+
+        /**
+         * Display a dialog containing code for the job or output file
+         *
+         * @param job - the Job object
+         * @param fileIndex - index for which output file this is
+         */
+        codeDialog: function(job, fileIndex) {
+            var dialog = require('base/js/dialog');
+            var jobCode = "thisJob = job" + job.jobNumber();
+            var fileCode = "thisFile = job" + job.jobNumber() + ".get_output_files()[" + fileIndex + "]";
+
+            dialog.modal({
+                notebook: IPython.notebook,
+                keyboard_manager: this.keyboard_manager,
+                title : "Python Code",
+                body : $("<div></div>")
+                    .append(
+                        $("<p></p>")
+                            .text("The GenePattern jobs and files referenced by this widget can be accessed programmatically. "
+                                + "To obtain a reference to the GPJob object, copy and paste the following code:")
+                    )
+                    .append(
+                        $("<blockquote></blockquote>")
+                            .append(
+                                $("<code></code>")
+                                    .text(jobCode)
+                            )
+                    )
+                    .append(
+                        $("<p></p>")
+                            .text("To obtain a reference to the output file, the code below can be used:")
+                    )
+                    .append(
+                        $("<blockquote></blockquote>")
+                            .append(
+                                $("<code></code>")
+                                    .text(fileCode)
+                            )
+                    )
+                    .append(
+                        $("<p></p>")
+                            .html("More documentation can be obtained at the GenePattern website, or by calling <code>help(thisJob)</code>.")
+                    ),
+                buttons : {
+                    "Close" : {}
+                }
+            });
         },
 
         /**

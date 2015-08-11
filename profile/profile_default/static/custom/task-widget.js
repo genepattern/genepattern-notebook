@@ -1213,7 +1213,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                             )
                             .append(
                                 $("<div></div>")
-                                    .text("You must agree below to the following End-User license agreements before you can run this task.")
+                                    .text("You must agree to the following End-User license agreements before you can run this task.")
                             )
                             .append(
                                 $("<div></div>")
