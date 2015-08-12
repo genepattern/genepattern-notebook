@@ -1,0 +1,137 @@
+/*
+ * Styles for navigation
+ */
+
+.add-cell-container {
+    text-align: right;
+    position: fixed;
+    bottom: 55px;
+    padding-right: 15px;
+    height: 0;
+}
+
+.add-cell-button {
+    color: white;
+    margin-right: 10px;
+    z-index: 5;
+    box-shadow: 2px 2px 1px #cecece;
+    height: 40px;
+    opacity: 0.5;
+    width: 40px;
+    background-color: #0a2d69;
+    display: inline-block;
+    font-size: 1.7em;
+    line-height: 1.6;
+    text-align: center;
+    border: medium none;
+    border-radius: 50%;
+}
+
+.add-cell-button:hover, .sidebar-button:hover {
+    opacity: 0.8;
+    cursor: pointer;
+}
+
+#slider {
+    display: none;
+    position: fixed;
+    top: 106px;
+    bottom: 0;
+    left: 0;
+    z-index: 5;
+    width: 50%;
+    min-width: 400px;
+    background-color: #f8f8f8;
+    border: 1px solid rgba(10, 45, 105, 0.8);
+}
+
+#slider-tabs, #slider .tab-content {
+    flex: auto;
+    -ms-flex: auto;
+    -moz-flex: auto;
+    -webkit-flex: auto;
+    height: 100%;
+}
+
+#slider-tabs .active {
+    background-color: #ffffff;
+}
+
+#slider-tabs .tab-pane {
+    padding: 10px;
+    overflow: auto;
+    position: absolute;
+    top: 43px;
+    bottom: 0;
+    width: 100%;
+}
+
+#slider-filter-box {
+    float: right;
+    padding: 7px;
+}
+
+.sidebar-button-main {
+    position: fixed;
+    left: 0;
+    top: 208px;
+}
+
+.sidebar-button-slider {
+    position: absolute;
+    right: -40px;
+    top: 100px;
+}
+
+.sidebar-button {
+    color: white;
+    z-index: 5;
+    box-shadow: 2px 2px 1px #cecece;
+    height: 40px;
+    opacity: 0.5;
+    width: 40px;
+    background-color: #0a2d69;
+    display: inline-block;
+    font-size: 1.7em;
+    line-height: 1.6;
+    text-align: center;
+    border: medium none;
+    border-top-right-radius: 50%;
+    border-bottom-right-radius: 50%;
+}
+
+.slider-option {
+    cursor: pointer;
+    position: relative;
+}
+
+.slider-option:hover {
+    background-color: #e4e4e4;
+}
+
+.slider-option-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.slider-option-anno {
+    color: gray;
+    position: absolute;
+    right: 15px;
+    top: 10px;
+}
+
+.slider-option-desc {
+    color: #333366;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+}
+
+.slider-option-tags {
+    display: block;
+    color: rgba(10, 45, 105, 1);
+    padding: 5px;
+}

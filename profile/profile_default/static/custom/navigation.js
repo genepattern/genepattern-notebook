@@ -85,6 +85,7 @@ GenePattern.notebook.sliderOption = function(id, name, anno, desc, tags) {
 GenePattern.notebook.slider = function() {
     return $("<div></div>")
         .attr("id", "slider")
+        .hide()
 
         // Append the navigation tab
         .append(
