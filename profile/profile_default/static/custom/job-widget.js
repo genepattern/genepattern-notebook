@@ -927,7 +927,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                     )
                     .append(
                         $("<p></p>")
-                            .html("More documentation can be obtained at the GenePattern website, or by calling <code>help(thisJob)</code>.")
+                            .html("More documentation can be obtained at the GenePattern website, or by calling <code>help(job" + job.jobNumber() + ")</code>.")
                     ),
                 buttons : {
                     "Close" : {}
