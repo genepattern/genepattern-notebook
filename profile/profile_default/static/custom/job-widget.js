@@ -868,17 +868,19 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                                 )
                                 .append(
                                     $("<a></a>")
-                                        .addClass("list-group-item")
-                                        .text("See Code Use")
+                                        .addClass("list-group-item gp-widget-job-view-code")
+                                        .text("View Code Use")
                                         .attr("href", "#")
-                                        .click(function() {
-                                            widget.codeDialog(widget.options.job, indexString);
-                                            $(".popover").popover("hide");
-                                        })
                                 ),
                             html: true,
                             placement: "right",
                             trigger: "click"
+                        });
+
+                        // Attach the click method to "view code"
+                        $(".gp-widget-job[name='" + widget.options.job.jobNumber() + "']").on('click', '.gp-widget-job-view-code', function () {
+                            widget.codeDialog(widget.options.job, indexString);
+                            $(".popover").popover("hide");
                         });
                     }
 
