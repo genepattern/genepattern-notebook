@@ -28,6 +28,15 @@
     font-weight: bold;
 }
 
+.gp-widget-logo {
+    height: 20px;
+    float: left;
+    padding-right: 10px;
+    position: relative;
+    left: -5px;
+    top: -2px;
+}
+
 .widget-username-label {
     font-style: italic;
 }

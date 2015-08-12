@@ -72,13 +72,13 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                                 )
                         )
                         .append(
+                            $("<img/>")
+                                .addClass("gp-widget-logo")
+                                .attr("src", "/static/custom/GP_logo_on_black.png")
+                        )
+                        .append(
                             $("<h3></h3>")
                                 .addClass("panel-title")
-                                .append(
-                                    $("<span></span>")
-                                        .addClass("fa fa-th")
-                                )
-                                .append(" GenePattern: ")
                                 .append(
                                     $("<span></span>")
                                         .addClass("widget-username-label")

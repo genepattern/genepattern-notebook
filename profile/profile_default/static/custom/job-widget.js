@@ -104,12 +104,13 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                             )
                     )
                     .append(
+                        $("<img/>")
+                            .addClass("gp-widget-logo")
+                            .attr("src", "/static/custom/GP_logo_on_black.png")
+                    )
+                    .append(
                         $("<h3></h3>")
                             .addClass("panel-title")
-                            .append(
-                                $("<span></span>")
-                                    .addClass("fa fa-th")
-                            )
                             .append(
                                 $("<span></span>")
                                     .addClass("gp-widget-job-task")
@@ -599,7 +600,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
          * @private
          */
         _showAuthenticationMessage: function() {
-            this.element.find(".gp-widget-job-task").text(" GenePattern Job: Not Authenticated");
+            this.element.find(".gp-widget-job-task").text("Not Authenticated");
             this.errorMessage("You must be authenticated before the job information can be displayed. After you authenticate it may take a few seconds for the job information to appear.");
 
             // Update the reload button
@@ -644,8 +645,8 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                         widget._clean();
 
                         // Display the error
-                        widget.element.find(".gp-widget-job-task").text(" GenePattern Job: Error");
-                        widget.element.find(".gp-widget-job-outputs").text("Error loading job: " + widget.options.jobNumber);
+                        widget.element.find(".gp-widget-job-task").text("Error");
+                        widget.errorMessage("Error loading job: " + widget.options.jobNumber);
 
                         // Update the code button
                         widget.element.find(".gp-widget-job-reload").attr("disabled", "disabled");

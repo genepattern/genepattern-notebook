@@ -1130,12 +1130,13 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                             )
                     )
                     .append(
+                        $("<img/>")
+                            .addClass("gp-widget-logo")
+                            .attr("src", "/static/custom/GP_logo_on_black.png")
+                    )
+                    .append(
                         $("<h3></h3>")
                             .addClass("panel-title")
-                            .append(
-                                $("<span></span>")
-                                    .addClass("fa fa-th")
-                            )
                             .append(
                                 $("<span></span>")
                                     .addClass("gp-widget-task-name")
@@ -1373,7 +1374,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
             this._installed = false;
 
             // Show the message
-            this.element.find(".gp-widget-task-name").empty().text(" GenePattern Task: Module Not Installed");
+            this.element.find(".gp-widget-task-name").empty().text("Module Not Installed");
             this.errorMessage("The module used by this widget is not installed on this GenePattern server.");
             this.element.find(".gp-widget-task-subheader").hide();
             this.element.find(".gp-widget-task-footer").hide();
@@ -1385,7 +1386,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
          * @private
          */
         _showAuthenticationMessage: function() {
-            this.element.find(".gp-widget-task-name").empty().text(" GenePattern Task: Not Authenticated");
+            this.element.find(".gp-widget-task-name").empty().text("Not Authenticated");
             this.element.find(".gp-widget-task-form").empty()
                 .addClass("alert alert-danger")
                 .text("You must be authenticated before the task information can be displayed. After you authenticate it may take a few seconds for the task information to appear.");
