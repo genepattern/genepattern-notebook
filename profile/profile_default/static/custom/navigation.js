@@ -21,55 +21,6 @@ GenePattern.notebook.loadingScreen = function() {
 };
 
 /**
- * Attach the bottom "Add Cell" buttons
- * @returns {*|jQuery}
- */
-GenePattern.notebook.bottomButton = function() {
-    var auth_view = GenePattern.authenticated ? "visible" : "hidden";
-    return $("<div></div>")
-            .addClass("container add-cell-container")
-            .append(
-                $("<span></span>")
-                    .addClass("fa fa-paragraph add-cell-button")
-                    .attr("title", "Add Markdown Cell")
-                    .attr("data-toggle", "tooltip")
-                    .attr("data-placement", "top")
-                    .click(function() {
-                        var index = IPython.notebook.get_selected_index();
-                        IPython.notebook.insert_cell_below('markdown', index);
-                        IPython.notebook.select_next();
-                    })
-            )
-            .append(
-                $("<span></span>")
-                    .addClass("fa fa-terminal add-cell-button")
-                    .attr("title", "Add Code Cell")
-                    .attr("data-toggle", "tooltip")
-                    .attr("data-placement", "top")
-                    .click(function() {
-                        var index = IPython.notebook.get_selected_index();
-                        IPython.notebook.insert_cell_below('code', index);
-                        IPython.notebook.select_next();
-                    })
-            )
-            .append(
-                $("<span></span>")
-                    .addClass("fa fa-th add-cell-button gp-cell-button")
-                    .attr("title", "Add GenePattern Cell")
-                    .css("padding-left", "1px")
-                    .css("visibility", auth_view)
-                    .attr("data-toggle", "tooltip")
-                    .attr("data-placement", "top")
-                    .click(function() {
-                        var index = IPython.notebook.get_selected_index();
-                        var cell = IPython.notebook.insert_cell_below('code', index);
-                        IPython.notebook.select_next();
-                        GenePattern.notebook.widgetSelectDialog(cell);
-                    })
-            );
-};
-
-/**
  * Attach the left-hand slider tab
  *
  * @returns {*|jQuery}
@@ -707,9 +658,6 @@ GPAuthWidget(gpserver)';
 GenePattern.notebook.init.launch_init = function() {
     // Change the logo
     $("#ipython_notebook").find("img").attr("src", "/static/custom/GP_logo_on_black.png");
-
-    // Add the bottom buttons
-    $("#notebook-container").append(GenePattern.notebook.bottomButton());
 
     // Add the sidebar
     var body = $("body");
