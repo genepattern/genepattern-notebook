@@ -566,7 +566,13 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                 // Check to see if the user is authenticated yet
                 if (GenePattern.authenticated) {
                     // If authenticated, execute cell again
-                    widget.element.closest(".cell").data("cell").execute();
+                    var cellElement = widget.element.closest(".cell");
+                    if (cellElement.length > 0) {
+                        var cellObject = cellElement.data("cell");
+                        if (cellObject) {
+                            cellObject.execute();
+                        }
+                    }
                 }
                 else {
                     // If not authenticated, poll again
