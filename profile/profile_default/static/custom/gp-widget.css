@@ -61,6 +61,10 @@
     position: relative;
 }
 
+.widget-subarea {
+    max-width: 100%;
+}
+
 .gp-widget-loading, .gp-widget-logged-in {
     position: absolute;
     text-align: center;
