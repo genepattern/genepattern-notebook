@@ -42,6 +42,12 @@ getScript("/static/custom/gp.js");
 
 getScript("/static/custom/navigation.js");
 
+/*
+ * Run the GenePattern Notebook theme's JavaScript
+ */
+
+//getScript("/static/custom/gp-theme.js");
+
 /**
  * Import the IPython GenePattern Authentication widget
  */

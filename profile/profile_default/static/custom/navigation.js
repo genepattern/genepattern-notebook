@@ -656,9 +656,6 @@ GPAuthWidget(gpserver)';
  * Initialize GenePattern Notebook core functionality
  */
 GenePattern.notebook.init.launch_init = function() {
-    // Change the logo
-    $("#ipython_notebook").find("img").attr("src", "/static/custom/GP_logo_on_black.png");
-
     // Add the sidebar
     var body = $("body");
     body.append(GenePattern.notebook.sliderTab());
@@ -701,9 +698,6 @@ GenePattern.notebook.init.launch_init = function() {
 };
 
 require(["jquery"], function() {
-    // Add the loading screen
-    $("body").append(GenePattern.notebook.loadingScreen());
-
     // If in a notebook, display with the full event model
     $([IPython.events]).on('kernel_ready.Kernel kernel_created.Session notebook_loaded.Notebook', GenePattern.notebook.init.notebook_init_wrapper);
 
