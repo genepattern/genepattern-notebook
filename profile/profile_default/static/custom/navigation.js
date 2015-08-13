@@ -662,6 +662,22 @@ GenePattern.notebook.init.launch_init = function() {
     body.append(GenePattern.notebook.sliderTab());
     body.append(GenePattern.notebook.slider());
 
+    // Hide or show the slider tab if a GenePattern cell is highlighted
+    $([IPython.events]).on('select.Cell', function(event) {
+        var cell = IPython.notebook.get_selected_cell();
+        var isGPCell = cell.element.find(".gp-widget").length > 0;
+
+        // If authenticated and the selected cell is a GenePattern cell, show
+        if (GenePattern.authenticated && isGPCell) {
+            $(".sidebar-button-main").show();
+        }
+
+        // Else, hide
+        else {
+            $(".sidebar-button-main").hide();
+        }
+    });
+
     // Initialize tooltips
     $(function () {
         $('[data-toggle="tooltip"]').tooltip()
