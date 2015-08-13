@@ -502,11 +502,19 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
 
     var AuthWidgetView = widget.DOMWidgetView.extend({
         render: function () {
+            var cell = this.options.cell;
+
             // Double check to make sure that this is the correct cell
-            if ($(this.options.cell.element).hasClass("running")) {
+            if ($(cell.element).hasClass("running")) {
+                // Check to see if this auth widget was manually created, if so replace with full code
+                if (cell.code_mirror.getValue().indexOf("# !AUTOEXEC") === -1) {
+                    var code = GenePattern.notebook.init.buildCode("http://genepattern.broadinstitute.org/gp", "", "");
+                    cell.code_mirror.setValue(code);
+                    cell.execute();
+                }
+
                 // Render the view.
                 this.setElement($('<div></div>'));
-                //var jobNumber = this.model.get('job_number');
                 this.$el.auth({
                     cell: this.options.cell
                 });
