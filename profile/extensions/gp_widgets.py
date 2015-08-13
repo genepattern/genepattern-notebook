@@ -7,7 +7,7 @@ from gp import GPResource
 
 class GPAuthWidget(GPResource, widgets.DOMWidget):
     """
-    A running or completed job on a Gene Pattern server.
+    A running or completed job on a GenePattern server.
 
     Contains methods to get the info of the job, and to wait on a running job by
     polling the server until the job is completed.
