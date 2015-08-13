@@ -562,36 +562,12 @@ GenePattern.notebook.init.notebook_init_wrapper = function () {
         // Call the core init function
         GenePattern.notebook.init.launch_init();
 
-        // If no auth widget exists, add it
-        setTimeout(function() {
-            var authWidgetFound = $(".gp-widget-auth").length >= 1;
-
-            // If jQuery didn't find the widget, does it exist as code?
-            if (!authWidgetFound) {
-                var cells = IPython.notebook.get_cells();
-                $.each(cells, function(i, cell) {
-                    var code = cell.get_text();
-                    if (IPython.notebook.get_cells()[0].get_text().indexOf("GPAuthWidget(") > -1) {
-                        authWidgetFound = true;
-                    }
-                });
-            }
-
-            // Add a new auth widget
-            if (!authWidgetFound) {
-                var cell = IPython.notebook.insert_cell_above("code", 0);
-                var code = GenePattern.notebook.init.buildCode("http://genepattern.broadinstitute.org/gp", "", "");
-                cell.code_mirror.setValue(code);
-                cell.execute();
-            }
-        }, 1000);
-
         // Initialize the GenePattern cell type keyboard shortcut
         IPython.keyboard_manager.command_shortcuts.add_shortcut('g', {
             help : 'to GenePattern',
             help_index : 'cc',
             handler : function (event) {
-                GenePattern.notebook.changeGenePatternPrompt()
+                GenePattern.notebook.changeGenePatternPrompt();
                 return false;
             }}
         );
