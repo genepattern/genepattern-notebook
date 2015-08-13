@@ -427,37 +427,36 @@ GenePattern.notebook.updateSliderData = function(url, value) {
 
 GenePattern.notebook.changeGenePatternPrompt = function() {
     var dialog = require('base/js/dialog');
-    if (GenePattern.authenticated) {
-        var cell = IPython.notebook.get_selected_cell();
+    var cell = IPython.notebook.get_selected_cell();
 
-        dialog.modal({
-            notebook: IPython.notebook,
-            keyboard_manager: this.keyboard_manager,
-            title : "Change to GenePattern Widget?",
-            body : "Are you sure you want to change this cell's type to a GenePattern widget? This will cause " +
-                    "you to lose any code or other information already entered into the cell.",
-            buttons : {
-                "Cancel" : {},
-                "Change Cell Type" : {
-                    "class" : "btn-danger",
-                    "click" : function() {
+    dialog.modal({
+        notebook: IPython.notebook,
+        keyboard_manager: this.keyboard_manager,
+        title : "Change to GenePattern Widget?",
+        body : "Are you sure you want to change this cell's type to a GenePattern widget? This will cause " +
+                "you to lose any code or other information already entered into the cell.",
+        buttons : {
+            "Cancel" : {},
+            "Change Cell Type" : {
+                "class" : "btn-danger",
+                "click" : function() {
+                    if (GenePattern.authenticated) {
                         GenePattern.notebook.widgetSelectDialog(cell);
+                    }
+                    else {
+                        // Get the auth widget code
+                        var code = GenePattern.notebook.init.buildCode("http://genepattern.broadinstitute.org/gp", "", "");
+
+                        // Put the code in the cell
+                        cell.code_mirror.setValue(code);
+
+                        // Execute the cell
+                        cell.execute();
                     }
                 }
             }
-        });
-    }
-    else {
-        dialog.modal({
-            notebook: IPython.notebook,
-            keyboard_manager: this.keyboard_manager,
-            title : "Authentication Required",
-            body : "You must first authenticate with a GenePattern server before creating a GenePattern widget.",
-            buttons : {
-                "OK" : {}
-            }
-        });
-    }
+        }
+    });
 };
 
 /**
