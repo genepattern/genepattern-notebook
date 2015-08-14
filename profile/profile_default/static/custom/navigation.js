@@ -571,15 +571,27 @@ GenePattern.notebook.init.notebook_init_wrapper = function () {
             }}
         );
 
-        // Set event for hiding popovers when user clicks away
+        // Set event for hiding popovers & slider when user clicks away
         $(document).on("click", function (e) {
-            var $target = $(e.target),
-                isPopover = $(e.target).is("[data-toggle=popover]"),
-                inPopover = $(e.target).closest(".popover").length > 0;
+            var target = $(e.target);
 
-            // Hide only if not inside popover
+            // Handle hiding popovers
+            var isPopover = target.is("[data-toggle=popover]");
+            var inPopover = target.closest(".popover").length > 0;
+
+            // Hide popover only if click not inside popover
             if (!isPopover && !inPopover) {
                 $(".popover").popover("hide");
+            }
+
+            // Handle hiding the slider
+            var inSlider = target.closest("#slider").length > 0;
+            var inTab = target.is(".sidebar-button-main");
+            var sliderVisible = $("#slider:visible").length > 0;
+
+            // Hide slider only if click not inside slider
+            if (!inSlider && !inTab && sliderVisible) {
+                $("#slider").hide("slide");
             }
         });
 
