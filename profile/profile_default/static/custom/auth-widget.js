@@ -120,91 +120,92 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                         )
                         .append(
                             $("<div></div>")
-                                .addClass("alert alert-danger gp-widget-error")
+                                .addClass("alert gp-widget-auth-message")
                                 .hide()
                         )
                         .append(
                             $("<div></div>")
-                                .addClass("form-group")
+                                .addClass("gp-widget-auth-form")
                                 .append(
-                                    $("<label></label>")
-                                        .attr("for", "server")
-                                        .text("GenePattern Server")
+                                    $("<div></div>")
+                                        .addClass("form-group")
+                                        .append(
+                                            $("<label></label>")
+                                                .attr("for", "server")
+                                                .text("GenePattern Server")
+                                        )
+                                        .append(
+                                            $("<select></select>")
+                                                .addClass("form-control")
+                                                .attr("name", "server")
+                                                .attr("type", "text")
+                                                .css("margin-left", "0")
+                                        )
                                 )
                                 .append(
-                                    $("<select></select>")
-                                        .addClass("form-control")
-                                        .attr("name", "server")
-                                        .attr("type", "text")
-                                        .css("margin-left", "0")
+                                    $("<div></div>")
+                                        .addClass("form-group")
+                                        .append(
+                                            $("<label></label>")
+                                                .attr("for", "username")
+                                                .text("GenePattern Username")
+                                        )
+                                        .append(
+                                            $("<input/>")
+                                                .addClass("form-control")
+                                                .attr("name", "username")
+                                                .attr("type", "text")
+                                                .attr("placeholder", "Username")
+                                                .attr("required", "required")
+                                                .val(widget.getUserLabel(""))
+                                                .keyup(function (e) {
+                                                    if (e.keyCode == 13) {
+                                                        widget._enterPressed();
+                                                    }
+                                                })
+                                        )
                                 )
-                        )
-                        .append(
-                            $("<div></div>")
-                                .addClass("form-group")
                                 .append(
-                                    $("<label></label>")
-                                        .attr("for", "username")
-                                        .text("GenePattern Username")
+                                    $("<div></div>")
+                                        .addClass("form-group")
+                                        .append(
+                                            $("<label></label>")
+                                                .attr("for", "password")
+                                                .text("GenePattern Password")
+                                        )
+                                        .append(
+                                            $("<input/>")
+                                                .addClass("form-control")
+                                                .attr("name", "password")
+                                                .attr("type", "password")
+                                                .attr("placeholder", "Password")
+                                                .val(widget.getPasswordLabel(""))
+                                                .keyup(function (e) {
+                                                    if (e.keyCode == 13) {
+                                                        widget._enterPressed();
+                                                    }
+                                                })
+                                        )
                                 )
                                 .append(
-                                    $("<input/>")
-                                        .addClass("form-control")
-                                        .attr("name", "username")
-                                        .attr("type", "text")
-                                        .attr("placeholder", "Username")
-                                        .attr("required", "required")
-                                        .val(widget.getUserLabel(""))
-                                        .keyup(function (e) {
-                                            if (e.keyCode == 13) {
-                                                widget._enterPressed();
-                                            }
+                                    $("<button></button>")
+                                        .addClass("btn btn-primary gp-auth-button")
+                                        .text("Login to GenePattern")
+                                        .click(function() {
+                                            var server = widget.element.find("[name=server]").val();
+                                            var username = widget.element.find("[name=username]").val();
+                                            var password = widget.element.find("[name=password]").val();
+
+                                            // Display the loading animation
+                                            widget._displayLoading();
+
+                                            widget.buildCode(server, username, password);
+                                            widget.authenticate(server, username, password, function() {
+                                                widget.executeCell();
+                                                widget.buildCode(server, "", "");
+                                            });
                                         })
                                 )
-                        )
-                        .append(
-                            $("<div></div>")
-                                .addClass("form-group")
-                                .append(
-                                    $("<label></label>")
-                                        .attr("for", "password")
-                                        .text("GenePattern Password")
-                                )
-                                .append(
-                                    $("<input/>")
-                                        .addClass("form-control")
-                                        .attr("name", "password")
-                                        .attr("type", "password")
-                                        .attr("placeholder", "Password")
-                                        .val(widget.getPasswordLabel(""))
-                                        .keyup(function (e) {
-                                            if (e.keyCode == 13) {
-                                                widget._enterPressed();
-                                            }
-                                        })
-                                )
-                        )
-                        .append(
-                            $("<button></button>")
-                                .addClass("btn btn-primary gp-auth-button")
-                                .text("Login to GenePattern")
-                                .click(function() {
-                                    var server = widget.element.find("[name=server]").val();
-                                    var username = widget.element.find("[name=username]").val();
-                                    var password = widget.element.find("[name=password]").val();
-
-                                    // Display the loading animation
-                                    widget._displayLoading();
-
-                                    widget.buildCode(server, username, password);
-                                    widget.authenticate(server, username, password, function() {
-                                        widget.executeCell();
-                                        widget.buildCode(server, "", "");
-
-                                        // Done loading
-                                        widget._displayLoggedIn();
-                                    });
-                                })
                         )
             );
 
@@ -235,7 +236,13 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                     indicator.addClass("fa-arrow-down");
 
                     // Display the logged in message
-                    widget._displayLoggedIn();
+                    // widget._displayLoggedIn();
+
+                    // Hide the login form
+                    widget.hideLoginForm();
+
+                    // Display the system message, if available
+                    widget.checkSystemMessage(function() {});
                 }, 1);
             }
 
@@ -279,7 +286,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
          * @private
          */
         _displayLoading: function() {
-            this.hideError();
+            this.hideMessage();
             this.element.find(".gp-widget-loading").show();
         },
 
@@ -289,16 +296,45 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
         },
 
         /**
-         * Hide the error message
+         * Hide the success or error message
          */
-        hideError: function() {
-            this.element.find(".gp-widget-error").hide();
+        hideMessage: function() {
+            this.element.find(".gp-widget-auth-message").hide();
+        },
+
+        hideLoginForm: function() {
+            this.element.find(".gp-widget-auth-form").hide();
         },
 
         /**
-         * Show an error message
+         * Show a success message to the user
          *
-         * @param message
+         * @param message - String containing the message to show
+         */
+        successMessage: function(message) {
+            // Get into the correct view
+            var code = this.element.find(".widget-code");
+            var view = this.element.find(".widget-view");
+            view.slideDown();
+            code.slideUp();
+
+            // Hide the loading message & logged in
+            this.element.find(".gp-widget-loading").hide();
+            this.element.find(".gp-widget-logged-in").hide();
+
+            // Display the message
+            var messageBox = this.element.find(".gp-widget-auth-message");
+            messageBox.removeClass("alert-danger");
+            messageBox.removeClass("alert-info");
+            messageBox.addClass("alert-success");
+            messageBox.text(message);
+            messageBox.show("shake", {}, 500);
+        },
+
+        /**
+         * Display an error message in the job widget
+         *
+         * @param message - String containing the message to show
          */
         errorMessage: function(message) {
             // Get into the correct view
@@ -312,11 +348,37 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
             this.element.find(".gp-widget-logged-in").hide();
 
             // Display the error
-            var messageBox = this.element.find(".gp-widget-error");
+            var messageBox = this.element.find(".gp-widget-auth-message");
             messageBox.removeClass("alert-success");
+            messageBox.removeClass("alert-info");
             messageBox.addClass("alert-danger");
             messageBox.text(message);
             messageBox.show("shake", {}, 500);
+        },
+
+        /**
+         * Show an info message to the user
+         *
+         * @param message - String containing the message to show
+         */
+        infoMessage: function(message) {
+            // Get into the correct view
+            var code = this.element.find(".widget-code");
+            var view = this.element.find(".widget-view");
+            view.slideDown();
+            code.slideUp();
+
+            // Hide the loading message & logged in
+            this.element.find(".gp-widget-loading").hide();
+            this.element.find(".gp-widget-logged-in").hide();
+
+            // Display the message
+            var messageBox = this.element.find(".gp-widget-auth-message");
+            messageBox.removeClass("alert-danger");
+            messageBox.removeClass("alert-success");
+            messageBox.addClass("alert-info");
+            messageBox.text(message);
+            messageBox.show();
         },
 
         /**
@@ -406,8 +468,6 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                     withCredentials: true
                 },
                 success: function(data) {
-                    console.log(data['access_token']);
-
                     var token = data['access_token'];
 
                     $.ajaxSetup({
@@ -467,6 +527,44 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                 },
                 error: function() {
                     widget.errorMessage("Error loading server info");
+                }
+            });
+        },
+
+        /**
+         * Checks the system message and displays the message, if one is found
+         * Calls the done() method regardless of success or error
+         *
+         * @param done
+         */
+        checkSystemMessage: function(done) {
+            var widget = this;
+            $.ajax({
+                type: "GET",
+                url: GenePattern.server() + "/rest/v1/config/system-message",
+                dataType: 'html',
+                cache: false,
+                xhrFields: {
+                    withCredentials: true
+                },
+                success: function(data) {
+                    // Display if the system message is not blank
+                    if (data !== "") {
+                        // Strip data of HTML
+                        var cleanMessage = $("<div></div>").html(data).text();
+
+                        // Display the system message
+                        widget.infoMessage(cleanMessage);
+                    }
+
+                    // If a function to execute when done has been passed in, execute it
+                    if (done) { done(); }
+                },
+                error: function() {
+                    // Assume that the server is not a version that supports the system message call
+
+                    // If a function to execute when done has been passed in, execute it
+                    if (done) { done(); }
                 }
             });
         },
