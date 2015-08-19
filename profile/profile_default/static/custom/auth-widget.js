@@ -474,7 +474,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                         headers: {"Authorization": "Bearer " + token}
                     });
 
-                    widget.afterAuthenticate(server, username, password, done);
+                    widget.afterAuthenticate(server, username, password, token, done);
                 },
                 error: function() {
                     widget.errorMessage("Error authenticating");
@@ -491,7 +491,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
          * @param password
          * @param done
          */
-        afterAuthenticate: function(server, username, password, done) {
+        afterAuthenticate: function(server, username, password, token, done) {
             var widget = this;
             $.ajax({
                 type: "GET",
@@ -507,6 +507,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                     GenePattern.setServer(server);
                     GenePattern.username = username;
                     GenePattern.password = password;
+                    GenePattern.token = token;
 
                     // Make authenticated UI changes to auth widget
                     widget.element.find(".widget-username-label").text(username);

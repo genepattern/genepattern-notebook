@@ -769,7 +769,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                         .css("overflow", "auto")
                         .css("margin-top", "10px")
                         .css("border", "1px solid rgba(10, 45, 105, 0.80)")
-                        .attr("src", launchUrl)
+                        .attr("src", launchUrl + "#" + GenePattern.token)
                 );
             }
         },
