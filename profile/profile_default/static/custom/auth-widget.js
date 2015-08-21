@@ -489,6 +489,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
          * @param server
          * @param username
          * @param password
+         * @param token
          * @param done
          */
         afterAuthenticate: function(server, username, password, token, done) {
