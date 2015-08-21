@@ -12,7 +12,7 @@
     text-align: center;
     vertical-align: middle;
     font-size: 40pt;
-    background: #eeeeee url("/static/custom/aurora5.png") center center;
+    background: #eeeeee url("/static/genepattern/aurora5.png") center center;
     background-size: cover;
     color: white;
     padding-top: 200px;
@@ -24,7 +24,7 @@
  */
 
 #header {
-    background: url("/static/custom/aurora5.png") center center;
+    background: url("/static/genepattern/aurora5.png") center center;
     padding: 10px;
     min-height: 130px;
 }

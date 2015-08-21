@@ -16,7 +16,7 @@ GenePattern.notebook.loadingScreen = function() {
         .addClass("loading-screen")
         .append(
             $("<img/>")
-                .attr("src", "/static/custom/GP_logo_on_black.png")
+                .attr("src", "/static/genepattern/GP_logo_on_black.png")
         );
 };
 
@@ -611,8 +611,7 @@ GenePattern.notebook.init.buildCode = function(server, username, password) {
     return '# !AUTOEXEC\n\
 \n\
 %reload_ext gp\n\
-%reload_ext gp_widgets\n\
-%reload_ext gp_magics\n\
+%reload_ext genepattern\n\
 \n\
 # Don\'t have the GenePattern library? It can be downloaded from: \n\
 # http://genepattern.broadinstitute.org/gp/downloads/gp-python.zip \n\
@@ -621,7 +620,7 @@ import gp\n\
 \n\
 # The following widgets are components of the GenePattern Notebook extension.\n\
 try:\n\
-    from gp_widgets import GPAuthWidget, GPJobWidget, GPTaskWidget\n\
+    from genepattern import GPAuthWidget, GPJobWidget, GPTaskWidget\n\
 except:\n\
     def GPAuthWidget(input):\n\
         print("GP Widget Library not installed. Please visit http://genepattern.org")\n\

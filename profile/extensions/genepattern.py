@@ -1,8 +1,47 @@
 __author__ = 'tabor'
+__copyright__ = 'Copyright 2015, Broad Institute'
+__version__ = '0.3'
+__status__ = 'Beta'
 
+
+##############################################
+# GenePattern Notebook extension for Jupyter #
+# Tested with Jupyter 3.x and Python 2.7.x   #
+##############################################
+
+
+from IPython.core.magic import Magics, magics_class, line_magic
 from IPython.html import widgets
-from IPython.utils.traitlets import Unicode, List, Integer
+from IPython.utils.traitlets import Unicode, Integer
 from gp import GPResource
+import gp
+
+
+@magics_class
+class GenePatternMagic(Magics):
+    """
+    GenePattern Notebook magic commands
+    """
+
+    @line_magic
+    def get_job(self, line):
+        args = line.split(" ")          # GPServer, job number
+        if len(args) != 4:
+            return 'Incorrect number of args. Need 4: Server URL, username, password, job number'
+
+        server = gp.GPServer(args[0], args[1], args[2])
+        job = gp.GPJob(server, int(args[3]))
+        return job
+
+    @line_magic
+    def get_task(self, line):
+        args = line.split(" ")          # GPServer, task name or lsid
+        if len(args) != 4:
+            return 'Incorrect number of args. Need 4: Server URL, username, password, task name or LSID'
+
+        server = gp.GPServer(args[0], args[1], args[2])
+        task = gp.GPTask(server, args[3])
+        return task
 
 
 class GPAuthWidget(GPResource, widgets.DOMWidget):
@@ -109,3 +148,17 @@ class GPTaskWidget(GPResource, widgets.DOMWidget):
             return True
         else:
             return False
+
+
+# The `ipython` argument is the currently active `InteractiveShell`
+# instance, which can be used in any way. This allows you to register
+# new magics or aliases, for example.
+def load_ipython_extension(ipython):
+    # Register magics
+    ipython.register_magics(GenePatternMagic)
+
+    # Check for presence of required client-side files in profile
+
+    # Download required file, if necessary
+
+    # Load all required files on the client-side

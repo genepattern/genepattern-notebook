@@ -1,14 +1,14 @@
 /*
  * Import the styles used by the GenePattern notebook skin
  */
- @import url("gp-navigation.css");
+ @import url("/static/genepattern/gp-navigation.css");
 
 /*
  * Import the styles used by the GenePattern widgets
  */
-@import url("gp-widget.css");
+@import url("/static/genepattern/gp-widget.css");
 
 /*
  * Import the styles used by the GenePattern notebook skin
  */
- /*@import url("gp-theme.css");*/
+ /*@import url("/static/genepattern/gp-theme.css");*/

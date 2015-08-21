@@ -34,32 +34,32 @@ function getScript(url, callback) {
  * Create the GenePattern object to hold GP state
  */
 
-getScript("/static/custom/gp.js");
+getScript("/static/genepattern/gp.js");
 
 /*
  * Navigation widgets & page initialization
  */
 
-getScript("/static/custom/navigation.js");
+getScript("/static/genepattern/navigation.js");
 
 /*
  * Run the GenePattern Notebook theme's JavaScript
  */
 
-//getScript("/static/custom/gp-theme.js");
+//getScript("/static/genepattern/gp-theme.js");
 
 /**
  * Import the IPython GenePattern Authentication widget
  */
 
-getScript("/static/custom/auth-widget.js");
+getScript("/static/genepattern/auth-widget.js");
 
 /**
  * Define the IPython GenePattern Job widget
  */
-getScript("/static/custom/job-widget.js");
+getScript("/static/genepattern/job-widget.js");
 
 /**
  * Define the IPython GenePattern Task widget
  */
-getScript("/static/custom/task-widget.js");
+getScript("/static/genepattern/task-widget.js");

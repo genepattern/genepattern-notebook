@@ -9,7 +9,7 @@ require(["jquery"], function() {
     $("body").append(GenePattern.notebook.loadingScreen());
 
     // Change the logo
-    $("#ipython_notebook").find("img").attr("src", "/static/custom/GP_logo_on_black.png");
+    $("#ipython_notebook").find("img").attr("src", "/static/genepattern/GP_logo_on_black.png");
 
     // Auto-add the GP Auth Widget if one does not already exist in the Notebook
     $([IPython.events]).on('kernel_ready.Kernel kernel_created.Session notebook_loaded.Notebook', function() {

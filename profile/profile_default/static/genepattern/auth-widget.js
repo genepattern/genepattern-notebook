@@ -74,7 +74,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                         .append(
                             $("<img/>")
                                 .addClass("gp-widget-logo")
-                                .attr("src", "/static/custom/GP_logo_on_black.png")
+                                .attr("src", "/static/genepattern/GP_logo_on_black.png")
                         )
                         .append(
                             $("<h3></h3>")
@@ -97,7 +97,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                         .append(
                             $("<div></div>")
                                 .addClass("gp-widget-loading")
-                                .append("<img src='/static/custom/loader.gif' />")
+                                .append("<img src='/static/genepattern/loader.gif' />")
                                 .hide()
                         )
                         .append(
