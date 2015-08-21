@@ -211,7 +211,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                                 .append(" ")
                                 .append(
                                     $("<button></button>")
-                                        .addClass("btn btn-default gp-auth-button")
+                                        .addClass("btn btn-default")
                                         .text("Register an Account")
                                         .click(function() {
                                             var server = widget.element.find("[name=server]").val();
