@@ -11,10 +11,16 @@ __status__ = 'Beta'
 
 
 from IPython.core.magic import Magics, magics_class, line_magic
+from IPython.core.display import display, Javascript
 from IPython.html import widgets
 from IPython.utils.traitlets import Unicode, Integer
 from gp import GPResource
+import IPython
+import os
 import gp
+import json
+import urllib
+import urllib2
 
 
 @magics_class
@@ -150,6 +156,40 @@ class GPTaskWidget(GPResource, widgets.DOMWidget):
             return False
 
 
+def download_client_files():
+    """
+    Checks for the presence of all necessary client-side files for the
+    extension, and downloads copies from a CDN if necessary.
+    """
+
+    # Get the directory and lazily create
+    client_dir = IPython.utils.path.locate_profile() + '/static/genepattern'
+    if not os.path.exists(client_dir):
+        os.makedirs(client_dir)
+
+    # Get the necessary file list in JSON
+    list_url = 'https://api.github.com/repos/genepattern/genepattern-notebook/contents/profile/profile_default/static/genepattern'
+    response = urllib2.urlopen(list_url)
+    list_data = json.load(response)
+
+    # Loop over list, downloading if necessary
+    for file_data in list_data:
+        file_name = file_data['name']
+        file_url = file_data['download_url']
+        file_path = client_dir + '/' + file_name
+        # Check and download
+        if not os.path.exists(file_path):
+            urllib.urlretrieve(file_url, file_path)
+
+
+def load_client_files():
+    client_dir = IPython.utils.path.locate_profile() + '/static/genepattern'
+
+    with open(client_dir + '/loader.js', 'r') as loader:
+        loader_text = loader.read()
+    display(Javascript(loader_text))
+
+
 # The `ipython` argument is the currently active `InteractiveShell`
 # instance, which can be used in any way. This allows you to register
 # new magics or aliases, for example.
@@ -157,8 +197,8 @@ def load_ipython_extension(ipython):
     # Register magics
     ipython.register_magics(GenePatternMagic)
 
-    # Check for presence of required client-side files in profile
-
-    # Download required file, if necessary
+    # Check for presence of required client-side files, download if necessary
+    download_client_files()
 
     # Load all required files on the client-side
+    load_client_files()
