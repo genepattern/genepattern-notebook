@@ -635,6 +635,9 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                 // Hide the code by default
                 var element = this.$el;
                 setTimeout(function() {
+                    // Protect against the "double render" bug in Jupyter 3.2.1
+                    element.parent().find(".gp-widget-auth:not(:first-child)").remove();
+
                     element.closest(".cell").find(".input")
                         .css("height", "0")
                         .css("overflow", "hidden");
