@@ -9,7 +9,7 @@ setup(name='genepattern-notebook',
       author_email='tabor@broadinstitute.org',
       url='https://github.com/genepattern/genepattern-notebook',
       download_url='https://github.com/genepattern/genepattern-notebook/archive/0.3.1.tar.gz',
-      keywords=['genepattern', 'genomics', 'bioinformatics'],
+      keywords=['genepattern', 'genomics', 'bioinformatics', 'ipython', 'jupyter'],
       classifiers=['Framework :: IPython'],
       install_requires=[
           'genepattern-python',
