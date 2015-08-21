@@ -17,80 +17,27 @@ $('head')
             .attr("type", "text/css")
             .attr('href', '/static/genepattern/gp-widget.css')
     );
-    // Import styles used by GenePattern Notebook theme
-    //.append(
-    //    $('<link rel="stylesheet" type="text/css" />')
-    //        .attr("rel", "stylesheet")
-    //        .attr("type", "text/css")
-    //        .attr('href', '/static/genepattern/gp-theme.css')
-    //);
 
 /*
- * Define debuggable method for loading scripts
+ * Load the required JavaScript files and init
  */
 
-function getScript(url, callback) {
-    var head = document.getElementsByTagName("head")[0];
-    var script = document.createElement("script");
-    script.src = url;
+requirejs([
+    "jquery",
+    "/static/genepattern/gp.js",
+    "/static/genepattern/navigation.js",
+    "/static/genepattern/auth-widget.js",
+    "/static/genepattern/job-widget.js",
+    "/static/genepattern/task-widget.js"], function(util) {
 
-    // Handle Script loading
-    {
-        var done = false;
+    // Initiate the GenePattern Notebook extension
+    // If reloading a notebook, display with the full event model
+    $([IPython.events]).on('kernel_ready.Kernel kernel_created.Session notebook_loaded.Notebook', GenePattern.notebook.init.notebook_init_wrapper);
 
-        // Attach handlers for all browsers
-        script.onload = script.onreadystatechange = function() {
-            if ( !done && (!this.readyState || this.readyState == "loaded" || this.readyState == "complete") ) {
-               done = true;
-               if (callback)
-                   callback();
-
-               // Handle memory leak in IE
-               script.onload = script.onreadystatechange = null;
-            }
-        };
-    }
-
-    head.appendChild(script);
-
-    // We handle everything using the script element injection
-    return undefined;
-}
-
-/*
- * Create the GenePattern object to hold GP state
- */
-
-getScript("/static/genepattern/gp.js");
-
-/*
- * Navigation widgets & page initialization
- */
-
-getScript("/static/genepattern/navigation.js");
-
-/*
- * Run the GenePattern Notebook theme's JavaScript
- */
-
-//getScript("/static/genepattern/gp-theme.js");
-
-/**
- * Import the IPython GenePattern Authentication widget
- */
-
-getScript("/static/genepattern/auth-widget.js");
-
-/**
- * Define the IPython GenePattern Job widget
- */
-getScript("/static/genepattern/job-widget.js");
-
-/**
- * Define the IPython GenePattern Task widget
- */
-getScript("/static/genepattern/task-widget.js");
-
-// Initiate the GenePattern Notebook extension
-// Do not include this line if loading from custom.js
-GenePattern.notebook.init.notebook_init_wrapper();
+    // Otherwise, if not initialized after two seconds, manually init
+    setTimeout(function() {
+        if (!GenePattern.notebook.init.launch_init.done_init  && IPython.notebook.kernel) {
+            GenePattern.notebook.init.notebook_init_wrapper();
+        }
+    }, 2000);
+});
