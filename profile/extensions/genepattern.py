@@ -169,7 +169,11 @@ def download_client_files():
 
     # Get the necessary file list in JSON
     list_url = 'https://api.github.com/repos/genepattern/genepattern-notebook/contents/profile/profile_default/static/genepattern'
-    response = urllib2.urlopen(list_url)
+    try:
+        response = urllib2.urlopen(list_url)
+    except:
+        # This is likely a forbidden error from overuse of the GitHub API, ignore error
+        return
     list_data = json.load(response)
 
     # Loop over list, downloading if necessary
