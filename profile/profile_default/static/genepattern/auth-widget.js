@@ -5,9 +5,11 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
     $.widget("gp.auth", {
         options: {
             servers: [                                              // Expects a list of lists with [name, url] pairs
-                ['GenePattern @ localhost', 'http://127.0.0.1:8080/gp'],
-                ['GenePattern @ Broad Institute', 'http://genepattern.broadinstitute.org/gp'],
-                ['GenePattern @ gpbeta', 'http://genepatternbeta.broadinstitute.org/gp']
+                ['Broad Institute', 'http://genepattern.broadinstitute.org/gp'],
+                ['Indiana University', 'http://gp.indiana.edu/gp'],
+                ['Broad Internal', 'http://gpbroad.broadinstitute.org/gp'],
+                ['localhost', 'http://127.0.0.1:8080/gp'],
+                ['GenePattern Beta', 'http://genepatternbeta.broadinstitute.org/gp']
             ],
             cell: null                                              // Reference to the IPython cell
         },
@@ -190,7 +192,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                                 .append(
                                     $("<button></button>")
                                         .addClass("btn btn-primary gp-auth-button")
-                                        .text("Login to GenePattern")
+                                        .text("Log into GenePattern")
                                         .click(function() {
                                             var server = widget.element.find("[name=server]").val();
                                             var username = widget.element.find("[name=username]").val();
@@ -204,6 +206,17 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                                                 widget.executeCell();
                                                 widget.buildCode(server, "", "");
                                             });
+                                        })
+                                )
+                                .append(" ")
+                                .append(
+                                    $("<button></button>")
+                                        .addClass("btn btn-default gp-auth-button")
+                                        .text("Register an Account")
+                                        .click(function() {
+                                            var server = widget.element.find("[name=server]").val();
+                                            var registerURL = server + "/pages/registerUser.jsf";
+                                            window.open(registerURL,'_blank');
                                         })
                                 )
                         )
