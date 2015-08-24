@@ -21,18 +21,6 @@ GenePattern.username = null;
 
 require(["jquery"], function() {
     /**
-     * Sets the URL to the GP server
-     * Example: http://genepattern.broadinstitute.org/gp
-     *
-     * @deprecated
-     * @param url - URL to server including the /gp (or similar)
-     */
-    GenePattern.setServer = function(url) {
-        GenePattern._server = url;
-    };
-
-
-    /**
      * Easily determine if the URL to the GenePattern server has been set or not.
      *
      * @returns {boolean} - true if the server has been set, else false
