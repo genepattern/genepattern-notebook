@@ -13,6 +13,7 @@ var GenePattern = GenePattern || {};
 GenePattern._server = null;
 GenePattern._tasks = [];
 GenePattern._jobs = [];
+GenePattern._kinds = [];
 GenePattern.authenticated = false;
 GenePattern.initialized = false;
 GenePattern.password = null;
@@ -23,6 +24,7 @@ require(["jquery"], function() {
      * Sets the URL to the GP server
      * Example: http://genepattern.broadinstitute.org/gp
      *
+     * @deprecated
      * @param url - URL to server including the /gp (or similar)
      */
     GenePattern.setServer = function(url) {
@@ -41,11 +43,67 @@ require(["jquery"], function() {
 
 
     /**
-     * Returns the server at which this library is pointed
+     * Sets or returns the server at which this library is pointed
+     * Example: http://genepattern.broadinstitute.org/gp
+     *
      * @returns {string|null}
      */
-    GenePattern.server = function() {
-        return GenePattern._server;
+    GenePattern.server = function(serverUrl) {
+        if (serverUrl === undefined) {
+            return GenePattern._server;
+        }
+        else {
+            GenePattern._server = serverUrl;
+        }
+    };
+
+
+    /**
+     * Gets or sets the map of kind to task
+     *
+     * @param kindMap
+     * @returns {Array|*}
+     */
+    GenePattern.kinds = function(kindMap) {
+        if (kindMap === undefined) {
+            return GenePattern._kinds;
+        }
+        else {
+            GenePattern._kinds = kindMap;
+        }
+    };
+
+
+    /**
+     * Given a map of kinds to task LSIDs (as returned by the REST API), returns a map of kinds to the
+     * linked Task() objects. Prints and error if the Task() object cannot be found.
+     *
+     * @param kindMap
+     * @returns {Array|*}
+     */
+    GenePattern.linkKinds = function(kindMap) {
+        var returnMap = {};
+
+        $.each(kindMap, function(key, taskArray) {
+            var returnArray = [];
+
+            for (var i = 0; i < taskArray.length; i++) {
+                var lsid = taskArray[i];
+                var task = GenePattern.task(lsid);
+                if (task === null) {
+                    console.log("Error finding Task() for LSID: " + lsid + " skipping...")
+                }
+                else {
+                    // Add Task() to array
+                    returnArray.push(task);
+                }
+            }
+
+            // Add array of Task()s to map
+            returnMap[key] = returnArray;
+        });
+
+        return returnMap;
     };
 
 

@@ -99,7 +99,10 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                         .append(
                             $("<div></div>")
                                 .addClass("gp-widget-loading")
-                                .append("<img src='/static/genepattern/loader.gif' />")
+                                .append(
+                                    $("<img />")
+                                        .attr("src", "/static/genepattern/loader.gif")
+                                )
                                 .hide()
                         )
                         .append(
@@ -518,7 +521,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                 success: function(data) {
                     // Set the authentication info on GenePattern object
                     GenePattern.authenticated = true;
-                    GenePattern.setServer(server);
+                    GenePattern.server(server);
                     GenePattern.username = username;
                     GenePattern.password = password;
                     GenePattern.token = token;
@@ -536,6 +539,10 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                             GenePattern._tasks.push(new GenePattern.Task(module));
                         });
                     }
+
+                    // Populate the GenePattern._kinds map
+                    var kindMap = GenePattern.linkKinds(data['kindToModules']);
+                    GenePattern.kinds(kindMap);
 
                     // If a function to execute when done has been passed in, execute it
                     if (done) { done(); }
