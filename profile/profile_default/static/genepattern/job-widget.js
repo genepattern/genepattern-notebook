@@ -797,10 +797,173 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
         },
 
         /**
+         * Construct and return a file menu for the provided output file
+         *
+         * @param link - Link to attach menu to
+         * @param output - Data structure for the output file
+         * @param indexString - String containing output file index
+         * @param fullMenu - Whether this is a full menu or a log file menu
+         * @returns {*|jQuery|HTMLElement}
+         * @private
+         */
+        _buildMenu: function(link, output, indexString, fullMenu) {
+            var widget = this;
+
+            // Attach simple menu
+            if (!fullMenu) {
+                link.popover({
+                    title: "",
+                    content: $("<div></div>")
+                        .addClass("list-group")
+                        .append(
+                            $("<label></label>")
+                                .text(output["link"]["name"])
+                        )
+                        .append(
+                            $("<a></a>")
+                                .addClass("list-group-item")
+                                .text("Open in New Tab")
+                                .attr("href", output["link"]["href"])
+                                .attr("target", "_blank")
+                        ),
+                    html: true,
+                    placement: "right",
+                    trigger: "click"
+                });
+            }
+            // Attach advanced menu
+            else {
+                var popover = $("<div></div>")
+                    .addClass("list-group")
+                    .append(
+                        $("<label></label>")
+                            .text(output["link"]["name"])
+                    )
+                    .append(
+                        $("<a></a>")
+                            .addClass("list-group-item")
+                            .text("Open in New Tab")
+                            .attr("href", output["link"]["href"])
+                            .attr("target", "_blank")
+                    )
+                    .append(
+                        $("<a></a>")
+                            .addClass("list-group-item gp-widget-job-view-code")
+                            .text("View Code Use")
+                            .attr("href", "#")
+                    )
+                    .append(
+                        $("<div></div>")
+                            .append(
+                                $("<label></label>")
+                                    .css("padding-top", "10px")
+                                    .text("Send to Downstream Task")
+                            )
+                            .append(
+                                $("<select></select>")
+                                    .addClass("form-control gp-widget-job-existing-task")
+                                    .css("margin-left", "0")
+                                    .append(
+                                        $("<option></option>")
+                                            .text("DUMMY")
+                                    )
+                            )
+                    )
+                    .append(
+                        $("<div></div>")
+                            .append(
+                                $("<label></label>")
+                                    .css("padding-top", "10px")
+                                    .text("Send to New Task")
+                            )
+                            .append(
+                                $("<select></select>")
+                                    .addClass("form-control gp-widget-job-new-task")
+                                    .css("margin-left", "0")
+                                    .append(
+                                        $("<option></option>")
+                                            .text("----")
+                                    )
+                            )
+                    );
+
+                link.popover({
+                    title: "",
+                    content: popover,
+                    html: true,
+                    placement: "right",
+                    trigger: "click"
+                });
+
+                // Add options to "Send to New Task" dropdown, or hide if none
+                var modules = null;
+                var kind = Array.isArray(output['kind']) ? output['kind'][0] : output['kind'];
+                var sendToNewTask = popover.find('.gp-widget-job-new-task');
+                var kindsMap = GenePattern.kinds();
+                if (kindsMap !==  null && kindsMap !== undefined) {
+                    modules = kindsMap[kind];
+                    $.each(modules, function(i, module) {
+                        sendToNewTask.append(
+                            $("<option></option>")
+                                .attr("data-lsid", module.lsid())
+                                .text(module.name())
+                        )
+                    });
+                }
+                if (modules === null || modules.length === 0) {
+                    sendToNewTask.parent().hide();
+                }
+
+                // Attach methods in a way that will not break when popover is hidden
+                link.on('shown.bs.popover', function () {
+                    // Attach the click method to "view code"
+                    link.parent().find(".gp-widget-job-view-code").click(function() {
+                        widget.codeDialog(widget.options.job, indexString);
+                        $(".popover").popover("hide");
+                    });
+
+                    // Attach "Send to New Task" clicks
+                    link.parent().find(".gp-widget-job-new-task").change(function(event) {
+                        var option = $(event.target).find(":selected");
+                        var lsid = option.attr("data-lsid");
+                        if (lsid === undefined || lsid === null) return;
+                        var name = option.text();
+                        var cell = IPython.notebook.insert_cell_at_bottom();
+                        var code = GenePattern.notebook.buildModuleCode({"lsid":lsid, "name": name});
+                        cell.set_text(code);
+
+                        // Execute the cell
+                        setTimeout(function() {
+                            cell.execute();
+                            setTimeout(function() {
+                                var widgetElement = cell.element.find(".gp-widget");
+                                var widget = widgetElement.data("widget");
+                                widgetElement.on("runTask.paramLoad", function() {
+                                    console.log(widget._task._params);
+                                    widget.receiveFile(link.attr("href"), kind);
+                                });
+                            }, 100)
+                        }, 10);
+
+                        // Hide the popover
+                        $(".popover").popover("hide");
+
+                        // Scroll to the new cell
+                        $('#site').animate({
+                            scrollTop: $(cell.element).position().top
+                        }, 500);
+                    });
+                })
+            }
+
+            return link;
+        },
+
+        /**
          * Return a div containing the file outputs formatted for display
          *
          * @param outputs - structure containing the output file data
-         * @fullMenu - whether to include more menu options than simple viewing
+         * @param fullMenu - whether to include more menu options than simple viewing
          * @returns {*|jQuery|HTMLElement}
          * @private
          */
@@ -827,62 +990,8 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                             $(".popover").popover("hide");
                         });
 
-                    // Attach simple menu
-                    if (!fullMenu) {
-                        link.popover({
-                            title: "",
-                            content: $("<div></div>")
-                                .addClass("list-group")
-                                .append(
-                                    $("<label></label>")
-                                        .text(output["link"]["name"])
-                                )
-                                .append(
-                                    $("<a></a>")
-                                        .addClass("list-group-item")
-                                        .text("Open in New Tab")
-                                        .attr("href", output["link"]["href"])
-                                        .attr("target", "_blank")
-                                ),
-                            html: true,
-                            placement: "right",
-                            trigger: "click"
-                        });
-                    }
-                    // Attach advanced menu
-                    else {
-                        link.popover({
-                            title: "",
-                            content: $("<div></div>")
-                                .addClass("list-group")
-                                .append(
-                                    $("<label></label>")
-                                        .text(output["link"]["name"])
-                                )
-                                .append(
-                                    $("<a></a>")
-                                        .addClass("list-group-item")
-                                        .text("Open in New Tab")
-                                        .attr("href", output["link"]["href"])
-                                        .attr("target", "_blank")
-                                )
-                                .append(
-                                    $("<a></a>")
-                                        .addClass("list-group-item gp-widget-job-view-code")
-                                        .text("View Code Use")
-                                        .attr("href", "#")
-                                ),
-                            html: true,
-                            placement: "right",
-                            trigger: "click"
-                        });
-
-                        // Attach the click method to "view code"
-                        $(".gp-widget-job[name='" + widget.options.job.jobNumber() + "']").on('click', '.gp-widget-job-view-code', function () {
-                            widget.codeDialog(widget.options.job, indexString);
-                            $(".popover").popover("hide");
-                        });
-                    }
+                    // Build and attach the file menu
+                    widget._buildMenu(link, output, indexString, fullMenu);
 
                     link.appendTo(outputsList);
                 }

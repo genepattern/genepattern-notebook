@@ -1269,6 +1269,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                         if (widget._task !== null) {
                             widget._buildHeader();
                             widget._buildForm();
+                            $(widget.element).trigger("runTask.paramLoad");
                         }
                         else {
                             widget._showUninstalledMessage();
@@ -1991,7 +1992,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
 
             // No match was found
             if (!matched) {
-                console.log("ERROR: No kind match found for " + url + " of kind " + kind + " in " + this.name());
+                console.log("ERROR: No kind match found for " + url + " of kind " + kind + " in " + this._task.name());
             }
         },
 
