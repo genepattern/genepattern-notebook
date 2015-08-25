@@ -1092,6 +1092,7 @@ require(["jquery"], function() {
         this._prefixWhenSpecified = null;
         this._type = null;
         this._numValues = null;
+        this._kinds = null;
 
         /**
          * Constructor-like initialization for the Param class
@@ -1112,8 +1113,20 @@ require(["jquery"], function() {
                     this._prefixWhenSpecified = paramJson[this._name]['attributes']['prefix_when_specified'];
                     this._type = paramJson[this._name]['attributes']['type'];
                     this._numValues = paramJson[this._name]['attributes']['numValues'];
+                    this._kinds = paramJson[this._name]['attributes']['fileFormat'] ? this._parseKinds(paramJson[this._name]['attributes']['fileFormat']) : null;
                 }
             }
+        };
+
+        /**
+         * Parses the string of accepted kinds and returns a list
+         *
+         * @param kindString
+         * @returns {Array}
+         * @private
+         */
+        this._parseKinds = function(kindString) {
+            return kindString.split(";");
         };
 
         /**
@@ -1303,6 +1316,21 @@ require(["jquery"], function() {
             }
             else {
                 return this._type;
+            }
+        };
+
+        /**
+         * Gets or sets the list of accepted file kinds
+         *
+         * @param kinds
+         * @returns {Array|null}
+         */
+        this.kinds = function(kinds) {
+            if (kinds !== undefined) {
+                this._kinds = kinds;
+            }
+            else {
+                return this._kinds;
             }
         };
 
