@@ -542,6 +542,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
 
                     // Populate the GenePattern._kinds map
                     var kindMap = GenePattern.linkKinds(data['kindToModules']);
+                    GenePattern.notebook.removeKindVisualizers(kindMap);
                     GenePattern.kinds(kindMap);
 
                     // If a function to execute when done has been passed in, execute it

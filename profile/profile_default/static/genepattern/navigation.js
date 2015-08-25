@@ -237,6 +237,28 @@ GenePattern.notebook.authenticate = function(data) {
 };
 
 /**
+ * Removes all visualizers from the kind to tasks map so that Java visualizers are not suggested
+ * from the Send to new Modules menus.
+ *
+ * @param kindMap
+ */
+GenePattern.notebook.removeKindVisualizers = function(kindMap) {
+    $.each(kindMap, function(kind, taskList) {
+        var currentLength = taskList.length;
+        for (var i = 0; i < currentLength; i++) {
+            var task = taskList[i];
+            var categories = task.categories();
+            if (categories.indexOf("Visualizer") !== -1) {
+                // This is a visualizer
+                taskList.splice(i, 1);
+                currentLength--;
+                i--;
+            }
+        }
+    });
+};
+
+/**
  * Build the basic code for displaying a module widget
  *
  * @param module
@@ -504,7 +526,6 @@ GenePattern.notebook.widgetSelectDialog = function(cell) {
         $(element).click(function() {
             var lsid = $(element).attr("data-id");
             var name = $(element).attr("data-name");
-            console.log(element);
             var code = GenePattern.notebook.buildModuleCode({"lsid":lsid, "name": name});
             cell.set_text(code);
             setTimeout(function() {
