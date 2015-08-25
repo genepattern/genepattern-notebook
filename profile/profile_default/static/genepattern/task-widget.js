@@ -484,6 +484,9 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
         _setPointers: function() {
             if (this.options.runTask) { this._runTask = this.options.runTask; }
             if (this.options.param) { this._param = this.options.param; }
+
+            // Add data pointer
+            this.element.data("widget", this);
         },
 
         /**
@@ -625,6 +628,15 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
          */
         param: function() {
             return this._param;
+        },
+
+        /**
+         * Returns the list of kinds accepted by the file input
+         *
+         * @returns {Array|null}
+         */
+        kinds: function() {
+            return this.options.param.kinds();
         },
 
         /**
@@ -1947,6 +1959,40 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
             }
 
             return validated;
+        },
+
+        /**
+         * Receives a file of the specified kind and sets the first matching param of that type
+         * Report an error to the console if no matching parameter found.
+         *
+         * @param url
+         * @param kind
+         */
+        receiveFile: function(url, kind) {
+            var uiParams = this.element.find(".gp-widget-task-param");
+            var matched = false;
+            $.each(uiParams, function(i, uiParam) {
+                var paramWidget = $(uiParam).find(".gp-widget-task-param-input").data("widget");
+                var param = paramWidget._param;
+                if (param.kinds !== undefined) {
+                    var kinds = param.kinds();
+                    if (kinds !== undefined && kinds !== null) {
+                        if (kinds.indexOf(kind) !== -1) {
+                            // Found a match!
+                            matched = true;
+                            // Set the value
+                            paramWidget.value(url);
+                            // Return and stop looping
+                            return false;
+                        }
+                    }
+                }
+            });
+
+            // No match was found
+            if (!matched) {
+                console.log("ERROR: No kind match found for " + url + " of kind " + kind + " in " + this.name());
+            }
         },
 
         /**
