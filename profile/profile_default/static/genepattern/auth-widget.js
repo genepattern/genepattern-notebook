@@ -262,6 +262,11 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                 }, 1);
             }
 
+            // Trigger gp.widgetRendered event on cell element
+            setTimeout(function() {
+                widget.element.closest(".cell").trigger("gp.widgetRendered");
+            }, 10);
+
             return this;
         },
 
