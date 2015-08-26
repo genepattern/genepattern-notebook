@@ -1285,6 +1285,11 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                 this._pollForAuth();
             }
 
+            // Trigger gp.widgetRendered event on cell element
+            setTimeout(function() {
+                widget.element.closest(".cell").trigger("gp.widgetRendered");
+            }, 10);
+
             return this;
         },
 

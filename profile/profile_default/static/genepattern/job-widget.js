@@ -934,15 +934,14 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
 
                         // Execute the cell
                         setTimeout(function() {
-                            cell.execute();
-                            setTimeout(function() {
+                            cell.element.on("gp.widgetRendered", function() {
                                 var widgetElement = cell.element.find(".gp-widget");
                                 var widget = widgetElement.data("widget");
                                 widgetElement.on("runTask.paramLoad", function() {
-                                    console.log(widget._task._params);
                                     widget.receiveFile(link.attr("href"), kind);
                                 });
-                            }, 100)
+                            });
+                            cell.execute();
                         }, 10);
 
                         // Hide the popover
