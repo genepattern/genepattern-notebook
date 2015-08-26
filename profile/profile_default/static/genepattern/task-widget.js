@@ -1094,6 +1094,9 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
             // By default assume the module is installed
             this._installed = true;
 
+            // By default the list of accepted kinds is null
+            this._kinds = null;
+
             // Add classes and scaffolding
             this.element.addClass("panel panel-default gp-widget gp-widget-task");
             this.element.append( // Attach header
@@ -1597,6 +1600,9 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                         }
                     }
 
+                    // Build the accepted kinds list
+                    widget._createKindsList(params);
+
                     // Build the EULA, too
                     widget._buildEula();
 
@@ -1965,6 +1971,40 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
             }
 
             return validated;
+        },
+
+        /**
+         * Creates the list of accepted kinds for the task
+         *
+         * @param params - List of gp.Param() objects
+         * @private
+         */
+        _createKindsList: function(params) {
+            var kindsSet = new Set();
+
+            // Protect against null and undefined
+            if (params === undefined || params === null) return [];
+
+            $.each(params, function(index, param) {
+                var kinds = param.kinds();
+                if (kinds !== null && kinds !== undefined) {
+                    kinds.forEach(function(kind) {
+                        kindsSet.add(kind);
+                    });
+                }
+            });
+
+            this._kinds = Array.from(kindsSet);
+        },
+
+        /**
+         * Returns a list of all Kinds accepted by the task. If the params for the task have not
+         * been loaded yet, a null value will be returned.
+         *
+         * @returns {Array}
+         */
+        acceptedKinds: function() {
+            return this._kinds;
         },
 
         /**

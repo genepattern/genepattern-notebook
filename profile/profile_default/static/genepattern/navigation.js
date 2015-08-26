@@ -237,6 +237,37 @@ GenePattern.notebook.authenticate = function(data) {
 };
 
 /**
+ * Returns structure containing all task widgets currently in the notebook, which accept the
+ * indicated kind. Structure is a list of pairings with the cell index and the widget object.
+ * Ex: [[1, gp.Task()], [9, gp.Task()], [12, gp.Task()]]
+ *
+ * @param kind
+ * @returns {Array}
+ */
+GenePattern.notebook.taskWidgetsForKind = function(kind) {
+    var matches = [];
+
+    $(".cell").each(function(index, node) {
+        var widgetNode = $(node).find(".gp-widget-task");
+
+        if (widgetNode.length > 0) {
+            var widget = widgetNode.data("widget");
+            if (widget !== undefined && widget !== null) {
+                var accepted = widget.acceptedKinds();
+                if (accepted !== undefined && accepted !== null) {
+                    if (accepted.indexOf(kind) !== -1) {
+                        // Found a match!
+                        matches.push([index, widget]);
+                    }
+                }
+            }
+        }
+    });
+
+    return matches;
+};
+
+/**
  * Removes all visualizers from the kind to tasks map so that Java visualizers are not suggested
  * from the Send to new Modules menus.
  *
