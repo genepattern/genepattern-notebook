@@ -156,6 +156,51 @@ class GPTaskWidget(GPResource, widgets.DOMWidget):
             return False
 
 
+def client_version_check():
+    """
+    Lazily creates the client directory, checks the version file,
+    removes all client files if the versions do not match.
+    Writes the new version file.
+    """
+
+    # Get the directory and lazily create
+    client_dir = IPython.utils.path.locate_profile() + '/static/genepattern'
+    if not os.path.exists(client_dir):
+        os.makedirs(client_dir)
+
+    # Get the version file if one exists
+    version_file_path = os.path.join(client_dir, "version.txt")
+    old_version = None
+    if os.path.exists(version_file_path):           # If the version file exists, check version
+        version_file = open("version.txt", "r")         # Open the old version file
+        old_version = version_file.read()               # Read the file
+        version_file.close()                             # Close the file
+        old_version = old_version.strip()               # Trim whitespace
+
+    # Determine whether to wipe the old files
+    wipe_old_files = False
+    if old_version is not None:                     # If versions do not match
+        if old_version != __version__:
+            wipe_old_files = True
+    else:                                           # If no version file, wipe the old files just in case
+        wipe_old_files = True
+
+    # Wipe the old files, if necessary
+    if wipe_old_files:
+        for the_file in os.listdir(client_dir):
+            file_path = os.path.join(client_dir, the_file)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+            except Exception, e:
+                print(e)
+
+    # Write the new version file
+    version_file = open(version_file_path, "w")
+    version_file.write(__version__)
+    version_file.close()
+
+
 def download_client_files():
     """
     Checks for the presence of all necessary client-side files for the
@@ -171,7 +216,7 @@ def download_client_files():
     list_url = 'https://api.github.com/repos/genepattern/genepattern-notebook/contents/profile/profile_default/static/genepattern'
     try:
         response = urllib2.urlopen(list_url)
-    except:
+    except Exception, e:
         # This is likely a forbidden error from overuse of the GitHub API, ignore error
         return
     list_data = json.load(response)
@@ -200,6 +245,9 @@ def load_client_files():
 def load_ipython_extension(ipython):
     # Register magics
     ipython.register_magics(GenePatternMagic)
+
+    # Clean old version client files, if necessary
+    client_version_check()
 
     # Check for presence of required client-side files, download if necessary
     download_client_files()
