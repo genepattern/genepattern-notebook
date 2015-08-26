@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(name='genepattern-notebook',
       py_modules=['genepattern'],
-      version='0.3.2',
+      version='0.3.3',
       description='GenePattern Notebook extension for Jupyter',
       license='BSD',
       author='Thorin Tabor',
