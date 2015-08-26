@@ -870,7 +870,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                                     .css("margin-left", "0")
                                     .append(
                                         $("<option></option>")
-                                            .text("DUMMY")
+                                            .text("----")
                                     )
                             )
                     )
@@ -957,7 +957,42 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                             scrollTop: $(cell.element).position().top
                         }, 500);
                     });
-                })
+
+                    // Dynamically add options to "Send to Downstream Task" dropdown
+                    var sendToExistingTask = link.parent().find('.gp-widget-job-existing-task');
+                    var matchingTasks = GenePattern.notebook.taskWidgetsForKind(kind);
+                    sendToExistingTask
+                        .empty()
+                        .append(
+                            $("<option></option>")
+                                .text("----")
+                        );
+                    $.each(matchingTasks, function(i, pairing) {
+                        var cellIndex = pairing[0];
+                        var taskWidget = pairing[1];
+                        sendToExistingTask
+                            .append(
+                                $("<option></option>")
+                                    .text(taskWidget._task.name() + " [Cell " + cellIndex + "]")
+                                    .data("widget", taskWidget)
+                            );
+                    });
+
+                    // Add event to hand changes on the "Send to Downstream Task" dropdown
+                    sendToExistingTask.change(function() {
+                        var option = $(this).find(":selected");
+                        var theWidget = option.data("widget");
+                        theWidget.receiveFile(link.attr("href"), kind);
+
+                        // Hide the popover
+                        $(".popover").popover("hide");
+
+                        // Scroll to the new cell
+                        $('#site').animate({
+                            scrollTop: $(theWidget.element).position().top
+                        }, 500);
+                    });
+                });
             }
 
             return link;

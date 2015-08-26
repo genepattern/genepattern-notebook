@@ -239,7 +239,7 @@ GenePattern.notebook.authenticate = function(data) {
 /**
  * Returns structure containing all task widgets currently in the notebook, which accept the
  * indicated kind. Structure is a list of pairings with the cell index and the widget object.
- * Ex: [[1, gp.Task()], [9, gp.Task()], [12, gp.Task()]]
+ * Ex: [[1, gp.runTask()], [9, gp.runTask()], [12, gp.runTask()]]
  *
  * @param kind
  * @returns {Array}

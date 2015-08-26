@@ -2028,6 +2028,8 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                             matched = true;
                             // Set the value
                             paramWidget.value(url);
+                            // Update the code
+                            paramWidget._updateCode();
                             // Return and stop looping
                             return false;
                         }
