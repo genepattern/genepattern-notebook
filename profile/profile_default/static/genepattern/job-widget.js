@@ -995,6 +995,15 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                 });
             }
 
+            // Make the "i" icon open the menus as well
+            var icon = link.find(".fa-info-circle");
+            icon.click(function(event) {
+                console.log("ARRRRRRGH");
+                $(this).parent().popover("show");
+                event.preventDefault();
+                event.stopPropagation();
+            });
+
             return link;
         },
 
