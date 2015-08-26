@@ -586,7 +586,7 @@ GenePattern.notebook.init.notebook_init_wrapper = function () {
         IPython.keyboard_manager.command_shortcuts.add_shortcut('g', {
             help : 'to GenePattern',
             help_index : 'cc',
-            handler : function (event) {
+            handler : function () {
                 GenePattern.notebook.changeGenePatternPrompt();
                 return false;
             }}
@@ -670,7 +670,7 @@ GenePattern.notebook.init.launch_init = function() {
     body.append(GenePattern.notebook.slider());
 
     // Hide or show the slider tab if a GenePattern cell is highlighted
-    $([IPython.events]).on('select.Cell', function(event) {
+    $([IPython.events]).on('select.Cell', function() {
         var cell = IPython.notebook.get_selected_cell();
         var isGPCell = cell.element.find(".gp-widget").length > 0;
 
@@ -703,8 +703,12 @@ GenePattern.notebook.init.launch_init = function() {
     $("#cell_type")
         .append(
             $("<option value='code'>GenePattern</option>")
-                .click(function() {
-                    GenePattern.notebook.changeGenePatternPrompt();
+                .change(function(event) {
+                    var type = $(event.target).find(":selected").text();
+                    if (type === "GenePattern") {
+                        // DO ACTION
+                        GenePattern.notebook.changeGenePatternPrompt();
+                    }
                 })
         );
     $("#change_cell_type").find("ul.dropdown-menu")
