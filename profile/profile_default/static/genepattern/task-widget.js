@@ -1994,7 +1994,13 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                 }
             });
 
-            this._kinds = Array.from(kindsSet);
+            // Transform Set() to Array() in way that is browser compatible
+            var kindsArray = [];
+            kindsSet.forEach(function(i) {
+                kindsArray.push(i);
+            });
+
+            this._kinds = kindsArray;
         },
 
         /**
