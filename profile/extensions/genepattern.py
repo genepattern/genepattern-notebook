@@ -180,9 +180,9 @@ def client_version_check():
     version_file_path = os.path.join(client_dir, "version.txt")
     old_version = None
     if os.path.exists(version_file_path):           # If the version file exists, check version
-        version_file = open("version.txt", "r")         # Open the old version file
+        version_file = open(version_file_path, "r")         # Open the old version file
         old_version = version_file.read()               # Read the file
-        version_file.close()                             # Close the file
+        version_file.close()                            # Close the file
         old_version = old_version.strip()               # Trim whitespace
 
     # Determine whether to wipe the old files
@@ -203,10 +203,10 @@ def client_version_check():
             except Exception as e:
                 print(e)
 
-    # Write the new version file
-    version_file = open(version_file_path, "w")
-    version_file.write(__version__)
-    version_file.close()
+        # Write the new version file
+        version_file = open(version_file_path, "w")
+        version_file.write(__version__)
+        version_file.close()
 
 
 def download_client_files():
