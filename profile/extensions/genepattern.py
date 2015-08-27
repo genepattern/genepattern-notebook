@@ -1,6 +1,6 @@
 __author__ = 'Thorin Tabor'
 __copyright__ = 'Copyright 2015, Broad Institute'
-__version__ = '0.3.3'
+__version__ = '0.3.4'
 __status__ = 'Beta'
 
 
@@ -18,9 +18,17 @@ from gp import GPResource
 import IPython
 import os
 import gp
+import sys
 import json
 import urllib
-import urllib2
+
+# Imports requiring compatibility between Python 2 and Python 3
+if sys.version_info.major == 2:
+    import urllib2
+    from urllib import urlretrieve
+elif sys.version_info.major == 3:
+    from urllib import request as urllib2
+    from urllib.request import urlretrieve
 
 
 @magics_class
@@ -192,7 +200,7 @@ def client_version_check():
             try:
                 if os.path.isfile(file_path):
                     os.unlink(file_path)
-            except Exception, e:
+            except Exception as e:
                 print(e)
 
     # Write the new version file
@@ -215,20 +223,22 @@ def download_client_files():
     # Get the necessary file list in JSON
     list_url = 'https://api.github.com/repos/genepattern/genepattern-notebook/contents/profile/profile_default/static/genepattern'
     try:
-        response = urllib2.urlopen(list_url)
-    except Exception, e:
+        request = urllib2.Request(list_url)
+        response = urllib2.urlopen(request)
+    except Exception:
         # This is likely a forbidden error from overuse of the GitHub API, ignore error
         return
-    list_data = json.load(response)
+    raw_json = response.read().decode('utf-8')
+    list_data = json.loads(raw_json)
 
     # Loop over list, downloading if necessary
     for file_data in list_data:
         file_name = file_data['name']
         file_url = file_data['download_url']
-        file_path = client_dir + '/' + file_name
+        file_path = os.path.join(client_dir, file_name)
         # Check and download
         if not os.path.exists(file_path):
-            urllib.urlretrieve(file_url, file_path)
+            urlretrieve(file_url, file_path)
 
 
 def load_client_files():
