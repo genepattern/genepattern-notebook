@@ -734,14 +734,14 @@ GenePattern.notebook.init.launch_init = function() {
     $("#cell_type")
         .append(
             $("<option value='code'>GenePattern</option>")
-                .change(function(event) {
-                    var type = $(event.target).find(":selected").text();
-                    if (type === "GenePattern") {
-                        // DO ACTION
-                        GenePattern.notebook.changeGenePatternPrompt();
-                    }
-                })
-        );
+        )
+        .change(function(event) {
+            var type = $(event.target).find(":selected").text();
+            if (type === "GenePattern") {
+                // DO ACTION
+                GenePattern.notebook.changeGenePatternPrompt();
+            }
+        });
     $("#change_cell_type").find("ul.dropdown-menu")
         .append(
             $("<li id='to_genepattern' title='Insert a GenePattern widget cell'><a href='#'>GenePattern</a></option>")
