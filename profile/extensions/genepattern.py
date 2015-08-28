@@ -1,6 +1,6 @@
 __author__ = 'Thorin Tabor'
 __copyright__ = 'Copyright 2015, Broad Institute'
-__version__ = '0.3.4'
+__version__ = '0.3.5'
 __status__ = 'Beta'
 
 
