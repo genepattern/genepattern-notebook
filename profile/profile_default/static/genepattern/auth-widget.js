@@ -7,9 +7,9 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
             servers: [                                              // Expects a list of lists with [name, url] pairs
                 ['Broad Institute', 'http://genepattern.broadinstitute.org/gp'],
                 ['Indiana University', 'http://gp.indiana.edu/gp'],
-                ['Broad Internal', 'http://gpbroad.broadinstitute.org/gp'],
-                ['localhost', 'http://127.0.0.1:8080/gp'],
-                ['GenePattern Beta', 'http://genepatternbeta.broadinstitute.org/gp']
+                ['Broad Internal (Broad Institute Users Only)', 'http://gpbroad.broadinstitute.org/gp'],
+                //['localhost', 'http://127.0.0.1:8080/gp'],
+                //['GenePattern Beta', 'http://genepatternbeta.broadinstitute.org/gp']
             ],
             cell: null                                              // Reference to the IPython cell
         },
@@ -398,7 +398,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
             messageBox.removeClass("alert-danger");
             messageBox.removeClass("alert-success");
             messageBox.addClass("alert-info");
-            messageBox.text(message);
+            messageBox.html(message);
             messageBox.show();
         },
 
@@ -560,6 +560,31 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
         },
 
         /**
+         * Returns a node with a feedback message and button, to be appended to the system message
+         *
+         * @param feedbackLink
+         * @returns {*|jQuery|HTMLElement}
+         */
+        createFeedbackMessage: function(feedbackLink) {
+            return $("<div></div>")
+                .addClass("clearfix")
+                .css("padding-top", "10px")
+                .append(
+                    $("<button></button>")
+                        .addClass("btn btn-primary btn-lg pull-right")
+                        .text("Leave Feedback")
+                        .click(function() {
+                            window.location.href = feedbackLink;
+                        })
+                )
+                .append(
+                    $("<p></p>")
+                        .addClass("lead")
+                        .text("Experiencing a bug? Have thoughts on how to make GenePattern Notebook better? Let us know by leaving feedback.")
+                )
+        },
+
+        /**
          * Checks the system message and displays the message, if one is found
          * Calls the done() method regardless of success or error
          *
@@ -581,6 +606,9 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                         // Strip data of HTML
                         var cleanMessage = $("<div></div>").html(data).text();
 
+                        // Append the feedback message
+                        cleanMessage.append(widget.createFeedbackMessage("mailto:gp-help@broadinstitute.org?subject=GenePattern%20Notebook"));
+
                         // Display the system message
                         widget.infoMessage(cleanMessage);
                     }
@@ -590,6 +618,10 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                 },
                 error: function() {
                     // Assume that the server is not a version that supports the system message call
+
+                    // Attach the feedback messafe
+                    var message = widget.createFeedbackMessage("mailto:gp-help@broadinstitute.org?subject=GenePattern%20Notebook");
+                    widget.infoMessage(message);
 
                     // If a function to execute when done has been passed in, execute it
                     if (done) { done(); }
