@@ -1,7 +1,16 @@
-/*
+/**
  * Navigation widgets
+ *
+ * @author Thorin Tabor
+ * @requires - jQuery
+ *
+ * Copyright 2015 The Broad Institute, Inc.
+ *
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not
+ * responsible for its use, misuse, or functionality.
  */
-
 var GenePattern = GenePattern || {};
 
 GenePattern.notebook = GenePattern.notebook || {};
