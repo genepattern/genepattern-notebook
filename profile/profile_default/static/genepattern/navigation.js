@@ -105,6 +105,9 @@ GenePattern.notebook.slider = function() {
                 .attr("data-placement", "right")
                 .click(function() {
                     $("#slider").hide("slide");
+
+                    // Fix a bug where the tooltip will sometimes remain open
+                    $(".ui-tooltip-content").hide();
                 })
         )
 
