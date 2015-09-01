@@ -383,7 +383,6 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                         )
                         .click(function() {
                             widget._updateSlider("destroy", file);
-                            widget._updateSlider("destroy", file);
                             widget._removeValue(file);
                             widget.element.find(".file-widget-value[name='" + file + "']").remove();
                             widget.element.find(".file-widget-upload").show();
