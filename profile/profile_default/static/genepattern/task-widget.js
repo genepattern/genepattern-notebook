@@ -278,6 +278,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                             }
 
                             widget.addValues(text);
+                            widget._updateCode();
                         }
                     }
 
@@ -298,6 +299,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                                 }
 
                                 widget.addValues(text);
+                                widget._updateCode();
                             }
                         });
                     }
