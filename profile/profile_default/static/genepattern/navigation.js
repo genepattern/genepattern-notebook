@@ -599,6 +599,213 @@ GenePattern.notebook.widgetSelectDialog = function(cell) {
     }, 500);
 };
 
+/**
+ * Construct and return a file menu for the provided output file
+ *
+ * @param element - HTML element to attach menu to
+ * @param name - The file name
+ * @param href - The URL of the file
+ * @param kind - The GenePattern kind of the file
+ * @param indexString - String containing output file index
+ * @param fullMenu - Whether this is a full menu or a log file menu
+ * @returns {*|jQuery|HTMLElement}
+ * @private
+ */
+GenePattern.notebook.buildMenu = function(element, name, href, kind, indexString, fullMenu) {
+    var widget = this;
+
+    // Attach simple menu
+    if (!fullMenu) {
+        element.popover({
+            title: "",
+            content: $("<div></div>")
+                .addClass("list-group")
+                .append(
+                    $("<label></label>")
+                        .text(name)
+                )
+                .append(
+                    $("<a></a>")
+                        .addClass("list-group-item")
+                        .text("Open in New Tab")
+                        .attr("href", href)
+                        .attr("target", "_blank")
+                ),
+            html: true,
+            placement: "right",
+            trigger: "click"
+        });
+    }
+    // Attach advanced menu
+    else {
+        var popover = $("<div></div>")
+            .addClass("list-group")
+            .append(
+                $("<label></label>")
+                    .text(name)
+            )
+            .append(
+                $("<a></a>")
+                    .addClass("list-group-item")
+                    .text("Open in New Tab")
+                    .attr("href", href)
+                    .attr("target", "_blank")
+            )
+            .append(
+                $("<a></a>")
+                    .addClass("list-group-item gp-widget-job-view-code")
+                    .text("View Code Use")
+                    .attr("href", "#")
+            )
+            .append(
+                $("<div></div>")
+                    .append(
+                        $("<label></label>")
+                            .css("padding-top", "10px")
+                            .text("Send to Downstream Task")
+                    )
+                    .append(
+                        $("<select></select>")
+                            .addClass("form-control gp-widget-job-existing-task")
+                            .css("margin-left", "0")
+                            .append(
+                                $("<option></option>")
+                                    .text("----")
+                            )
+                    )
+            )
+            .append(
+                $("<div></div>")
+                    .append(
+                        $("<label></label>")
+                            .css("padding-top", "10px")
+                            .text("Send to New Task")
+                    )
+                    .append(
+                        $("<select></select>")
+                            .addClass("form-control gp-widget-job-new-task")
+                            .css("margin-left", "0")
+                            .append(
+                                $("<option></option>")
+                                    .text("----")
+                            )
+                    )
+            );
+
+        element.popover({
+            title: "",
+            content: popover,
+            html: true,
+            placement: "right",
+            trigger: "click"
+        });
+
+        // Add options to "Send to New Task" dropdown, or hide if none
+        var modules = null;
+        var fixedKind = Array.isArray(kind) ? kind[0] : kind;
+        var sendToNewTask = popover.find('.gp-widget-job-new-task');
+        var kindsMap = GenePattern.kinds();
+        if (kindsMap !==  null && kindsMap !== undefined) {
+            modules = kindsMap[fixedKind];
+            $.each(modules, function(i, module) {
+                sendToNewTask.append(
+                    $("<option></option>")
+                        .attr("data-lsid", module.lsid())
+                        .text(module.name())
+                )
+            });
+        }
+        if (modules === null || modules.length === 0) {
+            sendToNewTask.parent().hide();
+        }
+
+        // Attach methods in a way that will not break when popover is hidden
+        element.on('shown.bs.popover', function () {
+            // Attach the click method to "view code"
+            element.parent().find(".gp-widget-job-view-code").click(function() {
+                widget.codeDialog(widget.options.job, indexString);
+                $(".popover").popover("hide");
+            });
+
+            // Attach "Send to New Task" clicks
+            element.parent().find(".gp-widget-job-new-task").change(function(event) {
+                var option = $(event.target).find(":selected");
+                var lsid = option.attr("data-lsid");
+                if (lsid === undefined || lsid === null) return;
+                var name = option.text();
+                var cell = IPython.notebook.insert_cell_at_bottom();
+                var code = GenePattern.notebook.buildModuleCode({"lsid":lsid, "name": name});
+                cell.set_text(code);
+
+                // Execute the cell
+                setTimeout(function() {
+                    cell.element.on("gp.widgetRendered", function() {
+                        var widgetElement = cell.element.find(".gp-widget");
+                        var widget = widgetElement.data("widget");
+                        widgetElement.on("runTask.paramLoad", function() {
+                            widget.receiveFile(element.attr("href"), fixedKind);
+                        });
+                    });
+                    cell.execute();
+                }, 10);
+
+                // Hide the popover
+                $(".popover").popover("hide");
+
+                // Scroll to the new cell
+                $('#site').animate({
+                    scrollTop: $(cell.element).position().top
+                }, 500);
+            });
+
+            // Dynamically add options to "Send to Downstream Task" dropdown
+            var sendToExistingTask = element.parent().find('.gp-widget-job-existing-task');
+            var matchingTasks = GenePattern.notebook.taskWidgetsForKind(fixedKind);
+            sendToExistingTask
+                .empty()
+                .append(
+                    $("<option></option>")
+                        .text("----")
+                );
+            $.each(matchingTasks, function(i, pairing) {
+                var cellIndex = pairing[0];
+                var taskWidget = pairing[1];
+                sendToExistingTask
+                    .append(
+                        $("<option></option>")
+                            .text(taskWidget._task.name() + " [Cell " + cellIndex + "]")
+                            .data("widget", taskWidget)
+                    );
+            });
+
+            // Add event to hand changes on the "Send to Downstream Task" dropdown
+            sendToExistingTask.change(function() {
+                var option = $(this).find(":selected");
+                var theWidget = option.data("widget");
+                theWidget.receiveFile(element.attr("href"), fixedKind);
+
+                // Hide the popover
+                $(".popover").popover("hide");
+
+                // Scroll to the new cell
+                $('#site').animate({
+                    scrollTop: $(theWidget.element).position().top
+                }, 500);
+            });
+        });
+    }
+
+    // Make the "i" icon open the menus as well
+    var icon = element.find(".fa-info-circle");
+    icon.click(function(event) {
+        $(this).parent().popover("show");
+        event.preventDefault();
+        event.stopPropagation();
+    });
+
+    return element;
+};
+
 /*
  * Initialization functions
  */
