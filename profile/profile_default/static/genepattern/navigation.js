@@ -163,6 +163,7 @@ GenePattern.notebook.slider = function() {
                                         .attr("data-toggle", "tab")
                                         .attr("href", "#slider-data")
                                         .text("Data")
+                                        .hide()
                                 )
                         )
                         .append(
@@ -187,6 +188,7 @@ GenePattern.notebook.slider = function() {
                             $("<div></div>")
                                 .attr("id", "slider-data")
                                 .addClass("tab-pane")
+                                .hide()
                         )
                         .append(
                             $("<div></div>")
