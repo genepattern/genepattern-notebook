@@ -667,6 +667,28 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
         }
     });
 
+    // Method to enable dev servers from the auth widget
+    GenePattern.notebook.enableDev = function() {
+        $(".gp-widget-auth-form").find("[name=server]").each(function(i, select) {
+            $(select)
+                .append(
+                    $("<option></option>")
+                        .val("http://genepatternbeta.broadinstitute.org/gp")
+                        .text("gpbeta")
+                )
+                .append(
+                    $("<option></option>")
+                        .val("http://gpdev.broadinstitute.org/gp")
+                        .text("gpdev")
+                )
+                .append(
+                    $("<option></option>")
+                        .val("http://127.0.0.1:8080/gp")
+                        .text("localhost")
+                )
+        });
+    };
+
 
     var AuthWidgetView = widget.DOMWidgetView.extend({
         render: function () {
