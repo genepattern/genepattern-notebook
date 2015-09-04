@@ -843,7 +843,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                         });
 
                     // Build and attach the file menu
-                    GenePattern.notebook.buildMenu(link, output["link"]["name"], output["link"]["href"], output["kind"], indexString, fullMenu);
+                    GenePattern.notebook.buildMenu(widget, link, output["link"]["name"], output["link"]["href"], output["kind"], indexString, fullMenu);
 
                     link.appendTo(outputsList);
                 }

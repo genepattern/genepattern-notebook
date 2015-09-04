@@ -604,6 +604,7 @@ GenePattern.notebook.widgetSelectDialog = function(cell) {
 /**
  * Construct and return a file menu for the provided output file
  *
+ * @param widget - the job widget pointed to by this menu
  * @param element - HTML element to attach menu to
  * @param name - The file name
  * @param href - The URL of the file
@@ -613,8 +614,7 @@ GenePattern.notebook.widgetSelectDialog = function(cell) {
  * @returns {*|jQuery|HTMLElement}
  * @private
  */
-GenePattern.notebook.buildMenu = function(element, name, href, kind, indexString, fullMenu) {
-    var widget = this;
+GenePattern.notebook.buildMenu = function(widget, element, name, href, kind, indexString, fullMenu) {
 
     // Attach simple menu
     if (!fullMenu) {
