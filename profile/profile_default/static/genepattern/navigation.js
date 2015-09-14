@@ -951,25 +951,33 @@ GenePattern.notebook.init.launch_init = function() {
         });
     });
 
-    // Add GenePattern "cell type"
-    $("#cell_type")
-        .append(
-            $("<option value='code'>GenePattern</option>")
-        )
-        .change(function(event) {
-            var type = $(event.target).find(":selected").text();
-            if (type === "GenePattern") {
-                // DO ACTION
-                GenePattern.notebook.changeGenePatternPrompt();
-            }
-        });
-    $("#change_cell_type").find("ul.dropdown-menu")
-        .append(
-            $("<li id='to_genepattern' title='Insert a GenePattern widget cell'><a href='#'>GenePattern</a></option>")
-                .click(function() {
+    // Add GenePattern "cell type" if not already in menu
+    var dropdown = $("#cell_type");
+    var gpInDropdown = dropdown.find("option:contains('GenePattern')").length > 0;
+    if (!gpInDropdown) {
+        dropdown.append(
+                $("<option value='code'>GenePattern</option>")
+            )
+            .change(function(event) {
+                var type = $(event.target).find(":selected").text();
+                if (type === "GenePattern") {
+                    // DO ACTION
                     GenePattern.notebook.changeGenePatternPrompt();
-                })
-        );
+                }
+            });
+    }
+
+    var cellMenu = $("#change_cell_type");
+    var gpInMenu = cellMenu.find("#to_genepattern").length > 0;
+    if (!gpInMenu) {
+        cellMenu.find("ul.dropdown-menu")
+            .append(
+                $("<li id='to_genepattern' title='Insert a GenePattern widget cell'><a href='#'>GenePattern</a></option>")
+                    .click(function() {
+                        GenePattern.notebook.changeGenePatternPrompt();
+                    })
+            );
+    }
 
     // Hide the loading screen
     setTimeout(function () {
