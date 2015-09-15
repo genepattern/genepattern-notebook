@@ -37,7 +37,7 @@ requirejs([
     "/static/genepattern/navigation.js",
     "/static/genepattern/auth-widget.js",
     "/static/genepattern/job-widget.js",
-    "/static/genepattern/task-widget.js"], function(util) {
+    "/static/genepattern/task-widget.js"], function() {
 
     // Initiate the GenePattern Notebook extension
     // If reloading a notebook, display with the full event model

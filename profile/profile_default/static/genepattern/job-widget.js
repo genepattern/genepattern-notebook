@@ -11,7 +11,7 @@
  * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not
  * responsible for its use, misuse, or functionality.
  */
-require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widget, manager) {
+require(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepattern/gp.js", "/static/genepattern/navigation.js"], function (widget, manager) {
     /**
      * Widget for viewing the job results of a launched job.
      *

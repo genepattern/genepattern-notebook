@@ -985,9 +985,15 @@ GenePattern.notebook.init.launch_init = function() {
     }, 100);
 };
 
-require(["jquery"], function() {
+requirejs([
+    "jquery",
+    "/static/genepattern/gp.js",
+    "/static/genepattern/navigation.js",
+    "/static/genepattern/auth-widget.js",
+    "/static/genepattern/job-widget.js",
+    "/static/genepattern/task-widget.js"], function() {
     // If in a notebook, display with the full event model
-    $([IPython.events]).on('kernel_ready.Kernel kernel_created.Session notebook_loaded.Notebook', GenePattern.notebook.init.notebook_init_wrapper);
+    //$([IPython.events]).on('kernel_ready.Kernel kernel_created.Session notebook_loaded.Notebook', GenePattern.notebook.init.notebook_init_wrapper);
 
     // If the notebook listing page, display with alternate event model
     if ($(document).find("#notebooks").length > 0) {
