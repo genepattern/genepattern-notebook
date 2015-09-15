@@ -582,6 +582,7 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui"], function (widge
                 .append(
                     $("<button></button>")
                         .addClass("btn btn-primary btn-lg pull-right")
+                        .css("margin-left", "10px")
                         .text("Leave Feedback")
                         .click(function() {
                             window.location.href = feedbackLink;

@@ -664,7 +664,7 @@ GenePattern.notebook.buildMenu = function(widget, element, name, href, kind, ind
                     .append(
                         $("<label></label>")
                             .css("padding-top", "10px")
-                            .text("Send to Downstream Task")
+                            .text("Send to Existing GenePattern Cell")
                     )
                     .append(
                         $("<select></select>")
@@ -681,7 +681,7 @@ GenePattern.notebook.buildMenu = function(widget, element, name, href, kind, ind
                     .append(
                         $("<label></label>")
                             .css("padding-top", "10px")
-                            .text("Send to New Task")
+                            .text("Send to New GenePattern Cell")
                     )
                     .append(
                         $("<select></select>")
