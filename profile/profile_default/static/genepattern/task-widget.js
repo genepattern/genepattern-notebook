@@ -11,7 +11,7 @@
  * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not
  * responsible for its use, misuse, or functionality.
  */
-require(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepattern/gp.js", "/static/genepattern/navigation.js"], function (widget, manager) {
+define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepattern/gp.js", "/static/genepattern/navigation.js"], function (widget, manager) {
 
     /**
      * Widget for file input into a GenePattern Notebook.
@@ -2187,41 +2187,65 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepat
         }
     });
 
-    var TaskWidgetView = widget.DOMWidgetView.extend({
-        render: function () {
-            // Double check to make sure that this is the correct cell
-            if ($(this.options.cell.element).hasClass("running")) {
-                // Render the view.
-                this.setElement($('<div></div>'));
-                var lsid = this.model.get('lsid');
-                var name = this.model.get('name');
+    var DOMWidgetView = IPython.DOMWidgetView;
+    var WidgetManager = IPython.WidgetManager;
 
-                // Determine which identifier is used
-                if (lsid) {
-                    this.$el.runTask({
-                        lsid: lsid
-                    });
+    function register_widget() {
+        var TaskWidgetView = DOMWidgetView.extend({
+            render: function () {
+                // Double check to make sure that this is the correct cell
+                if ($(this.options.cell.element).hasClass("running")) {
+                    // Render the view.
+                    this.setElement($('<div></div>'));
+                    var lsid = this.model.get('lsid');
+                    var name = this.model.get('name');
+
+                    // Determine which identifier is used
+                    if (lsid) {
+                        this.$el.runTask({
+                            lsid: lsid
+                        });
+                    }
+                    else {
+                        this.$el.runTask({
+                            name: name
+                        });
+                    }
+
+                    // Hide the code by default
+                    var element = this.$el;
+                    setTimeout(function() {
+                        // Protect against the "double render" bug in Jupyter 3.2.1
+                        element.parent().find(".gp-widget-task:not(:first-child)").remove();
+
+                        element.closest(".cell").find(".input")
+                            .css("height", "0")
+                            .css("overflow", "hidden");
+                    }, 1);
                 }
-                else {
-                    this.$el.runTask({
-                        name: name
-                    });
-                }
-
-                // Hide the code by default
-                var element = this.$el;
-                setTimeout(function() {
-                    // Protect against the "double render" bug in Jupyter 3.2.1
-                    element.parent().find(".gp-widget-task:not(:first-child)").remove();
-
-                    element.closest(".cell").find(".input")
-                        .css("height", "0")
-                        .css("overflow", "hidden");
-                }, 1);
             }
-        }
-    });
+        });
 
-    // Register the TaskWidgetView with the widget manager.
-    manager.WidgetManager.register_widget_view('TaskWidgetView', TaskWidgetView);
+        // Register the TaskWidgetView with the widget manager.
+        WidgetManager.register_widget_view('TaskWidgetView', TaskWidgetView);
+    }
+
+    function wait_until_ready() {
+        if (WidgetManager && DOMWidgetView) {
+            register_widget();
+        }
+        else {
+            setTimeout(function() {
+                DOMWidgetView = IPython.DOMWidgetView;
+                WidgetManager = IPython.WidgetManager;
+
+                wait_until_ready();
+            }, 200);
+        }
+    }
+
+    // Ensure that everything is loaded correctly before registering the widget
+    wait_until_ready();
+
+    return {};
 });

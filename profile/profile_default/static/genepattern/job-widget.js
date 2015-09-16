@@ -11,7 +11,7 @@
  * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not
  * responsible for its use, misuse, or functionality.
  */
-require(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepattern/gp.js", "/static/genepattern/navigation.js"], function (widget, manager) {
+define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepattern/gp.js", "/static/genepattern/navigation.js"], function (widget, manager) {
     /**
      * Widget for viewing the job results of a launched job.
      *
@@ -926,32 +926,56 @@ require(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepat
         }
     });
 
-    var JobWidgetView = widget.DOMWidgetView.extend({
-        render: function () {
-            // Double check to make sure that this is the correct cell
-            if ($(this.options.cell.element).hasClass("running")) {
-                // Render the view.
-                this.setElement($('<div></div>'));
-                var jobNumber = this.model.get('job_number');
-                this.$el.jobResults({
-                    jobNumber: jobNumber
-                });
+    var DOMWidgetView = IPython.DOMWidgetView;
+    var WidgetManager = IPython.WidgetManager;
 
-                // Hide the code by default
-                var element = this.$el;
-                setTimeout(function() {
-                    // Protect against the "double render" bug in Jupyter 3.2.1
-                    element.parent().find(".gp-widget-job:not(:first-child)").remove();
+    function register_widget() {
+        var JobWidgetView = DOMWidgetView.extend({
+            render: function () {
+                // Double check to make sure that this is the correct cell
+                if ($(this.options.cell.element).hasClass("running")) {
+                    // Render the view.
+                    this.setElement($('<div></div>'));
+                    var jobNumber = this.model.get('job_number');
+                    this.$el.jobResults({
+                        jobNumber: jobNumber
+                    });
 
-                    // Hide the code
-                    element.closest(".cell").find(".input")
-                        .css("height", "0")
-                        .css("overflow", "hidden");
-                }, 1);
+                    // Hide the code by default
+                    var element = this.$el;
+                    setTimeout(function() {
+                        // Protect against the "double render" bug in Jupyter 3.2.1
+                        element.parent().find(".gp-widget-job:not(:first-child)").remove();
+
+                        // Hide the code
+                        element.closest(".cell").find(".input")
+                            .css("height", "0")
+                            .css("overflow", "hidden");
+                    }, 1);
+                }
             }
-        }
-    });
+        });
 
-    // Register the JobWidgetView with the widget manager.
-    manager.WidgetManager.register_widget_view('JobWidgetView', JobWidgetView);
+        // Register the JobWidgetView with the widget manager.
+        WidgetManager.register_widget_view('JobWidgetView', JobWidgetView);
+    }
+
+    function wait_until_ready() {
+        if (WidgetManager && DOMWidgetView) {
+            register_widget();
+        }
+        else {
+            setTimeout(function() {
+                DOMWidgetView = IPython.DOMWidgetView;
+                WidgetManager = IPython.WidgetManager;
+
+                wait_until_ready();
+            }, 200);
+        }
+    }
+
+    // Ensure that everything is loaded correctly before registering the widget
+    wait_until_ready();
+
+    return {};
 });
