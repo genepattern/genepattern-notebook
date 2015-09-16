@@ -517,8 +517,26 @@ GenePattern.notebook.changeGenePatternPrompt = function() {
                         // Put the code in the cell
                         cell.code_mirror.setValue(code);
 
-                        // Execute the cell
-                        cell.execute();
+                        function isWidgetPresent() { return cell.element.find(".gp-widget").length > 0; }
+                        function isRunning() { return cell.element.hasClass("running") }
+
+                        var widgetPresent = isWidgetPresent();
+                        var running = isRunning();
+
+                        function ensure_widget() {
+                            if (!widgetPresent && !running) {
+                                cell.execute();
+                            }
+                            if (!widgetPresent) {
+                                setTimeout(function() {
+                                    widgetPresent = isWidgetPresent();
+                                    running = isRunning();
+                                    ensure_widget();
+                                }, 500);
+                            }
+                        }
+
+                        ensure_widget();
                     }
                 }
             }
