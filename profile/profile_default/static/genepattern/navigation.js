@@ -763,7 +763,9 @@ GenePattern.notebook.buildMenu = function(widget, element, name, href, kind, ind
                         var widgetElement = cell.element.find(".gp-widget");
                         var widget = widgetElement.data("widget");
                         widgetElement.on("runTask.paramLoad", function() {
-                            widget.receiveFile(element.attr("href"), fixedKind);
+                            setTimeout(function() {
+                                widget.receiveFile(element.attr("href"), fixedKind);
+                            }, 100);
                         });
                     });
                     cell.execute();
@@ -790,10 +792,11 @@ GenePattern.notebook.buildMenu = function(widget, element, name, href, kind, ind
             $.each(matchingTasks, function(i, pairing) {
                 var cellIndex = pairing[0];
                 var taskWidget = pairing[1];
+                var task = GenePattern.task(taskWidget.options.lsid);
                 sendToExistingTask
                     .append(
                         $("<option></option>")
-                            .text(taskWidget._task.name() + " [Cell " + cellIndex + "]")
+                            .text(task.name() + " [Cell " + cellIndex + "]")
                             .data("widget", taskWidget)
                     );
             });
