@@ -516,6 +516,11 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
 
                                 // Execute the cell
                                 cell.execute();
+
+                                // Scroll to the new cell
+                                $('#site').animate({
+                                    scrollTop: $(cell.element).position().top
+                                }, 500);
                             });
                         }
                     }
