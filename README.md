@@ -7,6 +7,10 @@ Some notes on setup of GenePattern Notebook environment.
 We recommend GenePattern 3.9.4 (the latest version), as this version fixes a bug in the 
 server than can cause the Notebook to double prompt for authentication.**
 
+**Jupyter 4 (IPython 4) has been released, introducing significant changes to the 
+Jupyter code base. We are working to update GenePattern Notebook to support this new 
+version, however, full support has not yet been implemented.**
+
 # Installation
 
 ## Install Python
