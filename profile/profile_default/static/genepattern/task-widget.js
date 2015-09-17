@@ -1265,7 +1265,8 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
                                                     widget.errorMessage(error);
                                                 };
 
-                                                widget._task.acceptEula(success, error);
+                                                var task = GenePattern.task(widget.options.lsid);
+                                                task.acceptEula(success, error);
                                             })
                                     )
                             )
@@ -1279,8 +1280,7 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
                 this._loadTask({
                     identifier: identifier,
                     success: function(task) {
-                        widget._task = task;
-                        if (widget._task !== null) {
+                        if (task !== null) {
                             widget._buildHeader();
                             widget._buildForm();
                             $(widget.element).trigger("runTask.paramLoad");
@@ -1331,8 +1331,7 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
             this._loadTask({
                 identifier: identifier,
                 success: function(task) {
-                    widget._task = task;
-                    if (widget._task !== null) {
+                    if (task !== null) {
                         widget._buildHeader();
                         widget._buildForm();
                     }
@@ -1461,7 +1460,8 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
          * @private
          */
         _buildEula: function() {
-            var eula = this._task.eula();   // Get the EULAs
+            var task = GenePattern.task(this.options.lsid);
+            var eula = task.eula();   // Get the EULAs
             // Only build the EULA display if necessary
             if (eula !== undefined && eula !== null && eula['pendingEulas'] !== undefined && eula['pendingEulas'].length > 0) {
                 var box = this.element.find(".gp-widget-task-eula-box");
@@ -1485,16 +1485,18 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
          * @private
          */
         _buildHeader: function() {
+            var task = GenePattern.task(this.options.lsid);
+
             this.element.find(".gp-widget-task-subheader").show();
             this.element.find(".gp-widget-task-footer").show();
 
-            this.element.find(".gp-widget-task-name").empty().text(" " + this._task.name());
-            this.element.find(".gp-widget-task-version").empty().text("Version " + this._task.version());
-            this.element.find(".gp-widget-task-doc").attr("data-href", GenePattern.server() + this._task.documentation().substring(3));
-            this.element.find(".gp-widget-task-desc").empty().text(this._task.description());
+            this.element.find(".gp-widget-task-name").empty().text(" " + task.name());
+            this.element.find(".gp-widget-task-version").empty().text("Version " + task.version());
+            this.element.find(".gp-widget-task-doc").attr("data-href", GenePattern.server() + task.documentation().substring(3));
+            this.element.find(".gp-widget-task-desc").empty().text(task.description());
 
             // Display error if Java visualizer
-            var categories = this._task.categories();
+            var categories = task.categories();
             if (categories.indexOf("Visualizer") !== -1) {
                 this.errorMessage("This job appears to be a deprecated Java-based visualizer. These visualizers are not supported in the GenePattern Notebook.");
             }
@@ -1590,9 +1592,10 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
          */
         _buildForm: function() {
             var widget = this;
+            var task = GenePattern.task(widget.options.lsid);
             this.element.find(".gp-widget-task-form").empty();
 
-            this._task.params({
+            task.params({
                 success: function(response, params) {
                     var reloadVals = widget._parseJobSpec();
 
@@ -1780,6 +1783,7 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
          * Toggle the code view on or off
          */
         toggleCode: function() {
+            var widget = this;
             var code = this.element.find(".gp-widget-task-code");
             var form = this.element.find(".gp-widget-task-form");
             var headers = this.element.find(".gp-widget-task-subheader, .gp-widget-task-footer");
@@ -1807,7 +1811,8 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
                 form.slideDown();
 
                 // Only show the EULA if there is one to display
-                if (this._task && this._task.eula() && this._task.eula().pendingEulas && this._task.eula().pendingEulas.length > 0) {
+                var task = GenePattern.task(widget.options.lsid);
+                if (task && task.eula() && task.eula().pendingEulas && task.eula().pendingEulas.length > 0) {
                     eula.slideDown();
                 }
 
@@ -2056,7 +2061,8 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
 
             // No match was found
             if (!matched) {
-                console.log("ERROR: No kind match found for " + url + " of kind " + kind + " in " + this._task.name());
+                var task = GenePattern.task(this.options.lsid);
+                console.log("ERROR: No kind match found for " + url + " of kind " + kind + " in " + task.name());
             }
         },
 
@@ -2065,7 +2071,8 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
          */
         submit: function() {
             // Create the job input
-            var jobInput = this._task.jobInput();
+            var task = GenePattern.task(this.options.lsid);
+            var jobInput = task.jobInput();
             var widget = this;
 
             this.uploadAll({
