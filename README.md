@@ -32,13 +32,7 @@ package management system.
 Next install IPython Notebook. This can easily be done from PIP by executing the following 
 line of code from the terminal.
 
-> pip install "ipython[notebook]"
-
-## Install GenePattern Python Library
-The GenePattern Notebook uses the GenePattern Python Library for many of its calls. This 
-library can be installed from PIP by running the following command:
-
-> pip install genepattern-python
+> pip install "ipython[all]==3.2"
 
 ## Install GenePattern Notebook
 
@@ -46,17 +40,7 @@ For the time being, the best way to install the GenePattern Notebook is by cloni
 repository and then copying over some files from the checkout to your IPython profile. The 
 GenePattern Notebook repository can be cloned by executing the following command:
 
-> git clone https://github.com/broadinstitute/GenePatternNotebook.git
-
-**As the GenePattern Notebook is not yet public, at this time you must be a member of the 
-GenePattern team to access the repository.**
-
-Next, you must copy over the GenePattern Notebook extension to your IPython profile. Your 
-profile is by default found at ~/.ipython - a hidden directory under your user directory.
-You will need to copy the client-side files needed to display the GenePattern widgets. 
-From the cloned repository (whose root folder is GenePatternNotebook):
-
-> cp GenePatternNotebook/profile/profile_default/static/custom/* ~/.ipython/profile_default/static/custom/
+> pip install genepattern-notebook
 
 ## Launch IPython
 
@@ -65,6 +49,13 @@ Finally, you may launch the IPython notebook by issuing the following command at
 > ipython notebook
 
 This will start up the notebook kernel from and launch your web browser, pointing to the Notebook.
+
+## Updating GenePattern Notebook
+
+If you want to update GenePattern Notebook to a more recent version on PIP, run the following 
+command:
+
+> pip install -U --no-deps genepattern-notebook
 
 ## Note for RNA-seq Notebook Users
 
