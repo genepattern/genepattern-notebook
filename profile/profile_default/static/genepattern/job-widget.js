@@ -729,8 +729,11 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
                 }
             }
 
-            // Build the sharing pane
-            this.buildSharingPanel(job);
+            // If sharing panel does not exist, build the sharing pane
+            var sharingFound = this.element.find(".gp-widget-job-share-table").length > 0;
+            if (!sharingFound) {
+                this.buildSharingPanel(job);
+            }
 
             // Build the visualizer display, if necessary
             var launchUrl = job.launchUrl();
