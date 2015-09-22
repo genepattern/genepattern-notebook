@@ -303,6 +303,26 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
                             }
                         });
                     }
+
+                    // Path for Safari
+                    else if (html === "") {
+                        text = event['dataTransfer'].getData('text/uri-list');
+                        if (text !== undefined && text !== null) {
+
+                                // Throw an error if this would overflow max values
+                                if (!widget._valNumGood(text)) {
+                                    widget._runTask.errorMessage(widget._param.name() + " cannot handle that many values. Max values: " + widget._param.maxValues());
+
+                                    widget.element.css("background-color", "");
+                                    event.stopPropagation();
+                                    event.preventDefault();
+                                    return;
+                                }
+
+                                widget.addValues(text);
+                                widget._updateCode();
+                            }
+                    }
                 }
 
                 widget.element.css("background-color", "");
