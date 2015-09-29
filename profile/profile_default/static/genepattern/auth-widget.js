@@ -12,6 +12,9 @@
  * responsible for its use, misuse, or functionality.
  */
 define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepattern/gp.js", "/static/genepattern/navigation.js"], function (widget, manager) {
+    // Add shim to support Jupyter 3.x and 4.x
+    var Jupyter = Jupyter || IPython || {};
+
     $.widget("gp.auth", {
         options: {
             servers: [                                              // Expects a list of lists with [name, url] pairs
@@ -690,8 +693,8 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
         });
     };
 
-    var DOMWidgetView = IPython.DOMWidgetView;
-    var WidgetManager = IPython.WidgetManager;
+    var DOMWidgetView = Jupyter.DOMWidgetView;
+    var WidgetManager = Jupyter.WidgetManager;
 
     function register_widget() {
         var AuthWidgetView = DOMWidgetView.extend({
@@ -737,8 +740,8 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
         }
         else {
             setTimeout(function() {
-                DOMWidgetView = IPython.DOMWidgetView;
-                WidgetManager = IPython.WidgetManager;
+                DOMWidgetView = Jupyter.DOMWidgetView;
+                WidgetManager = Jupyter.WidgetManager;
 
                 wait_until_ready();
             }, 200);

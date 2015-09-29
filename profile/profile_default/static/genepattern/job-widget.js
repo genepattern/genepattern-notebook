@@ -17,6 +17,9 @@ define([
     "jqueryui",
     "/static/genepattern/gp.js",
     "/static/genepattern/navigation.js"], function (widget, manager) {
+    // Add shim to support Jupyter 3.x and 4.x
+    var Jupyter = Jupyter || IPython || {};
+
     /**
      * Widget for viewing the job results of a launched job.
      *
@@ -502,7 +505,7 @@ define([
             //var cell = this.element.closest(".cell").data("cell");
 
             dialog.modal({
-                notebook: IPython.notebook,
+                notebook: Jupyter.notebook,
                 keyboard_manager: this.keyboard_manager,
                 title : "Reload Job?",
                 body : "Are you sure you want to reload the job? This will leave the current " +
@@ -514,7 +517,7 @@ define([
                         "click" : function() {
                             job.code("Python").done(function(code) {
                                 code = widget._stripUnwantedCode(code);
-                                var cell = IPython.notebook.insert_cell_below();
+                                var cell = Jupyter.notebook.insert_cell_below();
 
                                 // Put the code in the cell
                                 cell.code_mirror.setValue(code);
@@ -880,7 +883,7 @@ define([
             var fileCode = "thisFile = job" + job.jobNumber() + ".get_output_files()[" + fileIndex + "]";
 
             dialog.modal({
-                notebook: IPython.notebook,
+                notebook: Jupyter.notebook,
                 keyboard_manager: this.keyboard_manager,
                 title : "Python Code",
                 body : $("<div></div>")
@@ -939,8 +942,8 @@ define([
         }
     });
 
-    var DOMWidgetView = IPython.DOMWidgetView;
-    var WidgetManager = IPython.WidgetManager;
+    var DOMWidgetView = Jupyter.DOMWidgetView;
+    var WidgetManager = Jupyter.WidgetManager;
 
     function register_widget() {
         var JobWidgetView = DOMWidgetView.extend({
@@ -979,8 +982,8 @@ define([
         }
         else {
             setTimeout(function() {
-                DOMWidgetView = IPython.DOMWidgetView;
-                WidgetManager = IPython.WidgetManager;
+                DOMWidgetView = Jupyter.DOMWidgetView;
+                WidgetManager = Jupyter.WidgetManager;
 
                 wait_until_ready();
             }, 200);

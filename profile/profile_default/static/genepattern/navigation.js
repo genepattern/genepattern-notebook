@@ -12,8 +12,10 @@
  * responsible for its use, misuse, or functionality.
  */
 var GenePattern = GenePattern || {};
-
 GenePattern.notebook = GenePattern.notebook || {};
+
+// Add shim to support Jupyter 3.x and 4.x
+var Jupyter = Jupyter || IPython || {};
 
 /**
  * Attaches the loading screen
@@ -225,10 +227,10 @@ GenePattern.notebook.authenticate = function(data) {
                 tags.sort();
                 var option = GenePattern.notebook.sliderOption(module['lsid'], module['name'], "v" + module['version'], module['description'], tags);
                 option.click(function() {
-                    var index = IPython.notebook.get_selected_index();
-                    IPython.notebook.insert_cell_below('code', index);
-                    IPython.notebook.select_next();
-                    var cell = IPython.notebook.get_selected_cell();
+                    var index = Jupyter.notebook.get_selected_index();
+                    Jupyter.notebook.insert_cell_below('code', index);
+                    Jupyter.notebook.select_next();
+                    var cell = Jupyter.notebook.get_selected_cell();
                     var code = GenePattern.notebook.buildModuleCode(module);
                     cell.set_text(code);
                     setTimeout(function() {
@@ -240,7 +242,7 @@ GenePattern.notebook.authenticate = function(data) {
 
                     // Scroll to the new cell
                     $('#site').animate({
-                        scrollTop: $(IPython.notebook.get_selected_cell().element).position().top
+                        scrollTop: $(Jupyter.notebook.get_selected_cell().element).position().top
                     }, 500);
                 });
                 sliderModules.append(option);
@@ -494,10 +496,10 @@ GenePattern.notebook.updateSliderData = function(url, value) {
 
 GenePattern.notebook.changeGenePatternPrompt = function() {
     var dialog = require('base/js/dialog');
-    var cell = IPython.notebook.get_selected_cell();
+    var cell = Jupyter.notebook.get_selected_cell();
 
     dialog.modal({
-        notebook: IPython.notebook,
+        notebook: Jupyter.notebook,
         keyboard_manager: this.keyboard_manager,
         title : "Change to GenePattern Widget?",
         body : "Are you sure you want to change this cell's type to a GenePattern widget? This will cause " +
@@ -601,7 +603,7 @@ GenePattern.notebook.widgetSelectDialog = function(cell) {
     // Create the dialog
     var dialog = require('base/js/dialog');
     dialog.modal({
-        notebook: IPython.notebook,
+        notebook: Jupyter.notebook,
         keyboard_manager: this.keyboard_manager,
         title : "Select Widget Type",
         body : modules,
@@ -753,7 +755,7 @@ GenePattern.notebook.buildMenu = function(widget, element, name, href, kind, ind
                 var lsid = option.attr("data-lsid");
                 if (lsid === undefined || lsid === null) return;
                 var name = option.text();
-                var cell = IPython.notebook.insert_cell_at_bottom();
+                var cell = Jupyter.notebook.insert_cell_at_bottom();
                 var code = GenePattern.notebook.buildModuleCode({"lsid":lsid, "name": name});
                 cell.set_text(code);
 
@@ -851,12 +853,12 @@ GenePattern.notebook.init.main_init_wrapper = function(evt) {
  * Initialize GenePattern Notebook from the notebook page
  */
 GenePattern.notebook.init.notebook_init_wrapper = function () {
-    if (!GenePattern.notebook.init.launch_init.done_init  && IPython.notebook.kernel) {
+    if (!GenePattern.notebook.init.launch_init.done_init  && Jupyter.notebook.kernel) {
         // Call the core init function
         GenePattern.notebook.init.launch_init();
 
         // Initialize the GenePattern cell type keyboard shortcut
-        IPython.keyboard_manager.command_shortcuts.add_shortcut('g', {
+        Jupyter.keyboard_manager.command_shortcuts.add_shortcut('g', {
             help : 'to GenePattern',
             help_index : 'cc',
             handler : function () {
@@ -943,8 +945,8 @@ GenePattern.notebook.init.launch_init = function() {
     body.append(GenePattern.notebook.slider());
 
     // Hide or show the slider tab if a GenePattern cell is highlighted
-    $([IPython.events]).on('select.Cell', function() {
-        var cell = IPython.notebook.get_selected_cell();
+    $([Jupyter.events]).on('select.Cell', function() {
+        var cell = Jupyter.notebook.get_selected_cell();
         var isGPCell = cell.element.find(".gp-widget").length > 0;
 
         // If authenticated and the selected cell is a GenePattern cell, show
@@ -967,7 +969,7 @@ GenePattern.notebook.init.launch_init = function() {
     $(function () {
         $.each($(".cell"), function(index, val) {
             if ($(val).html().indexOf("# !AUTOEXEC") > -1) {
-                IPython.notebook.get_cell(index).execute();
+                Jupyter.notebook.get_cell(index).execute();
             }
         });
     });

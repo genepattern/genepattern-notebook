@@ -11,6 +11,10 @@
  * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not
  * responsible for its use, misuse, or functionality.
  */
+
+// Add shim to support Jupyter 3.x and 4.x
+var Jupyter = Jupyter || IPython || {};
+
 $('head')
     // Import styles used by GenePattern navigation
     .append(
@@ -45,7 +49,7 @@ requirejs([
 
     // Otherwise, if not initialized after two seconds, manually init
     setTimeout(function() {
-        if (!GenePattern.notebook.init.launch_init.done_init  && IPython.notebook.kernel) {
+        if (!GenePattern.notebook.init.launch_init.done_init  && Jupyter.notebook.kernel) {
             GenePattern.notebook.init.notebook_init_wrapper();
         }
     }, 2000);

@@ -12,6 +12,8 @@
  * responsible for its use, misuse, or functionality.
  */
 define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepattern/gp.js", "/static/genepattern/navigation.js"], function (widget, manager) {
+    // Add shim to support Jupyter 3.x and 4.x
+    var Jupyter = Jupyter || IPython || {};
 
     /**
      * Widget for file input into a GenePattern Notebook.
@@ -2214,8 +2216,8 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
         }
     });
 
-    var DOMWidgetView = IPython.DOMWidgetView;
-    var WidgetManager = IPython.WidgetManager;
+    var DOMWidgetView = Jupyter.DOMWidgetView;
+    var WidgetManager = Jupyter.WidgetManager;
 
     function register_widget() {
         var TaskWidgetView = DOMWidgetView.extend({
@@ -2263,8 +2265,8 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
         }
         else {
             setTimeout(function() {
-                DOMWidgetView = IPython.DOMWidgetView;
-                WidgetManager = IPython.WidgetManager;
+                DOMWidgetView = Jupyter.DOMWidgetView;
+                WidgetManager = Jupyter.WidgetManager;
 
                 wait_until_ready();
             }, 200);
