@@ -2120,15 +2120,22 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
                     // Submit the job input
                     jobInput.submit({
                         success: function(response, jobNumber) {
-                            //widget.successMessage("Job successfully submitted! Job ID: " + jobNumber);
+                            widget.successMessage("Job successfully submitted! Job ID: " + jobNumber);
+
+                            // Create a new cell for the job widget
+                            var cell = Jupyter.notebook.insert_cell_below();
 
                             // Set the code for the job widget
-                            var cell = widget.element.closest(".cell").data("cell");
                             var code = GenePattern.notebook.buildJobCode(jobNumber);
                             cell.code_mirror.setValue(code);
 
                             // Execute cell.
                             cell.execute();
+
+                            // Scroll to the new cell
+                            $('#site').animate({
+                                scrollTop: $(cell.element).position().top
+                            }, 500);
                         },
                         error: function(exception) {
                             widget.errorMessage("Error submitting job: " + exception.statusText);
