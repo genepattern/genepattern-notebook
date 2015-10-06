@@ -632,13 +632,26 @@ define(["widgets/js/widget",
                     // Display if the system message is not blank
                     if (data !== "") {
                         // Strip data of HTML
-                        var cleanMessage = $("<div></div>").html(data).text();
+                        var cleanMessage = $("<div></div>").html(data).text().trim();
+
+                        var messageBlock = $("<div></div>");
+
+                        // If there is a message
+                        if (cleanMessage !== "") {
+                            messageBlock.append(
+                                $("<div></div>")
+                                    .text(cleanMessage)
+                            );
+                            messageBlock.append("<hr/>");
+                        }
 
                         // Append the feedback message
-                        cleanMessage.append(widget.createFeedbackMessage("mailto:gp-help@broadinstitute.org?subject=GenePattern%20Notebook"));
+                        messageBlock.append(
+                            widget.createFeedbackMessage("mailto:gp-help@broadinstitute.org?subject=GenePattern%20Notebook")
+                        );
 
                         // Display the system message
-                        widget.infoMessage(cleanMessage);
+                        widget.infoMessage(messageBlock);
                     }
 
                     // If a function to execute when done has been passed in, execute it
