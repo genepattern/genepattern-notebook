@@ -15,20 +15,25 @@
 // Add shim to support Jupyter 3.x and 4.x
 var Jupyter = Jupyter || IPython || {};
 
+// Add file path shim for Jupyter 3/4
+var STATIC_PATH = null;
+if (Jupyter.version >= "4.0.0") STATIC_PATH = "/custom/genepattern/";
+else STATIC_PATH = "/static/genepattern/";
+
 $('head')
     // Import styles used by GenePattern navigation
     .append(
         $('<link rel="stylesheet" type="text/css" />')
             .attr("rel", "stylesheet")
             .attr("type", "text/css")
-            .attr('href', '/static/genepattern/gp-navigation.css')
+            .attr('href', STATIC_PATH + 'gp-navigation.css')
     )
     // Import styles used by GenePattern widgets
     .append(
         $('<link rel="stylesheet" type="text/css" />')
             .attr("rel", "stylesheet")
             .attr("type", "text/css")
-            .attr('href', '/static/genepattern/gp-widget.css')
+            .attr('href', STATIC_PATH + 'gp-widget.css')
     );
 
 /*
@@ -37,11 +42,11 @@ $('head')
 
 requirejs([
     "jquery",
-    "/static/genepattern/gp.js",
-    "/static/genepattern/navigation.js",
-    "/static/genepattern/auth-widget.js",
-    "/static/genepattern/job-widget.js",
-    "/static/genepattern/task-widget.js"], function() {
+    STATIC_PATH + "gp.js",
+    STATIC_PATH + "navigation.js",
+    STATIC_PATH + "auth-widget.js",
+    STATIC_PATH + "job-widget.js",
+    STATIC_PATH + "task-widget.js"], function() {
 
     // Initiate the GenePattern Notebook extension
     // If reloading a notebook, display with the full event model

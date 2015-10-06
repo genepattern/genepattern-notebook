@@ -11,21 +11,33 @@ responsible for its use, misuse, or functionality.
 
 __author__ = 'Thorin Tabor'
 __copyright__ = 'Copyright 2015, Broad Institute'
-__version__ = '0.3.10'
+__version__ = '0.4.0'
 __status__ = 'Beta'
 __license__ = 'BSD'
 
-from IPython.core.magic import Magics, magics_class, line_magic
-from IPython.core.display import display, Javascript
-from IPython.html import widgets
-from IPython.utils.traitlets import Unicode, Integer
 from gp import GPResource
-import IPython
 import os
 import gp
 import sys
 import json
-import urllib
+
+import IPython
+from IPython.core.magic import Magics, magics_class, line_magic
+from IPython.core.display import display, Javascript
+
+# Determine IPython version and do version-specific imports
+ipy_major_version = IPython.version_info[0]
+if ipy_major_version <= 2:
+    sys.exit("GenePattern Notebook requires Jupyter/IPython 3.2 or greater")
+elif ipy_major_version == 3:
+    from IPython.utils.traitlets import Unicode, Integer
+    from IPython.html import widgets
+    from IPython.utils.path import locate_profile
+elif ipy_major_version >= 4:
+    import jupyter_core
+    from traitlets import Unicode, Integer
+    from ipywidgets import widgets
+    from IPython.paths import locate_profile
 
 # Imports requiring compatibility between Python 2 and Python 3
 if sys.version_info.major == 2:
@@ -169,6 +181,17 @@ class GPTaskWidget(GPResource, widgets.DOMWidget):
             return False
 
 
+def client_directory():
+    """
+    Returns the directory in which to download client files.
+    This will vary between Jupyter 3 and 4.
+    """
+    if ipy_major_version == 3:
+        return locate_profile() + '/static/genepattern'
+    else:
+        return jupyter_core.paths.jupyter_config_dir() + '/custom/genepattern'
+
+
 def client_version_check():
     """
     Lazily creates the client directory, checks the version file,
@@ -177,7 +200,7 @@ def client_version_check():
     """
 
     # Get the directory and lazily create
-    client_dir = IPython.utils.path.locate_profile() + '/static/genepattern'
+    client_dir = client_directory()
     if not os.path.exists(client_dir):
         os.makedirs(client_dir)
 
@@ -221,12 +244,12 @@ def download_client_files():
     """
 
     # Get the directory and lazily create
-    client_dir = IPython.utils.path.locate_profile() + '/static/genepattern'
+    client_dir = client_directory()
     if not os.path.exists(client_dir):
         os.makedirs(client_dir)
 
     # Get the necessary file list in JSON
-    list_url = 'https://api.github.com/repos/genepattern/genepattern-notebook/contents/profile/profile_default/static/genepattern'
+    list_url = 'https://api.github.com/repos/genepattern/genepattern-notebook/contents/profile/profile_default/static/genepattern?ref=develop'
     try:
         request = urllib2.Request(list_url)
         response = urllib2.urlopen(request)
@@ -247,7 +270,7 @@ def download_client_files():
 
 
 def load_client_files():
-    client_dir = IPython.utils.path.locate_profile() + '/static/genepattern'
+    client_dir = client_directory()
 
     with open(client_dir + '/loader.js', 'r') as loader:
         loader_text = loader.read()

@@ -17,6 +17,11 @@ GenePattern.notebook = GenePattern.notebook || {};
 // Add shim to support Jupyter 3.x and 4.x
 var Jupyter = Jupyter || IPython || {};
 
+// Add file path shim for Jupyter 3/4
+var STATIC_PATH = null;
+if (Jupyter.version >= "4.0.0") STATIC_PATH = "/custom/genepattern/";
+else STATIC_PATH = "/static/genepattern/";
+
 /**
  * Attaches the loading screen
  *
@@ -27,7 +32,7 @@ GenePattern.notebook.loadingScreen = function() {
         .addClass("loading-screen")
         .append(
             $("<img/>")
-                .attr("src", "/static/genepattern/GP_logo_on_black.png")
+                .attr("src", STATIC_PATH + "GP_logo_on_black.png")
         );
 };
 
@@ -1010,11 +1015,11 @@ GenePattern.notebook.init.launch_init = function() {
 
 requirejs([
     "jquery",
-    "/static/genepattern/gp.js",
-    "/static/genepattern/navigation.js",
-    "/static/genepattern/auth-widget.js",
-    "/static/genepattern/job-widget.js",
-    "/static/genepattern/task-widget.js"], function() {
+    STATIC_PATH + "gp.js",
+    STATIC_PATH + "navigation.js",
+    STATIC_PATH + "auth-widget.js",
+    STATIC_PATH + "job-widget.js",
+    STATIC_PATH + "task-widget.js"], function() {
     // If in a notebook, display with the full event model
     //$([IPython.events]).on('kernel_ready.Kernel kernel_created.Session notebook_loaded.Notebook', GenePattern.notebook.init.notebook_init_wrapper);
 

@@ -11,15 +11,21 @@
  * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not
  * responsible for its use, misuse, or functionality.
  */
-require(["jquery"], function() {
-    // Add shim to support Jupyter 3.x and 4.x
-    var Jupyter = Jupyter || IPython || {};
 
+// Add shim to support Jupyter 3.x and 4.x
+var Jupyter = Jupyter || IPython || {};
+
+// Add file path shim for Jupyter 3/4
+var STATIC_PATH = null;
+if (Jupyter.version >= "4.0.0") STATIC_PATH = "/custom/genepattern/";
+else STATIC_PATH = "/static/genepattern/";
+
+require(["jquery"], function() {
     // Add the loading screen
     $("body").append(GenePattern.notebook.loadingScreen());
 
     // Change the logo
-    $("#ipython_notebook").find("img").attr("src", "/static/genepattern/GP_logo_on_black.png");
+    $("#ipython_notebook").find("img").attr("src", STATIC_PATH + "GP_logo_on_black.png");
 
     // Auto-add the GP Auth Widget if one does not already exist in the Notebook
     $([Jupyter.events]).on('kernel_ready.Kernel kernel_created.Session notebook_loaded.Notebook', function() {

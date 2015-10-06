@@ -11,7 +11,21 @@
  * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not
  * responsible for its use, misuse, or functionality.
  */
-define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepattern/gp.js", "/static/genepattern/navigation.js"], function (widget, manager) {
+
+// Add shim to support Jupyter 3.x and 4.x
+var Jupyter = Jupyter || IPython || {};
+
+// Add file path shim for Jupyter 3/4
+var STATIC_PATH = null;
+if (Jupyter.version >= "4.0.0") STATIC_PATH = "/custom/genepattern/";
+else STATIC_PATH = "/static/genepattern/";
+
+define(["widgets/js/widget",
+        "widgets/js/manager",
+        "jqueryui",
+        STATIC_PATH + "gp.js",
+        STATIC_PATH + "navigation.js"], function (widget, manager) {
+
     // Add shim to support Jupyter 3.x and 4.x
     var Jupyter = Jupyter || IPython || {};
 
@@ -89,7 +103,7 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
                         .append(
                             $("<img/>")
                                 .addClass("gp-widget-logo")
-                                .attr("src", "/static/genepattern/GP_logo_on_black.png")
+                                .attr("src", STATIC_PATH + "GP_logo_on_black.png")
                         )
                         .append(
                             $("<h3></h3>")
@@ -114,7 +128,7 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
                                 .addClass("gp-widget-loading")
                                 .append(
                                     $("<img />")
-                                        .attr("src", "/static/genepattern/loader.gif")
+                                        .attr("src", STATIC_PATH + "loader.gif")
                                 )
                                 .hide()
                         )
@@ -693,7 +707,7 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
         });
     };
 
-    var DOMWidgetView = Jupyter.DOMWidgetView;
+    var DOMWidgetView = widget.DOMWidgetView;
     var WidgetManager = Jupyter.WidgetManager;
 
     function register_widget() {
