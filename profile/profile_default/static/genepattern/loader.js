@@ -45,7 +45,7 @@ requirejs([
 
     // Initiate the GenePattern Notebook extension
     // If reloading a notebook, display with the full event model
-    $([IPython.events]).on('kernel_ready.Kernel kernel_created.Session notebook_loaded.Notebook', GenePattern.notebook.init.notebook_init_wrapper);
+    $([Jupyter.events]).on('kernel_ready.Kernel kernel_created.Session notebook_loaded.Notebook', GenePattern.notebook.init.notebook_init_wrapper);
 
     // Otherwise, if not initialized after two seconds, manually init
     setTimeout(function() {
