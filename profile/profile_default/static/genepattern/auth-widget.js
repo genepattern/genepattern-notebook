@@ -34,7 +34,7 @@ define(["widgets/js/widget",
             servers: [                                              // Expects a list of lists with [name, url] pairs
                 ['Broad Institute', 'http://genepattern.broadinstitute.org/gp'],
                 ['Indiana University', 'http://gp.indiana.edu/gp'],
-                ['Broad Internal (Broad Institute Users Only)', 'http://gpbroad.broadinstitute.org/gp'],
+                ['Broad Internal (Broad Institute Users Only)', 'https://gpbroad.broadinstitute.org/gp'],
                 //['localhost', 'http://127.0.0.1:8080/gp'],
                 //['GenePattern Beta', 'http://genepatternbeta.broadinstitute.org/gp']
             ],
