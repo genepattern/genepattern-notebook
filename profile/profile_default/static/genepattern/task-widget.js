@@ -1173,6 +1173,23 @@ define(["widgets/js/widget",
                             .append(" ")
                             .append(
                                 $("<button></button>")
+                                    .addClass("btn btn-default btn-sm widget-slide-indicator")
+                                    .css("padding", "2px 7px")
+                                    .attr("title", "Expand or Collapse")
+                                    .attr("data-toggle", "tooltip")
+                                    .attr("data-placement", "bottom")
+                                    .append(
+                                        $("<span></span>")
+                                            .addClass("fa fa-arrow-up")
+                                    )
+                                    .tooltip()
+                                    .click(function() {
+                                        widget.expandCollapse();
+                                    })
+                            )
+                            .append(" ")
+                            .append(
+                                $("<button></button>")
                                     .addClass("btn btn-default btn-sm")
                                     .css("padding", "2px 7px")
                                     .attr("title", "Toggle Code View")
@@ -1390,6 +1407,25 @@ define(["widgets/js/widget",
          */
         _setOption: function(key, value) {
             this._super(key, value);
+        },
+
+        /**
+         * Expand or collapse the task widget
+         */
+        expandCollapse: function() {
+            var toSlide = this.element.find(".panel-body");
+            var indicator = this.element.find(".widget-slide-indicator").find("span");
+            if (toSlide.is(":hidden")) {
+                toSlide.slideDown();
+                indicator.removeClass("fa-arrow-down");
+                indicator.addClass("fa-arrow-up");
+                this.element.find(".widget-code").slideUp();
+            }
+            else {
+                toSlide.slideUp();
+                indicator.removeClass("fa-arrow-up");
+                indicator.addClass("fa-arrow-down");
+            }
         },
 
         /**
