@@ -476,7 +476,7 @@ define(["widgets/js/widget",
             }
             else {
                 // If normally collapsed
-                var collapsed = $(".widget-slide-indicator").find(".fa-arrow-down").length > 0;
+                var collapsed = this.element.find(".widget-slide-indicator").find(".fa-arrow-down").length > 0;
                 if (collapsed) {
                     code.slideUp();
                 }

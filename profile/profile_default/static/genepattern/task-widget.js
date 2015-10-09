@@ -1419,7 +1419,6 @@ define(["widgets/js/widget",
                 toSlide.slideDown();
                 indicator.removeClass("fa-arrow-down");
                 indicator.addClass("fa-arrow-up");
-                this.element.find(".widget-code").slideUp();
             }
             else {
                 toSlide.slideUp();
@@ -1894,6 +1893,11 @@ define(["widgets/js/widget",
                 }
 
                 code.slideUp();
+            }
+
+            var collapsed = this.element.find(".widget-slide-indicator").find(".fa-arrow-down").length > 0;
+            if (collapsed) {
+                this.expandCollapse();
             }
         },
 
