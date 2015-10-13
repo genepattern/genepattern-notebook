@@ -734,6 +734,7 @@ GenePattern.notebook.buildMenu = function(widget, element, name, href, kind, ind
         var kindsMap = GenePattern.kinds();
         if (kindsMap !==  null && kindsMap !== undefined) {
             modules = kindsMap[fixedKind];
+            if (modules === null || modules === undefined) { modules = []; } // Protect against undefined & null
             $.each(modules, function(i, module) {
                 sendToNewTask.append(
                     $("<option></option>")
