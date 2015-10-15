@@ -749,14 +749,23 @@ GenePattern.notebook.buildMenu = function(widget, element, name, href, kind, ind
 
         // Attach methods in a way that will not break when popover is hidden
         element.on('shown.bs.popover', function () {
+            var viewCodeButton = element.parent().find(".gp-widget-job-view-code");
+            var newTaskDropdown = element.parent().find(".gp-widget-job-new-task");
+            var sendToExistingTask = element.parent().find('.gp-widget-job-existing-task');
+
+            // Unbind old click events so they aren't double-bound
+            viewCodeButton.unbind("click");
+            newTaskDropdown.unbind("change");
+            sendToExistingTask.unbind("change");
+
             // Attach the click method to "view code"
-            element.parent().find(".gp-widget-job-view-code").click(function() {
+            viewCodeButton.click(function() {
                 widget.codeDialog(widget.options.job, indexString);
                 $(".popover").popover("hide");
             });
 
             // Attach "Send to New Task" clicks
-            element.parent().find(".gp-widget-job-new-task").change(function(event) {
+            newTaskDropdown.change(function(event) {
                 var option = $(event.target).find(":selected");
                 var lsid = option.attr("data-lsid");
                 if (lsid === undefined || lsid === null) return;
@@ -789,7 +798,6 @@ GenePattern.notebook.buildMenu = function(widget, element, name, href, kind, ind
             });
 
             // Dynamically add options to "Send to Downstream Task" dropdown
-            var sendToExistingTask = element.parent().find('.gp-widget-job-existing-task');
             var matchingTasks = GenePattern.notebook.taskWidgetsForKind(fixedKind);
             sendToExistingTask
                 .empty()
