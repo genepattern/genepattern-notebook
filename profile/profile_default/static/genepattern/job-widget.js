@@ -35,17 +35,18 @@ define([
      *      Access to Job Results
      *      Access to Logs
      *      Job Sharing & Permissions
+     *      Visibility into Child Jobs
      *
      * Non-Supported Features:
      *      Access to Job Inputs
-     *      Visibility into Child Jobs
      *      Batch Jobs
      */
     $.widget("gp.jobResults", {
         options: {
             jobNumber: null,    // The job number
             poll: true,         // Poll to refresh running jobs
-            job: null           // Job object this represents
+            job: null,          // Job object this represents
+            childJob: false     // If this is a child job
         },
 
         /**
@@ -129,7 +130,7 @@ define([
                                     .append(" ")
                                     .append(
                                         $("<button></button>")
-                                            .addClass("btn btn-default btn-sm")
+                                            .addClass("btn btn-default btn-sm gp-widget-job-code")
                                             .css("padding", "2px 7px")
                                             .attr("title", "Toggle Code View")
                                             .attr("data-toggle", "tooltip")
@@ -191,6 +192,10 @@ define([
                                 $("<div></div>")
                                     .addClass("gp-widget-job-visualize")
                             )
+                            .append(
+                                $("<div></div>")
+                                    .addClass("gp-widget-job-children")
+                            )
                     )
                     .append(
                         $("<div></div>")
@@ -198,6 +203,13 @@ define([
                             .css("display", "none")
                     )
             );
+
+            // Set as child job, if necessary
+            if (this.options.childJob) {
+                this.element.find(".gp-widget-job-share").hide();
+                this.element.find(".gp-widget-job-reload").hide();
+                this.element.find(".gp-widget-job-code").hide();
+            }
 
             // Check to see if the user is authenticated yet
             if (GenePattern.authenticated) {
@@ -796,6 +808,12 @@ define([
                 this._displayVisualizer(launchUrl);
             }
 
+            // Build the display of child jobs, if necessary
+            var children = job.children();
+            if (children !== undefined && children !== null && children.length > 0) {
+                this._displayChildren(children);
+            }
+
             // Initialize status polling
             this._initPoll(job.status());
         },
@@ -850,6 +868,28 @@ define([
                         .attr("src", launchUrl + "#" + GenePattern.token)
                 );
             }
+        },
+
+        /**
+         * Build the display of child widgets
+         *
+         * @param children - List of Job() objects for children
+         * @private
+         */
+        _displayChildren: function(children) {
+            var childrenDiv = this.element.find(".gp-widget-job-children");
+            childrenDiv.css("margin-top", "10px");
+
+            // For each child, append a widget
+            children.forEach(function(child) {
+                var childWidget = $("<div></div>")
+                    .addClass("gp-widget-job-child")
+                    .jobResults({
+                        jobNumber: child.jobNumber(),
+                        childJob: true
+                    });
+                childrenDiv.append(childWidget);
+            });
         },
 
         /**
@@ -909,6 +949,7 @@ define([
                     GenePattern.notebook.buildMenu(widget, link, output["link"]["name"], output["link"]["href"], output["kind"], indexString, fullMenu);
 
                     link.appendTo(outputsList);
+                    $("<br/>").appendTo(outputsList);
                 }
             }
             else {
