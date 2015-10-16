@@ -11,7 +11,7 @@ responsible for its use, misuse, or functionality.
 
 __author__ = 'Thorin Tabor'
 __copyright__ = 'Copyright 2015, Broad Institute'
-__version__ = '0.3.10'
+__version__ = '0.3.11'
 __status__ = 'Beta'
 __license__ = 'BSD'
 
@@ -226,7 +226,7 @@ def download_client_files():
         os.makedirs(client_dir)
 
     # Get the necessary file list in JSON
-    list_url = 'https://api.github.com/repos/genepattern/genepattern-notebook/contents/profile/profile_default/static/genepattern'
+    list_url = 'https://api.github.com/repos/genepattern/genepattern-notebook/contents/profile/profile_default/static/genepattern?ref=' + __version__
     try:
         request = urllib2.Request(list_url)
         response = urllib2.urlopen(request)
@@ -269,3 +269,5 @@ def load_ipython_extension(ipython):
 
     # Load all required files on the client-side
     load_client_files()
+
+    print("GenePattern Notebook loaded")
