@@ -1119,7 +1119,8 @@ define(["widgets/js/widget",
     $.widget("gp.runTask", {
         options: {
             lsid: null,
-            name: null
+            name: null,
+            task: null
         },
 
         /**
@@ -1318,8 +1319,13 @@ define(["widgets/js/widget",
                                                     widget.errorMessage(error);
                                                 };
 
-                                                var task = GenePattern.task(widget.options.lsid);
-                                                task.acceptEula(success, error);
+                                                widget.getTask(function(task) {
+                                                    if (task === null) {
+                                                        console.log("Error getting task for EULA acceptance");
+                                                        return;
+                                                    }
+                                                    task.acceptEula(success, error);
+                                                });
                                             })
                                     )
                             )
@@ -1330,19 +1336,13 @@ define(["widgets/js/widget",
             // Check to see if the user is authenticated yet
             if (GenePattern.authenticated) {
                 // Make call to build the header & form
-                this._loadTask({
-                    identifier: identifier,
-                    success: function(task) {
-                        if (task !== null) {
-                            widget._buildHeader();
-                            widget._buildForm();
-                            $(widget.element).trigger("runTask.paramLoad");
-                        }
-                        else {
-                            widget._showUninstalledMessage();
-                        }
-                    },
-                    error: function(exception) {
+                this.getTask(function(task) {
+                    if (task !== null) {
+                        widget._buildHeader();
+                        widget._buildForm();
+                        $(widget.element).trigger("runTask.paramLoad");
+                    }
+                    else {
                         widget._showUninstalledMessage();
                     }
                 });
@@ -1381,18 +1381,12 @@ define(["widgets/js/widget",
             var widget = this;
             var identifier = this._getIdentifier();
 
-            this._loadTask({
-                identifier: identifier,
-                success: function(task) {
-                    if (task !== null) {
-                        widget._buildHeader();
-                        widget._buildForm();
-                    }
-                    else {
-                        widget._showUninstalledMessage();
-                    }
-                },
-                error: function(exception) {
+            this.getTask(function(task) {
+                if (task !== null) {
+                    widget._buildHeader();
+                    widget._buildForm();
+                }
+                else {
                     widget._showUninstalledMessage();
                 }
             });
@@ -1407,6 +1401,48 @@ define(["widgets/js/widget",
          */
         _setOption: function(key, value) {
             this._super(key, value);
+        },
+
+        /**
+         * Retrieves the associated Task object from cache, or from the server if necessary
+         *
+         * @param done - Function to call once the task is loaded
+         *      Passes the Task() object in as a parameter, or null if in error
+         *
+         * @returns {GenePattern.Task|null} - Returns null if task had to be retrieved
+         *      from the server, otherwise returns the Task() object
+         */
+        getTask: function(done) {
+            // First check for the associated task, return if found
+            var task = this.options.task;
+            if (task !== null) {
+                done(task);
+                return task;
+            }
+
+            // Otherwise check the general GenePattern cache
+            var identifier = this._getIdentifier();
+            task = GenePattern.task(identifier);
+            if (task !== null) {
+                this.options.task = task; // Associate this task with the widget
+                done(task);
+                return task;
+            }
+
+            // Otherwise call back to the server
+            var widget = this;
+            GenePattern.taskQuery({
+                lsid: identifier,
+                success: function(newTask) {
+                    widget.options.task = newTask; // Associate this task with the widget
+                    done(newTask);
+                },
+                error: function(error) {
+                    console.log(error);
+                    done(null);
+                }
+            });
+            return null;
         },
 
         /**
@@ -1439,31 +1475,6 @@ define(["widgets/js/widget",
             else {
                 throw "Error creating Run Task widget! No LSID or name!";
             }
-        },
-
-        /**
-         * Gets the Task object based on the identifier and makes the given callbacks
-         *
-         * @param pObj - An object specifying the following properties:
-         *                  identifier: the LSID or name of the task to load from the server
-         *                  success: callback to call upon successful load, passes in
-         *                          the new Task() object as a parameter
-         *                  error: callback for when something went wrong creating the
-         *                          task object, passes in the exception as a parameter
-         *
-         * @returns {jQuery.Deferred} - Returns a jQuery Deferred object for event chaining.
-         *      See http://api.jquery.com/jquery.deferred/ for details.
-         * @private
-         */
-        _loadTask: function(pObj) {
-            if (!pObj) throw "Task._loadTask() parameter either null or undefined";
-            if (typeof pObj === 'object' && !pObj.identifier) throw "Task._loadTask() parameter does not contain an identifier";
-
-            return GenePattern.taskQuery({
-                lsid: pObj.identifier,
-                success: pObj.success,
-                error: pObj.error
-            });
         },
 
         /**
@@ -1531,23 +1542,31 @@ define(["widgets/js/widget",
          * @private
          */
         _buildEula: function() {
-            var task = GenePattern.task(this.options.lsid);
-            var eula = task.eula();   // Get the EULAs
-            // Only build the EULA display if necessary
-            if (eula !== undefined && eula !== null && eula['pendingEulas'] !== undefined && eula['pendingEulas'].length > 0) {
-                var box = this.element.find(".gp-widget-task-eula-box");
-
-                // Attach each of the EULAs
-                for (var i = 0; i < eula['pendingEulas'].length; i++) {
-                    var license = eula['pendingEulas'][i];
-                    var licenseBox = $("<pre></pre>")
-                        .addClass("gp-widget-task-eula-license")
-                        .text(license['content']);
-                    box.append(licenseBox);
+            var widget = this;
+            this.getTask(function(task) {
+                // Handle error
+                if (task === null) {
+                    console.log("Task error in _buildEula()");
+                    return
                 }
 
-                this.element.find(".gp-widget-task-eula").show();
-            }
+                var eula = task.eula();   // Get the EULAs
+                // Only build the EULA display if necessary
+                if (eula !== undefined && eula !== null && eula['pendingEulas'] !== undefined && eula['pendingEulas'].length > 0) {
+                    var box = widget.element.find(".gp-widget-task-eula-box");
+
+                    // Attach each of the EULAs
+                    for (var i = 0; i < eula['pendingEulas'].length; i++) {
+                        var license = eula['pendingEulas'][i];
+                        var licenseBox = $("<pre></pre>")
+                            .addClass("gp-widget-task-eula-license")
+                            .text(license['content']);
+                        box.append(licenseBox);
+                    }
+
+                    widget.element.find(".gp-widget-task-eula").show();
+                }
+            });
         },
 
         /**
@@ -1556,21 +1575,28 @@ define(["widgets/js/widget",
          * @private
          */
         _buildHeader: function() {
-            var task = GenePattern.task(this.options.lsid);
+            var widget = this;
+            this.getTask(function(task) {
+                // Handle error
+                if (task === null) {
+                    console.log("Task error in _buildEula()");
+                    return
+                }
 
-            this.element.find(".gp-widget-task-subheader").show();
-            this.element.find(".gp-widget-task-footer").show();
+                widget.element.find(".gp-widget-task-subheader").show();
+                widget.element.find(".gp-widget-task-footer").show();
 
-            this.element.find(".gp-widget-task-name").empty().text(" " + task.name());
-            this.element.find(".gp-widget-task-version").empty().text("Version " + task.version());
-            this.element.find(".gp-widget-task-doc").attr("data-href", GenePattern.server() + task.documentation().substring(3));
-            this.element.find(".gp-widget-task-desc").empty().text(task.description());
+                widget.element.find(".gp-widget-task-name").empty().text(" " + task.name());
+                widget.element.find(".gp-widget-task-version").empty().text("Version " + task.version());
+                widget.element.find(".gp-widget-task-doc").attr("data-href", GenePattern.server() + task.documentation().substring(3));
+                widget.element.find(".gp-widget-task-desc").empty().text(task.description());
 
-            // Display error if Java visualizer
-            var categories = task.categories();
-            if (categories.indexOf("Visualizer") !== -1) {
-                this.errorMessage("This job appears to be a deprecated Java-based visualizer. These visualizers are not supported in the GenePattern Notebook.");
-            }
+                // Display error if Java visualizer
+                var categories = task.categories();
+                if (categories.indexOf("Visualizer") !== -1) {
+                    widget.errorMessage("This job appears to be a deprecated Java-based visualizer. These visualizers are not supported in the GenePattern Notebook.");
+                }
+            });
         },
 
         /**
@@ -1663,42 +1689,49 @@ define(["widgets/js/widget",
          */
         _buildForm: function() {
             var widget = this;
-            var task = GenePattern.task(widget.options.lsid);
-            this.element.find(".gp-widget-task-form").empty();
+            this.getTask(function(task) {
+                // Handle error
+                if (task === null) {
+                    console.log("Task error in _buildEula()");
+                    return
+                }
 
-            task.params({
-                success: function(response, params) {
-                    var reloadVals = widget._parseJobSpec();
+                widget.element.find(".gp-widget-task-form").empty();
 
-                    for (var i = 0; i < params.length; i++) {
-                        try {
-                            var param = params[i];
-                            var pDiv = widget._addParam(param);
+                task.params({
+                    success: function(response, params) {
+                        var reloadVals = widget._parseJobSpec();
 
-                            if (reloadVals[param.name()] !== undefined) {
-                                var pWidget = pDiv.data("widget");
-                                pWidget.value(reloadVals[param.name()]);
+                        for (var i = 0; i < params.length; i++) {
+                            try {
+                                var param = params[i];
+                                var pDiv = widget._addParam(param);
+
+                                if (reloadVals[param.name()] !== undefined) {
+                                    var pWidget = pDiv.data("widget");
+                                    pWidget.value(reloadVals[param.name()]);
+                                }
+                            }
+                            catch(exception) {
+                                console.log(exception);
                             }
                         }
-                        catch(exception) {
-                            console.log(exception);
+
+                        // Build the accepted kinds list
+                        widget._createKindsList(params);
+
+                        // Build the EULA, too
+                        widget._buildEula();
+
+                        // Build the job_spec if necessary
+                        if (Object.keys(reloadVals).length == 0) {
+                            widget._addJobSpec(params);
                         }
+                    },
+                    error: function(exception) {
+                        widget.errorMessage("Could not load task: " + exception.statusText);
                     }
-
-                    // Build the accepted kinds list
-                    widget._createKindsList(params);
-
-                    // Build the EULA, too
-                    widget._buildEula();
-
-                    // Build the job_spec if necessary
-                    if (Object.keys(reloadVals).length == 0) {
-                        widget._addJobSpec(params);
-                    }
-                },
-                error: function(exception) {
-                    widget.errorMessage("Could not load task: " + exception.statusText);
-                }
+                });
             });
         },
 
