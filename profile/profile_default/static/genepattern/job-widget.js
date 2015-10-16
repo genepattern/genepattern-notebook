@@ -265,6 +265,48 @@ define([
         },
 
         /**
+         * Retrieves the associated Task object from cache, or from the server if necessary
+         *
+         * @param done - Function to call once the task is loaded
+         *      Passes the Task() object in as a parameter, or null if in error
+         *
+         * @returns {GenePattern.Task|null} - Returns null if task had to be retrieved
+         *      from the server, otherwise returns the Task() object
+         */
+        getTask: function(done) {
+            // First check for the associated task, return if found
+            var task = this.options.job.task();
+            if (task !== null) {
+                done(task);
+                return task;
+            }
+
+            // Otherwise check the general GenePattern cache
+            var identifier = this.options.job.taskLsid();
+            task = GenePattern.task(identifier);
+            if (task !== null) {
+                this.options.job._task = task; // Associate this task with the widget
+                done(task);
+                return task;
+            }
+
+            // Otherwise call back to the server
+            var widget = this;
+            GenePattern.taskQuery({
+                lsid: identifier,
+                success: function(newTask) {
+                    widget.options.job._task = newTask; // Associate this task with the widget
+                    done(newTask);
+                },
+                error: function(error) {
+                    console.log(error);
+                    done(null);
+                }
+            });
+            return null;
+        },
+
+        /**
          * Expand or collapse the job widget
          */
         expandCollapse: function() {
@@ -756,6 +798,8 @@ define([
          * @private
          */
         _displayJob: function(job) {
+            var widget = this;
+
             // Clean the old data
             this._clean();
 
@@ -789,15 +833,16 @@ define([
             }
 
             // Display error if Java visualizer
-            var task = job.task();
-            if (task !== null && task !== undefined) {
-                var categories = task.categories();
-                if (categories.indexOf("Visualizer") !== -1) {
-                    this.errorMessage("This job appears to be a deprecated Java-based visualizer. These visualizers are not supported in the GenePattern Notebook.");
-                    this.element.find(".gp-widget-job-submitted").hide();
-                    this.element.find(".gp-widget-job-status").hide();
+            this.getTask(function(task) {
+                if (task !== null && task !== undefined) {
+                    var categories = task.categories();
+                    if (categories.indexOf("Visualizer") !== -1) {
+                        widget.errorMessage("This job appears to be a deprecated Java-based visualizer. These visualizers are not supported in the GenePattern Notebook.");
+                        widget.element.find(".gp-widget-job-submitted").hide();
+                        widget.element.find(".gp-widget-job-status").hide();
+                    }
                 }
-            }
+            });
 
             // If sharing panel does not exist, build the sharing pane
             var sharingFound = this.element.find(".gp-widget-job-share-table").length > 0;
