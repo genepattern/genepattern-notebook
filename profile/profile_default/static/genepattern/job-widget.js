@@ -130,7 +130,7 @@ define([
                                     .append(" ")
                                     .append(
                                         $("<button></button>")
-                                            .addClass("btn btn-default btn-sm gp-widget-job-code")
+                                            .addClass("btn btn-default btn-sm gp-widget-job-codetoggle")
                                             .css("padding", "2px 7px")
                                             .attr("title", "Toggle Code View")
                                             .attr("data-toggle", "tooltip")
@@ -208,7 +208,8 @@ define([
             if (this.options.childJob) {
                 this.element.find(".gp-widget-job-share").hide();
                 this.element.find(".gp-widget-job-reload").hide();
-                this.element.find(".gp-widget-job-code").hide();
+                this.element.find(".gp-widget-job-codetoggle").hide();
+                this.element.find(".gp-widget-logo").hide();
             }
 
             // Check to see if the user is authenticated yet
@@ -267,7 +268,7 @@ define([
          * Expand or collapse the job widget
          */
         expandCollapse: function() {
-            var toSlide = this.element.find(".panel-body");
+            var toSlide = this.element.find("> .panel-body");
             var indicator = this.element.find(".widget-slide-indicator").find("span");
             if (toSlide.is(":hidden")) {
                 toSlide.slideDown();
@@ -793,6 +794,8 @@ define([
                 var categories = task.categories();
                 if (categories.indexOf("Visualizer") !== -1) {
                     this.errorMessage("This job appears to be a deprecated Java-based visualizer. These visualizers are not supported in the GenePattern Notebook.");
+                    this.element.find(".gp-widget-job-submitted").hide();
+                    this.element.find(".gp-widget-job-status").hide();
                 }
             }
 
