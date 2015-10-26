@@ -347,9 +347,10 @@ define(["widgets/js/widget",
         _selectCustomServer: function() {
             var widget = this;
             var dialog = require('base/js/dialog');
+            var urlTextBox = $("<input class='form-control gp-custom-url' type='text' value='http://localhost:8080/gp'/>");
             dialog.modal({
                 notebook: Jupyter.notebook,
-                keyboard_manager: this.keyboard_manager,
+                keyboard_manager: Jupyter.keyboard_manager,
                 title : "Enter Custom GenePattern Server URL",
                 body : $("<div></div>")
                             .append("Enter the URL to your custom GenePattern server below. Please use the full URL, " +
@@ -357,17 +358,47 @@ define(["widgets/js/widget",
                                     "http://genepattern.broadinstitute.org/gp")
                             .append($("<br/><br/>"))
                             .append($("<label style='font-weight: bold;'>Server URL </label>"))
-                            .append($("<input name='gp-custom-url' class='form-control' type='text' value='http://localhost:8080/gp'/>")),
+                            .append(urlTextBox),
                 buttons : {
                     "Cancel" : {},
                     "OK" : {
                         "class" : "btn-primary",
                         "click" : function() {
-                            widget._setCustomURL("http://localhost:8080/gp");
+                            var url = urlTextBox.val();
+                            url = widget._validateCustomURL(url);
+                            widget._setCustomURL(url);
                         }
                     }
                 }
             });
+
+            // Allow you to type in your URL
+            urlTextBox.focus(function() { Jupyter.keyboard_manager.disable(); });
+            urlTextBox.blur(function() { Jupyter.keyboard_manager.enable(); });
+        },
+
+        /**
+         * Attempt to correct an incorrectly entered GenePattern URL and return the corrected version
+         *
+         * @param url
+         * @returns {string}
+         * @private
+         */
+        _validateCustomURL: function(url) {
+            var returnURL = url;
+            // Check for http:// or https://
+            var protocolTest = new RegExp("(^http\:\/\/)|(https\:\/\/)");
+            if (!protocolTest.test(returnURL)) returnURL = "http://" + returnURL;
+
+            // Check for trailing slash
+            var slashTest = new RegExp("\/$");
+            if (slashTest.test(returnURL)) returnURL = returnURL.slice(0, -1);
+
+            // Check for /gp
+            var gpTest = new RegExp("\/gp$");
+            if (!gpTest.test(returnURL)) returnURL += "/gp";
+
+            return returnURL;
         },
 
         /**
