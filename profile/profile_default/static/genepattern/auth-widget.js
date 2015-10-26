@@ -698,25 +698,64 @@ define(["widgets/js/widget",
         }
     });
 
+    Jupyter.keyboard_manager.command_shortcuts.add_shortcut('Shift-d', {
+        help : 'toggle dev servers',
+        help_index : 'ee',
+        handler : function () {
+            GenePattern.notebook.toggleDev();
+            return false;
+        }}
+    );
+
     // Method to enable dev servers from the auth widget
-    GenePattern.notebook.enableDev = function() {
-        $(".gp-widget-auth-form").find("[name=server]").each(function(i, select) {
-            $(select)
-                .append(
-                    $("<option></option>")
-                        .val("http://genepatternbeta.broadinstitute.org/gp")
-                        .text("gpbeta")
-                )
-                .append(
-                    $("<option></option>")
-                        .val("http://gpdev.broadinstitute.org/gp")
-                        .text("gpdev")
-                )
-                .append(
-                    $("<option></option>")
-                        .val("http://127.0.0.1:8080/gp")
-                        .text("localhost")
-                )
+    GenePattern.notebook.toggleDev = function() {
+        function addOptions() {
+            $(".gp-widget-auth-form").find("[name=server]").each(function(i, select) {
+                $(select)
+                    .addClass("gp-widget-dev-on")
+                    .append(
+                        $("<option></option>")
+                            .val("http://genepatternbeta.broadinstitute.org/gp")
+                            .text("gpbeta")
+                    )
+                    .append(
+                        $("<option></option>")
+                            .val("http://gpdev.broadinstitute.org/gp")
+                            .text("gpdev")
+                    )
+                    .append(
+                        $("<option></option>")
+                            .val("http://127.0.0.1:8080/gp")
+                            .text("localhost")
+                    )
+            });
+        }
+
+        function removeOptions() {
+            $(".gp-widget-auth-form").find("[name=server]").each(function(i, select) {
+                $(select).removeClass("gp-widget-dev-on");
+                $(select).find("option[value='http://genepatternbeta.broadinstitute.org/gp']").remove();
+                $(select).find("option[value='http://gpdev.broadinstitute.org/gp']").remove();
+                $(select).find("option[value='http://127.0.0.1:8080/gp']").remove();
+            });
+        }
+
+        // Toggle
+        var devOn = $(".gp-widget-auth-form").find("[name=server]").hasClass("gp-widget-dev-on");
+        var devWord = devOn ? "off" : "on";
+        if (devOn) removeOptions();
+        else addOptions();
+
+        // Show dialog
+        var dialog = require('base/js/dialog');
+        dialog.modal({
+            notebook: Jupyter.notebook,
+            keyboard_manager: this.keyboard_manager,
+            title : "Development Options Toggled",
+            body : "You have toggled development options " + devWord + " for GenePattern Notebook.",
+            buttons : {
+                "OK" : {}
+            }
         });
     };
 
