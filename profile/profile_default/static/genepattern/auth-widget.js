@@ -35,8 +35,7 @@ define(["widgets/js/widget",
                 ['Broad Institute', 'http://genepattern.broadinstitute.org/gp'],
                 ['Indiana University', 'http://gp.indiana.edu/gp'],
                 ['Broad Internal (Broad Institute Users Only)', 'https://gpbroad.broadinstitute.org/gp'],
-                //['localhost', 'http://127.0.0.1:8080/gp'],
-                //['GenePattern Beta', 'http://genepatternbeta.broadinstitute.org/gp']
+                ['Custom GenePattern Server', 'Custom']
             ],
             cell: null                                              // Reference to the IPython cell
         },
@@ -262,6 +261,18 @@ define(["widgets/js/widget",
                 );
             });
 
+            // If a custom URL is specified in the code, add to server dropdown
+            var customURL = widget._getCodeServerURL();
+            if (customURL !== null && widget._isURLCustom(customURL)) {
+                widget._setCustomURL(customURL);
+            }
+
+            // Call dialog if Custom Server selected
+            serverSelect.change(function() {
+                var selected = serverSelect.val();
+                if (selected === "Custom") widget._selectCustomServer();
+            });
+
             // Hide the code by default
             var element = this.element;
             setTimeout(function() {
@@ -326,6 +337,102 @@ define(["widgets/js/widget",
          */
         _setOption: function(key, value) {
             this._super(key, value);
+        },
+
+        /**
+         * Prompt the user for the URL to a custom GenePattern server
+         *
+         * @private
+         */
+        _selectCustomServer: function() {
+            var widget = this;
+            var dialog = require('base/js/dialog');
+            dialog.modal({
+                notebook: Jupyter.notebook,
+                keyboard_manager: this.keyboard_manager,
+                title : "Enter Custom GenePattern Server URL",
+                body : $("<div></div>")
+                            .append("Enter the URL to your custom GenePattern server below. Please use the full URL, " +
+                                    "including http:// as well as any port numbers and the trailing /gp. For example: " +
+                                    "http://genepattern.broadinstitute.org/gp")
+                            .append($("<br/><br/>"))
+                            .append($("<label style='font-weight: bold;'>Server URL </label>"))
+                            .append($("<input name='gp-custom-url' class='form-control' type='text' value='http://localhost:8080/gp'/>")),
+                buttons : {
+                    "Cancel" : {},
+                    "OK" : {
+                        "class" : "btn-primary",
+                        "click" : function() {
+                            widget._setCustomURL("http://localhost:8080/gp");
+                        }
+                    }
+                }
+            });
+        },
+
+        /**
+         * Sets the auth widget to have the specified custom GenePattern URL
+         *
+         * @private
+         */
+        _setCustomURL: function(url) {
+            var widget = this;
+            var serverSelect = widget.element.find("[name=server]");
+
+            // Remove custom option
+            serverSelect.find("option[value=Custom]").remove();
+
+            // Add custom option
+            serverSelect.append(
+                $("<option></option>")
+                    .val(url)
+                    .text(url)
+            );
+
+            // Select the custom option
+            serverSelect.val(url);
+
+            // Set the custom URL in the code
+            var code = GenePattern.notebook.init.buildCode(url, "", "");
+            this.options.cell.code_mirror.setValue(code);
+        },
+
+        /**
+         * Returns the URL specified in the backing code
+         *
+         * @private
+         */
+        _getCodeServerURL: function() {
+            var code = this.options.cell.code_mirror.getValue();
+            var lines = code.split("\n");
+            var serverLine = null;
+            lines.forEach(function(line) {
+                if (line.indexOf("gp.GPServer") >= 0) {
+                    serverLine = line;
+                }
+            });
+
+            // Found the line
+            if (serverLine !== null) {
+                var parts = serverLine.split("\"");
+                return parts[1];
+            }
+            // Didn't find the line, return null
+            else {
+                return null;
+            }
+        },
+
+        /**
+         * Checks to see if the URLis in the server dropdown or not
+         *
+         * @param url
+         * @private
+         */
+        _isURLCustom: function(url) {
+            var widget = this;
+            var serverSelect = widget.element.find("[name=server]");
+            return serverSelect.find("option[value='" + url + "']").length === 0;
         },
 
         /**
