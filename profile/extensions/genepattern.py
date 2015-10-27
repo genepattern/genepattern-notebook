@@ -249,7 +249,7 @@ def download_client_files():
         os.makedirs(client_dir)
 
     # Get the necessary file list in JSON
-    list_url = 'https://api.github.com/repos/genepattern/genepattern-notebook/contents/profile/profile_default/static/genepattern?ref=master'
+    list_url = 'https://api.github.com/repos/genepattern/genepattern-notebook/contents/profile/profile_default/static/genepattern?ref=' + 'develop'
     try:
         request = urllib2.Request(list_url)
         response = urllib2.urlopen(request)
