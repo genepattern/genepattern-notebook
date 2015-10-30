@@ -1,7 +1,7 @@
 GenePattern Notebook
 ====================
 
-Some notes on setup of GenePattern Notebook environment.
+Some notes on the setup of GenePattern Notebook environment.
 
 **IMPORTANT: The current version of the code only works with GenePattern 3.9.3 and up! 
 Some features are only supported in GenePattern 3.9.5 and up.**
