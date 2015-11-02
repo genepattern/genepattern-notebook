@@ -18,9 +18,13 @@ GenePattern.notebook = GenePattern.notebook || {};
 var Jupyter = Jupyter || IPython || {};
 
 // Add file path shim for Jupyter 3/4
-var STATIC_PATH = null;
-if (Jupyter.version >= "4.0.0") STATIC_PATH = "/custom/genepattern/";
-else STATIC_PATH = "/static/genepattern/";
+var STATIC_PATH = location.origin;
+var pathParts = location.pathname.split("/");
+for (var i = 1; i < pathParts.length-2; i++) STATIC_PATH += "/" + pathParts[i];
+if (Jupyter.version >= "4.0.0") {
+    STATIC_PATH += "/custom/genepattern/";
+}
+else STATIC_PATH += "/static/genepattern/";
 
 /**
  * Attaches the loading screen
@@ -637,7 +641,6 @@ GenePattern.notebook.widgetSelectDialog = function(cell) {
  * @param indexString - String containing output file index
  * @param fullMenu - Whether this is a full menu or a log file menu
  * @returns {*|jQuery|HTMLElement}
- * @private
  */
 GenePattern.notebook.buildMenu = function(widget, element, name, href, kind, indexString, fullMenu) {
 
