@@ -348,7 +348,7 @@ define(["widgets/js/widget",
         _selectCustomServer: function() {
             var widget = this;
             var dialog = require('base/js/dialog');
-            var urlTextBox = $("<input class='form-control gp-custom-url' type='text' value='http://localhost:8080/gp'/>");
+            var urlTextBox = $("<input class='form-control gp-custom-url' type='text' value='http://127.0.0.1:8080/gp'/>");
             dialog.modal({
                 notebook: Jupyter.notebook,
                 keyboard_manager: Jupyter.keyboard_manager,
