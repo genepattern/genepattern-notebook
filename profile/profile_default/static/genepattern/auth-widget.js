@@ -411,22 +411,14 @@ define(["widgets/js/widget",
             var widget = this;
             var serverSelect = widget.element.find("[name=server]");
 
-            // Remove custom option
-            serverSelect.find("option[value=Custom]").remove();
-
             // Add custom option
-            serverSelect.append(
-                $("<option></option>")
-                    .val(url)
-                    .text(url)
-            );
+            $("<option></option>")
+                .val(url)
+                .text(url)
+                .insertBefore(serverSelect.find("option[value=Custom]"));
 
             // Select the custom option
             serverSelect.val(url);
-
-            // Set the custom URL in the code
-            var code = GenePattern.notebook.init.buildCode(url, "", "");
-            this.options.cell.code_mirror.setValue(code);
         },
 
         /**
@@ -664,6 +656,7 @@ define(["widgets/js/widget",
                     widget.afterAuthenticate(server, username, password, token, done);
                 },
                 error: function() {
+                    widget.buildCode(server, "", "");
                     widget.errorMessage("Error authenticating");
                 }
             });
