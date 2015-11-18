@@ -1896,6 +1896,7 @@ define(["widgets/js/widget",
             var form = this.element.find(".gp-widget-task-form");
             var headers = this.element.find(".gp-widget-task-subheader, .gp-widget-task-footer");
             var eula = this.element.find(".gp-widget-task-eula");
+            var message = this.element.find(".gp-widget-task-message");
 
             if (code.is(":hidden")) {
                 this.element.closest(".cell").data("cell").code_mirror.refresh();
@@ -1913,10 +1914,12 @@ define(["widgets/js/widget",
                 form.slideUp();
                 headers.slideUp();
                 eula.slideUp();
+                message.slideUp();
                 code.slideDown();
             }
             else {
                 form.slideDown();
+                message.slideDown();
 
                 // Only show the EULA if there is one to display
                 var task = GenePattern.task(widget.options.lsid);
