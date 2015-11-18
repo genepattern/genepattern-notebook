@@ -812,28 +812,28 @@ define([
 
             // Display the job number and task name
             var taskText = " " + job.jobNumber() + ". " + job.taskName();
-            this.element.find(".gp-widget-job-task").text(taskText);
+            this.element.find(".gp-widget-job-task:first").text(taskText);
 
             // Display the user and date submitted
             var submittedText = "Submitted by " + job.userId() + " on " + job.dateSubmitted();
-            this.element.find(".gp-widget-job-submitted").text(submittedText);
+            this.element.find(".gp-widget-job-submitted:first").text(submittedText);
 
             // Display the status
             var statusText = this._statusText(job.status());
-            this.element.find(".gp-widget-job-status").text(statusText);
+            this.element.find(".gp-widget-job-status:first").text(statusText);
 
             // Display the job results
             var outputsList = this._outputsList(job.outputFiles(), true);
-            this.element.find(".gp-widget-job-outputs").append(outputsList);
+            this.element.find(".gp-widget-job-outputs:first").append(outputsList);
 
             // Display the log files
             var logList = this._outputsList(job.logFiles(), false);
-            this.element.find(".gp-widget-job-outputs").append(logList);
+            this.element.find(".gp-widget-job-outputs:first").append(logList);
 
             // Enable sharing button, if necessary
             var permissions = job.permissions();
             if (permissions !== undefined && permissions !== null && permissions['canSetPermissions']) {
-                this.element.find(".gp-widget-job-share").removeAttr("disabled");
+                this.element.find(".gp-widget-job-share:first").removeAttr("disabled");
             }
 
             // Display error if Java visualizer
@@ -849,7 +849,7 @@ define([
             });
 
             // If sharing panel does not exist, build the sharing pane
-            var sharingFound = this.element.find(".gp-widget-job-share-table").length > 0;
+            var sharingFound = this.element.find(".gp-widget-job-share-table:first").length > 0;
             if (!sharingFound) {
                 this.buildSharingPanel(job);
             }
@@ -866,8 +866,10 @@ define([
                 this._displayChildren(children);
             }
 
-            // Initialize status polling
-            this._initPoll(job.status());
+            // Initialize status polling if top-level job
+            if (!this.options.childJob) {
+                this._initPoll(job.status());
+            }
         },
 
         /**
@@ -903,7 +905,7 @@ define([
          * @private
          */
         _displayVisualizer: function(launchUrl) {
-            var viewerDiv = this.element.find(".gp-widget-job-visualize");
+            var viewerDiv = this.element.find(".gp-widget-job-visualize:first");
 
             // Check if the visualizer has already been displayed
             var displayed = viewerDiv.find("iframe").length > 0;
@@ -929,8 +931,9 @@ define([
          * @private
          */
         _displayChildren: function(children) {
-            var childrenDiv = this.element.find(".gp-widget-job-children");
+            var childrenDiv = this.element.find(".gp-widget-job-children:first");
             childrenDiv.css("margin-top", "10px");
+            childrenDiv.empty();
 
             // For each child, append a widget
             children.forEach(function(child) {
