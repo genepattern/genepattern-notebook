@@ -641,8 +641,8 @@ define([
          * Toggle the code view on or off
          */
         toggleCode: function() {
-            var code = this.element.find(".gp-widget-job-code");
-            var view = this.element.find(".gp-widget-job-body-wrapper");
+            var code = this.element.find(".gp-widget-job-code:last");
+            var view = this.element.find(".gp-widget-job-body-wrapper:first");
 
             if (code.is(":hidden")) {
                 this.element.closest(".cell").data("cell").code_mirror.refresh();
@@ -665,7 +665,7 @@ define([
                 code.slideUp();
             }
 
-            var collapsed = this.element.find(".widget-slide-indicator").find(".fa-arrow-down").length > 0;
+            var collapsed = this.element.find(".widget-slide-indicator:first").find(".fa-arrow-down").length > 0;
             if (collapsed) {
                 this.expandCollapse();
             }
