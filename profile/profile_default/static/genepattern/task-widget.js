@@ -1919,7 +1919,11 @@ define(["widgets/js/widget",
             }
             else {
                 form.slideDown();
-                message.slideDown();
+
+                // Only show message if there is one
+                if (message.hasClass("alert-success") || message.hasClass("alert-error")) {
+                    message.slideDown();
+                }
 
                 // Only show the EULA if there is one to display
                 var task = GenePattern.task(widget.options.lsid);
