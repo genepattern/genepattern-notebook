@@ -2,13 +2,13 @@ from distutils.core import setup
 
 setup(name='genepattern-notebook',
     py_modules=['genepattern'],
-    version='0.4.1',
+    version='0.4.2',
     description='GenePattern Notebook extension for Jupyter',
     license='BSD',
     author='Thorin Tabor',
     author_email='tabor@broadinstitute.org',
     url='https://github.com/genepattern/genepattern-notebook',
-    download_url='https://github.com/genepattern/genepattern-notebook/archive/0.4.1.tar.gz',
+    download_url='https://github.com/genepattern/genepattern-notebook/archive/0.4.2.tar.gz',
     keywords=['genepattern', 'genomics', 'bioinformatics', 'ipython', 'jupyter'],
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -18,12 +18,11 @@ setup(name='genepattern-notebook',
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Python',
         'Framework :: IPython',
-
     ],
     categories=[],
     install_requires=[
         'genepattern-python',
         'jupyter',
         'ipywidgets'
-],
+    ],
 )
