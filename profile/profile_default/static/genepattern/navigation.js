@@ -19,10 +19,8 @@ var Jupyter = Jupyter || IPython || {};
 
 // Add file path shim for Jupyter 3/4
 var STATIC_PATH = location.origin;
-var pathParts = location.pathname.split("/");
-for (var i = 1; i < pathParts.length-2; i++) STATIC_PATH += "/" + pathParts[i];
 if (Jupyter.version >= "4.0.0") {
-    STATIC_PATH += "/custom/genepattern/";
+    STATIC_PATH += Jupyter.contents.base_url + "custom/genepattern/";
 }
 else STATIC_PATH += "/static/genepattern/";
 
