@@ -639,7 +639,7 @@ define(["widgets/js/widget",
             $.ajax({
                 type: "POST",
                 url: server + "/rest/v1/oauth2/token?grant_type=password&username=" + encodeURIComponent(username) +
-                        "&password=" + encodeURIComponent(password) + "&client_id=GenePatternNotebook",
+                        "&password=" + encodeURIComponent(password) + "&client_id=GenePatternNotebook-" + encodeURIComponent(username),
                 cache: false,
                 xhrFields: {
                     withCredentials: true
