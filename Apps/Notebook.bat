@@ -1,1 +1,1 @@
-ipython notebook %1
+jupyter notebook %1
