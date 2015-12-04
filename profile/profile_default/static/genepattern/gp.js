@@ -705,6 +705,7 @@ require(["jquery"], function() {
         this._outputFiles = null;
         this._numOutputFiles = null;
         this._launchUrl = null;
+        this._children = null;
 
         /**
          * Constructor-like initialization for the Job class
@@ -770,6 +771,16 @@ require(["jquery"], function() {
                 });
         };
 
+        /**
+         * Returns code snippets for getting the job information in a using GenePattern library
+         *
+         * @param pObj - The following parameters may be set
+         *                  language: the language the return code should be in
+         *                      Accepted: Python, R, Java and MATLAB
+         *
+         * @returns {jQuery.Deferred} - Returns a jQuery Deferred object for event chaining.
+         *      See http://api.jquery.com/jquery.deferred/ for details.
+         */
         this.code = function(pObj) {
             // Validate language
             var language = null;
@@ -840,6 +851,33 @@ require(["jquery"], function() {
          */
         this.launchUrl = function() {
             return this._launchUrl;
+        };
+
+        /**
+         * Returns an array of child Job() objects associated with this parent job.
+         * Lazily initialized Job._children in the process.
+         *
+         * @returns {Array}
+         */
+        this.children = function() {
+            // Lazily initialize Job._children
+            if (this._children === null) {
+                var childList = [];
+
+                // If the job has children
+                if (jobJson['children'] !== undefined) {
+                    var rawChildren = jobJson['children']['items'];
+                    rawChildren.forEach(function(child) {
+                        var childJob = new GenePattern.Job(child);
+                        childList.push(childJob);
+                    });
+                }
+
+                this._children = childList;
+            }
+
+            // Return the array of child jobs
+            return this._children;
         };
 
         /**

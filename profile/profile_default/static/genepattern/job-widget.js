@@ -11,7 +11,24 @@
  * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not
  * responsible for its use, misuse, or functionality.
  */
-define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepattern/gp.js", "/static/genepattern/navigation.js"], function (widget, manager) {
+
+// Add shim to support Jupyter 3.x and 4.x
+var Jupyter = Jupyter || IPython || {};
+
+// Add file path shim for Jupyter 3/4
+var STATIC_PATH = location.origin;
+if (Jupyter.version >= "4.0.0") {
+    STATIC_PATH += Jupyter.contents.base_url + "custom/genepattern/";
+}
+else STATIC_PATH += "/static/genepattern/";
+
+define([
+    "widgets/js/widget",
+    "widgets/js/manager",
+    "jqueryui",
+    STATIC_PATH + "gp.js",
+    STATIC_PATH + "navigation.js"], function (widget, manager) {
+
     /**
      * Widget for viewing the job results of a launched job.
      *
@@ -20,17 +37,18 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
      *      Access to Job Results
      *      Access to Logs
      *      Job Sharing & Permissions
+     *      Visibility into Child Jobs
      *
      * Non-Supported Features:
      *      Access to Job Inputs
-     *      Visibility into Child Jobs
      *      Batch Jobs
      */
     $.widget("gp.jobResults", {
         options: {
             jobNumber: null,    // The job number
             poll: true,         // Poll to refresh running jobs
-            job: null           // Job object this represents
+            job: null,          // Job object this represents
+            childJob: false     // If this is a child job
         },
 
         /**
@@ -97,7 +115,24 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
                                     .append(" ")
                                     .append(
                                         $("<button></button>")
-                                            .addClass("btn btn-default btn-sm")
+                                            .addClass("btn btn-default btn-sm widget-slide-indicator")
+                                            .css("padding", "2px 7px")
+                                            .attr("title", "Expand or Collapse")
+                                            .attr("data-toggle", "tooltip")
+                                            .attr("data-placement", "bottom")
+                                            .append(
+                                                $("<span></span>")
+                                                    .addClass("fa fa-arrow-up")
+                                            )
+                                            .tooltip()
+                                            .click(function() {
+                                                widget.expandCollapse();
+                                            })
+                                    )
+                                    .append(" ")
+                                    .append(
+                                        $("<button></button>")
+                                            .addClass("btn btn-default btn-sm gp-widget-job-codetoggle")
                                             .css("padding", "2px 7px")
                                             .attr("title", "Toggle Code View")
                                             .attr("data-toggle", "tooltip")
@@ -116,7 +151,7 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
                     .append(
                         $("<img/>")
                             .addClass("gp-widget-logo")
-                            .attr("src", "/static/genepattern/GP_logo_on_black.png")
+                            .attr("src", STATIC_PATH + "GP_logo_on_black.png")
                     )
                     .append(
                         $("<h3></h3>")
@@ -159,6 +194,10 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
                                 $("<div></div>")
                                     .addClass("gp-widget-job-visualize")
                             )
+                            .append(
+                                $("<div></div>")
+                                    .addClass("gp-widget-job-children")
+                            )
                     )
                     .append(
                         $("<div></div>")
@@ -166,6 +205,14 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
                             .css("display", "none")
                     )
             );
+
+            // Set as child job, if necessary
+            if (this.options.childJob) {
+                this.element.find(".gp-widget-job-share").hide();
+                this.element.find(".gp-widget-job-reload").hide();
+                this.element.find(".gp-widget-job-codetoggle").hide();
+                this.element.find(".gp-widget-logo").hide();
+            }
 
             // Check to see if the user is authenticated yet
             if (GenePattern.authenticated) {
@@ -217,6 +264,66 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
          */
         _setOption: function(key, value) {
             this._super(key, value);
+        },
+
+        /**
+         * Retrieves the associated Task object from cache, or from the server if necessary
+         *
+         * @param done - Function to call once the task is loaded
+         *      Passes the Task() object in as a parameter, or null if in error
+         *
+         * @returns {GenePattern.Task|null} - Returns null if task had to be retrieved
+         *      from the server, otherwise returns the Task() object
+         */
+        getTask: function(done) {
+            // First check for the associated task, return if found
+            var task = this.options.job.task();
+            if (task !== null) {
+                done(task);
+                return task;
+            }
+
+            // Otherwise check the general GenePattern cache
+            var identifier = this.options.job.taskLsid();
+            task = GenePattern.task(identifier);
+            if (task !== null) {
+                this.options.job._task = task; // Associate this task with the widget
+                done(task);
+                return task;
+            }
+
+            // Otherwise call back to the server
+            var widget = this;
+            GenePattern.taskQuery({
+                lsid: identifier,
+                success: function(newTask) {
+                    widget.options.job._task = newTask; // Associate this task with the widget
+                    done(newTask);
+                },
+                error: function(error) {
+                    console.log(error);
+                    done(null);
+                }
+            });
+            return null;
+        },
+
+        /**
+         * Expand or collapse the job widget
+         */
+        expandCollapse: function() {
+            var toSlide = this.element.find("> .panel-body");
+            var indicator = this.element.find(".widget-slide-indicator").find("span");
+            if (toSlide.is(":hidden")) {
+                toSlide.slideDown();
+                indicator.removeClass("fa-arrow-down");
+                indicator.addClass("fa-arrow-up");
+            }
+            else {
+                toSlide.slideUp();
+                indicator.removeClass("fa-arrow-up");
+                indicator.addClass("fa-arrow-down");
+            }
         },
 
         /**
@@ -497,7 +604,7 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
             //var cell = this.element.closest(".cell").data("cell");
 
             dialog.modal({
-                notebook: IPython.notebook,
+                notebook: Jupyter.notebook,
                 keyboard_manager: this.keyboard_manager,
                 title : "Reload Job?",
                 body : "Are you sure you want to reload the job? This will leave the current " +
@@ -509,7 +616,7 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
                         "click" : function() {
                             job.code("Python").done(function(code) {
                                 code = widget._stripUnwantedCode(code);
-                                var cell = IPython.notebook.insert_cell_below();
+                                var cell = Jupyter.notebook.insert_cell_below();
 
                                 // Put the code in the cell
                                 cell.code_mirror.setValue(code);
@@ -532,8 +639,8 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
          * Toggle the code view on or off
          */
         toggleCode: function() {
-            var code = this.element.find(".gp-widget-job-code");
-            var view = this.element.find(".gp-widget-job-body-wrapper");
+            var code = this.element.find(".gp-widget-job-code:last");
+            var view = this.element.find(".gp-widget-job-body-wrapper:first");
 
             if (code.is(":hidden")) {
                 this.element.closest(".cell").data("cell").code_mirror.refresh();
@@ -554,6 +661,11 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
             else {
                 view.slideDown();
                 code.slideUp();
+            }
+
+            var collapsed = this.element.find(".widget-slide-indicator:first").find(".fa-arrow-down").length > 0;
+            if (collapsed) {
+                this.expandCollapse();
             }
         },
 
@@ -688,6 +800,8 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
          * @private
          */
         _displayJob: function(job) {
+            var widget = this;
+
             // Clean the old data
             this._clean();
 
@@ -696,41 +810,44 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
 
             // Display the job number and task name
             var taskText = " " + job.jobNumber() + ". " + job.taskName();
-            this.element.find(".gp-widget-job-task").text(taskText);
+            this.element.find(".gp-widget-job-task:first").text(taskText);
 
             // Display the user and date submitted
             var submittedText = "Submitted by " + job.userId() + " on " + job.dateSubmitted();
-            this.element.find(".gp-widget-job-submitted").text(submittedText);
+            this.element.find(".gp-widget-job-submitted:first").text(submittedText);
 
             // Display the status
             var statusText = this._statusText(job.status());
-            this.element.find(".gp-widget-job-status").text(statusText);
+            this.element.find(".gp-widget-job-status:first").text(statusText);
 
             // Display the job results
             var outputsList = this._outputsList(job.outputFiles(), true);
-            this.element.find(".gp-widget-job-outputs").append(outputsList);
+            this.element.find(".gp-widget-job-outputs:first").append(outputsList);
 
             // Display the log files
             var logList = this._outputsList(job.logFiles(), false);
-            this.element.find(".gp-widget-job-outputs").append(logList);
+            this.element.find(".gp-widget-job-outputs:first").append(logList);
 
             // Enable sharing button, if necessary
             var permissions = job.permissions();
             if (permissions !== undefined && permissions !== null && permissions['canSetPermissions']) {
-                this.element.find(".gp-widget-job-share").removeAttr("disabled");
+                this.element.find(".gp-widget-job-share:first").removeAttr("disabled");
             }
 
             // Display error if Java visualizer
-            var task = job.task();
-            if (task !== null && task !== undefined) {
-                var categories = task.categories();
-                if (categories.indexOf("Visualizer") !== -1) {
-                    this.errorMessage("This job appears to be a deprecated Java-based visualizer. These visualizers are not supported in the GenePattern Notebook.");
+            this.getTask(function(task) {
+                if (task !== null && task !== undefined) {
+                    var categories = task.categories();
+                    if (categories.indexOf("Visualizer") !== -1) {
+                        widget.errorMessage("This job appears to be a deprecated Java-based visualizer. These visualizers are not supported in the GenePattern Notebook.");
+                        widget.element.find(".gp-widget-job-submitted").hide();
+                        widget.element.find(".gp-widget-job-status").hide();
+                    }
                 }
-            }
+            });
 
             // If sharing panel does not exist, build the sharing pane
-            var sharingFound = this.element.find(".gp-widget-job-share-table").length > 0;
+            var sharingFound = this.element.find(".gp-widget-job-share-table:first").length > 0;
             if (!sharingFound) {
                 this.buildSharingPanel(job);
             }
@@ -741,8 +858,16 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
                 this._displayVisualizer(launchUrl);
             }
 
-            // Initialize status polling
-            this._initPoll(job.status());
+            // Build the display of child jobs, if necessary
+            var children = job.children();
+            if (children !== undefined && children !== null && children.length > 0) {
+                this._displayChildren(children);
+            }
+
+            // Initialize status polling if top-level job
+            if (!this.options.childJob) {
+                this._initPoll(job.status());
+            }
         },
 
         /**
@@ -778,7 +903,7 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
          * @private
          */
         _displayVisualizer: function(launchUrl) {
-            var viewerDiv = this.element.find(".gp-widget-job-visualize");
+            var viewerDiv = this.element.find(".gp-widget-job-visualize:first");
 
             // Check if the visualizer has already been displayed
             var displayed = viewerDiv.find("iframe").length > 0;
@@ -795,6 +920,29 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
                         .attr("src", launchUrl + "#" + GenePattern.token)
                 );
             }
+        },
+
+        /**
+         * Build the display of child widgets
+         *
+         * @param children - List of Job() objects for children
+         * @private
+         */
+        _displayChildren: function(children) {
+            var childrenDiv = this.element.find(".gp-widget-job-children:first");
+            childrenDiv.css("margin-top", "10px");
+            childrenDiv.empty();
+
+            // For each child, append a widget
+            children.forEach(function(child) {
+                var childWidget = $("<div></div>")
+                    .addClass("gp-widget-job-child")
+                    .jobResults({
+                        jobNumber: child.jobNumber(),
+                        childJob: true
+                    });
+                childrenDiv.append(childWidget);
+            });
         },
 
         /**
@@ -854,6 +1002,7 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
                     GenePattern.notebook.buildMenu(widget, link, output["link"]["name"], output["link"]["href"], output["kind"], indexString, fullMenu);
 
                     link.appendTo(outputsList);
+                    $("<br/>").appendTo(outputsList);
                 }
             }
             else {
@@ -875,7 +1024,7 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
             var fileCode = "thisFile = job" + job.jobNumber() + ".get_output_files()[" + fileIndex + "]";
 
             dialog.modal({
-                notebook: IPython.notebook,
+                notebook: Jupyter.notebook,
                 keyboard_manager: this.keyboard_manager,
                 title : "Python Code",
                 body : $("<div></div>")
@@ -934,8 +1083,8 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
         }
     });
 
-    var DOMWidgetView = IPython.DOMWidgetView;
-    var WidgetManager = IPython.WidgetManager;
+    var DOMWidgetView = widget.DOMWidgetView;
+    var WidgetManager = Jupyter.WidgetManager;
 
     function register_widget() {
         var JobWidgetView = DOMWidgetView.extend({
@@ -974,8 +1123,8 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
         }
         else {
             setTimeout(function() {
-                DOMWidgetView = IPython.DOMWidgetView;
-                WidgetManager = IPython.WidgetManager;
+                DOMWidgetView = Jupyter.DOMWidgetView;
+                WidgetManager = Jupyter.WidgetManager;
 
                 wait_until_ready();
             }, 200);

@@ -11,15 +11,30 @@
  * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not
  * responsible for its use, misuse, or functionality.
  */
-define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepattern/gp.js", "/static/genepattern/navigation.js"], function (widget, manager) {
+
+// Add shim to support Jupyter 3.x and 4.x
+var Jupyter = Jupyter || IPython || {};
+
+// Add file path shim for Jupyter 3/4
+var STATIC_PATH = location.origin;
+if (Jupyter.version >= "4.0.0") {
+    STATIC_PATH += Jupyter.contents.base_url + "custom/genepattern/";
+}
+else STATIC_PATH += "/static/genepattern/";
+
+define(["widgets/js/widget",
+        "widgets/js/manager",
+        "jqueryui",
+        STATIC_PATH + "gp.js",
+        STATIC_PATH + "navigation.js"], function (widget, manager) {
+
     $.widget("gp.auth", {
         options: {
             servers: [                                              // Expects a list of lists with [name, url] pairs
                 ['Broad Institute', 'http://genepattern.broadinstitute.org/gp'],
                 ['Indiana University', 'http://gp.indiana.edu/gp'],
                 ['Broad Internal (Broad Institute Users Only)', 'https://gpbroad.broadinstitute.org/gp'],
-                //['localhost', 'http://127.0.0.1:8080/gp'],
-                //['GenePattern Beta', 'http://genepatternbeta.broadinstitute.org/gp']
+                ['Custom GenePattern Server', 'Custom']
             ],
             cell: null                                              // Reference to the IPython cell
         },
@@ -86,7 +101,7 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
                         .append(
                             $("<img/>")
                                 .addClass("gp-widget-logo")
-                                .attr("src", "/static/genepattern/GP_logo_on_black.png")
+                                .attr("src", STATIC_PATH + "GP_logo_on_black.png")
                         )
                         .append(
                             $("<h3></h3>")
@@ -111,7 +126,7 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
                                 .addClass("gp-widget-loading")
                                 .append(
                                     $("<img />")
-                                        .attr("src", "/static/genepattern/loader.gif")
+                                        .attr("src", STATIC_PATH + "loader.gif")
                                 )
                                 .hide()
                         )
@@ -245,6 +260,18 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
                 );
             });
 
+            // If a custom URL is specified in the code, add to server dropdown
+            var customURL = widget._getCodeServerURL();
+            if (customURL !== null && widget._isURLCustom(customURL)) {
+                widget._setCustomURL(customURL);
+            }
+
+            // Call dialog if Custom Server selected
+            serverSelect.change(function() {
+                var selected = serverSelect.val();
+                if (selected === "Custom") widget._selectCustomServer();
+            });
+
             // Hide the code by default
             var element = this.element;
             setTimeout(function() {
@@ -309,6 +336,125 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
          */
         _setOption: function(key, value) {
             this._super(key, value);
+        },
+
+        /**
+         * Prompt the user for the URL to a custom GenePattern server
+         *
+         * @private
+         */
+        _selectCustomServer: function() {
+            var widget = this;
+            var dialog = require('base/js/dialog');
+            var urlTextBox = $("<input class='form-control gp-custom-url' type='text' value='http://127.0.0.1:8080/gp'/>");
+            dialog.modal({
+                notebook: Jupyter.notebook,
+                keyboard_manager: Jupyter.keyboard_manager,
+                title : "Enter Custom GenePattern Server URL",
+                body : $("<div></div>")
+                            .append("Enter the URL to your custom GenePattern server below. Please use the full URL, " +
+                                    "including http:// as well as any port numbers and the trailing /gp. For example: " +
+                                    "http://genepattern.broadinstitute.org/gp")
+                            .append($("<br/><br/>"))
+                            .append($("<label style='font-weight: bold;'>Server URL </label>"))
+                            .append(urlTextBox),
+                buttons : {
+                    "Cancel" : {},
+                    "OK" : {
+                        "class" : "btn-primary",
+                        "click" : function() {
+                            var url = urlTextBox.val();
+                            url = widget._validateCustomURL(url);
+                            widget._setCustomURL(url);
+                        }
+                    }
+                }
+            });
+
+            // Allow you to type in your URL
+            urlTextBox.focus(function() { Jupyter.keyboard_manager.disable(); });
+            urlTextBox.blur(function() { Jupyter.keyboard_manager.enable(); });
+        },
+
+        /**
+         * Attempt to correct an incorrectly entered GenePattern URL and return the corrected version
+         *
+         * @param url
+         * @returns {string}
+         * @private
+         */
+        _validateCustomURL: function(url) {
+            var returnURL = url;
+            // Check for http:// or https://
+            var protocolTest = new RegExp("(^http\:\/\/)|(https\:\/\/)");
+            if (!protocolTest.test(returnURL)) returnURL = "http://" + returnURL;
+
+            // Check for trailing slash
+            var slashTest = new RegExp("\/$");
+            if (slashTest.test(returnURL)) returnURL = returnURL.slice(0, -1);
+
+            // Check for /gp
+            var gpTest = new RegExp("\/gp$");
+            if (!gpTest.test(returnURL)) returnURL += "/gp";
+
+            return returnURL;
+        },
+
+        /**
+         * Sets the auth widget to have the specified custom GenePattern URL
+         *
+         * @private
+         */
+        _setCustomURL: function(url) {
+            var widget = this;
+            var serverSelect = widget.element.find("[name=server]");
+
+            // Add custom option
+            $("<option></option>")
+                .val(url)
+                .text(url)
+                .insertBefore(serverSelect.find("option[value=Custom]"));
+
+            // Select the custom option
+            serverSelect.val(url);
+        },
+
+        /**
+         * Returns the URL specified in the backing code
+         *
+         * @private
+         */
+        _getCodeServerURL: function() {
+            var code = this.options.cell.code_mirror.getValue();
+            var lines = code.split("\n");
+            var serverLine = null;
+            lines.forEach(function(line) {
+                if (line.indexOf("gp.GPServer") >= 0) {
+                    serverLine = line;
+                }
+            });
+
+            // Found the line
+            if (serverLine !== null) {
+                var parts = serverLine.split("\"");
+                return parts[1];
+            }
+            // Didn't find the line, return null
+            else {
+                return null;
+            }
+        },
+
+        /**
+         * Checks to see if the URLis in the server dropdown or not
+         *
+         * @param url
+         * @private
+         */
+        _isURLCustom: function(url) {
+            var widget = this;
+            var serverSelect = widget.element.find("[name=server]");
+            return serverSelect.find("option[value='" + url + "']").length === 0;
         },
 
         /**
@@ -459,7 +605,7 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
             }
             else {
                 // If normally collapsed
-                var collapsed = $(".widget-slide-indicator").find(".fa-arrow-down").length > 0;
+                var collapsed = this.element.find(".widget-slide-indicator").find(".fa-arrow-down").length > 0;
                 if (collapsed) {
                     code.slideUp();
                 }
@@ -493,7 +639,7 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
             $.ajax({
                 type: "POST",
                 url: server + "/rest/v1/oauth2/token?grant_type=password&username=" + encodeURIComponent(username) +
-                        "&password=" + encodeURIComponent(password) + "&client_id=GenePatternNotebook",
+                        "&password=" + encodeURIComponent(password) + "&client_id=GenePatternNotebook-" + encodeURIComponent(username),
                 cache: false,
                 xhrFields: {
                     withCredentials: true
@@ -508,6 +654,7 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
                     widget.afterAuthenticate(server, username, password, token, done);
                 },
                 error: function() {
+                    widget.buildCode(server, "", "");
                     widget.errorMessage("Error authenticating");
                 }
             });
@@ -681,30 +828,69 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
         }
     });
 
+    Jupyter.keyboard_manager.command_shortcuts.add_shortcut('Shift-d', {
+        help : 'toggle dev servers',
+        help_index : 'ee',
+        handler : function () {
+            GenePattern.notebook.toggleDev();
+            return false;
+        }}
+    );
+
     // Method to enable dev servers from the auth widget
-    GenePattern.notebook.enableDev = function() {
-        $(".gp-widget-auth-form").find("[name=server]").each(function(i, select) {
-            $(select)
-                .append(
-                    $("<option></option>")
-                        .val("http://genepatternbeta.broadinstitute.org/gp")
-                        .text("gpbeta")
-                )
-                .append(
-                    $("<option></option>")
-                        .val("http://gpdev.broadinstitute.org/gp")
-                        .text("gpdev")
-                )
-                .append(
-                    $("<option></option>")
-                        .val("http://127.0.0.1:8080/gp")
-                        .text("localhost")
-                )
+    GenePattern.notebook.toggleDev = function() {
+        function addOptions() {
+            $(".gp-widget-auth-form").find("[name=server]").each(function(i, select) {
+                $(select)
+                    .addClass("gp-widget-dev-on")
+                    .append(
+                        $("<option></option>")
+                            .val("http://genepatternbeta.broadinstitute.org/gp")
+                            .text("gpbeta")
+                    )
+                    .append(
+                        $("<option></option>")
+                            .val("http://gpdev.broadinstitute.org/gp")
+                            .text("gpdev")
+                    )
+                    .append(
+                        $("<option></option>")
+                            .val("http://127.0.0.1:8080/gp")
+                            .text("localhost")
+                    )
+            });
+        }
+
+        function removeOptions() {
+            $(".gp-widget-auth-form").find("[name=server]").each(function(i, select) {
+                $(select).removeClass("gp-widget-dev-on");
+                $(select).find("option[value='http://genepatternbeta.broadinstitute.org/gp']").remove();
+                $(select).find("option[value='http://gpdev.broadinstitute.org/gp']").remove();
+                $(select).find("option[value='http://127.0.0.1:8080/gp']").remove();
+            });
+        }
+
+        // Toggle
+        var devOn = $(".gp-widget-auth-form").find("[name=server]").hasClass("gp-widget-dev-on");
+        var devWord = devOn ? "off" : "on";
+        if (devOn) removeOptions();
+        else addOptions();
+
+        // Show dialog
+        var dialog = require('base/js/dialog');
+        dialog.modal({
+            notebook: Jupyter.notebook,
+            keyboard_manager: this.keyboard_manager,
+            title : "Development Options Toggled",
+            body : "You have toggled development options " + devWord + " for GenePattern Notebook.",
+            buttons : {
+                "OK" : {}
+            }
         });
     };
 
-    var DOMWidgetView = IPython.DOMWidgetView;
-    var WidgetManager = IPython.WidgetManager;
+    var DOMWidgetView = widget.DOMWidgetView;
+    var WidgetManager = Jupyter.WidgetManager;
 
     function register_widget() {
         var AuthWidgetView = DOMWidgetView.extend({
@@ -750,8 +936,8 @@ define(["widgets/js/widget", "widgets/js/manager", "jqueryui", "/static/genepatt
         }
         else {
             setTimeout(function() {
-                DOMWidgetView = IPython.DOMWidgetView;
-                WidgetManager = IPython.WidgetManager;
+                DOMWidgetView = Jupyter.DOMWidgetView;
+                WidgetManager = Jupyter.WidgetManager;
 
                 wait_until_ready();
             }, 200);

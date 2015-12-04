@@ -1,15 +1,10 @@
 GenePattern Notebook
 ====================
 
-Some notes on setup of GenePattern Notebook environment.
+Some notes on the setup of GenePattern Notebook environment.
 
 **IMPORTANT: The current version of the code only works with GenePattern 3.9.3 and up! 
-We recommend GenePattern 3.9.4 (the latest version), as this version fixes a bug in the 
-server than can cause the Notebook to double prompt for authentication.**
-
-**Jupyter 4 (IPython 4) has been released, introducing significant changes to the 
-Jupyter code base. We are working to update GenePattern Notebook to support this new 
-version, however, full support has not yet been implemented.**
+Some features are only supported in GenePattern 3.9.5 and up.**
 
 # Installation
 
@@ -32,27 +27,20 @@ Install PIP (Python Package Index) if not already installed (PIP may come with A
 distribution; see https://pip.pypa.io/en/latest/installing.html). This is Python's preferred 
 package management system.
 
-## Install IPython Notebook
-Next install IPython Notebook. This can easily be done from PIP by executing the following 
-line of code from the terminal.
-
-> pip install "ipython[all]==3.2"
-
 ## Install GenePattern Notebook
 
-For the time being, the best way to install the GenePattern Notebook is by cloning the GitHub 
-repository and then copying over some files from the checkout to your IPython profile. The 
-GenePattern Notebook repository can be cloned by executing the following command:
+The best way to install GenePattern Notebook is through PIP. It can be installed by executing
+the following command:
 
 > pip install genepattern-notebook
 
-## Launch IPython
+## Launch Jupyter
 
-Finally, you may launch the IPython notebook by issuing the following command at the terminal:
+Finally, you may launch Jupyter Notebook by issuing the following command at the terminal:
 
-> ipython notebook
+> jupyter notebook
 
-This will start up the notebook kernel from and launch your web browser, pointing to the Notebook.
+This will start up the notebook kernel and launch your web browser pointing to the Notebook.
 
 ## Updating GenePattern Notebook
 
@@ -61,28 +49,18 @@ command:
 
 > pip install -U --no-deps genepattern-notebook
 
-## Note for RNA-seq Notebook Users
-
-The RNA-seq Notebook requires an additional Python package known as jsonpickle. This package allows 
-the notebook to store results in memory using a JSON data format. This package may be installed by 
-executing the following line of code from a terminal.
-
-> pip install -U jsonpickle
-
 # Known Issues
 
-There is a known issue that can cause JavaScript visualizers to not display propertly unless a user 
-first logs into the main GenePattern interface from the same browser before using them in the 
-GenePattern Notebook. This is due to a security model issue in the GenePattern server. A fix is 
-planned for the upcoming GenePattern 3.9.5 release.
+Users using the GenePattern Notebook with an older version of GenePattern (3.9.3 or 3.9.4) may
+need to log into the GenePattern UI before making use of the notebook. The server status 
+message and child jobs will also be unavailable.
 
 # Feature Support
 
-Most common GenePattern features are supported from the GenePattern Notebook. A few, however, have 
+Most common GenePattern features are supported in the GenePattern Notebook. A few, however, have 
 yet to be implemented. GenePattern features that are not yet supported are:
 
 * Batch job submission
 * GenomeSpace integration
-* Pipeline child job output
 * Dynamically updated choice parameters
 * Parameter groups

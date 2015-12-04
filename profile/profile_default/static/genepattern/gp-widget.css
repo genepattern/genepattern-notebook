@@ -135,6 +135,15 @@
     margin-right: 5px;
 }
 
+.gp-widget-job-child {
+    border-color: #BBBBBB;
+}
+
+.gp-widget-job-child .gp-widget-job-header {
+    background-color: #BBBBBB;
+    border-color: #BBBBBB;
+}
+
 /*
  * File Input Styles
  */
