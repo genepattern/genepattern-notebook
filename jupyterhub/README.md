@@ -15,15 +15,13 @@ file for using the authenticator.
 2. Generate JupyterHub config by running
 > jupyterhub --generate-config
 
-3. Edit the config to declare GenePatternAuthenticator as the authenticator
-> import gpauthenticator
->
-> c.JupyterHub.authenticator_class = gpauthenticator.GenePatternAuthenticator
+3. Edit the config to declare GenePatternAuthenticator as the authenticator 
+(see example jupyterhib_config.py file)
 4. Edit gpauthenticator.py to point to your GenePattern server of choice
-> url = url_concat("http://127.0.0.1:8080/gp/rest/v1/oauth2/token", params)
+> GENEPATTERN_URL = "http://genepattern.broadinstitute.org/gp"
 5. Put the gpauthenticator.py file on your Python path
 6. Start your JupyterHub server using the config
-> jupyterhub --config=/path/to/the/config/file
+> sudo nohup jupyterhub --ip=0.0.0.0 --port=8000 --config=/path/to/jupyterhub_config.py &
 
 ## Getting nano to work inside Docker
 This fixes a weird Docker bug where nano won't work when inside a Docker container. 
