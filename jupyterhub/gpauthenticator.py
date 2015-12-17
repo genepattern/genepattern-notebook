@@ -11,6 +11,8 @@ from jupyterhub.auth import Authenticator, LocalAuthenticator
 
 
 class GenePatternAuthenticator(Authenticator):
+    # URL of the GenePattern server you are authenticating with
+    GENEPATTERN_URL = "http://genepattern.broadinstitute.org/gp"
 
     @gen.coroutine
     def authenticate(self, handler, data):
@@ -33,7 +35,7 @@ class GenePatternAuthenticator(Authenticator):
             client_id="GenePatternNotebook"
         )
 
-        url = url_concat("http://127.0.0.1:8080/gp/rest/v1/oauth2/token", params)
+        url = url_concat(self.GENEPATTERN_URL + "/gp/rest/v1/oauth2/token", params)
 
         req = HTTPRequest(url,
                           method="POST",
