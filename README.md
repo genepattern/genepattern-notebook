@@ -1,14 +1,25 @@
 GenePattern Notebook
 ====================
 
-Some notes on the setup of GenePattern Notebook environment.
-
-**IMPORTANT: The current version of the code only works with GenePattern 3.9.3 and up! 
-Some features are only supported in GenePattern 3.9.5 and up.**
+The [GenePattern Notebook](http://www.broadinstitute.org/cancer/software/genepattern/genepattern-notebooks) 
+environment gives GenePattern users the ability to interleave text, graphics, and code with 
+their GenePattern analyses to create "notebooks" that can be edited, shared, and published. 
+GenePattern Notebooks are built on the [Jupyter Notebook](https://jupyter.org/) system 
+(formerly called IPython Notebook) and extend it so that users can take advantage of its ease 
+of use and ability to encapsulate an entire scientific research narrative, without the need 
+to write code.
 
 # Installation
 
-## Install Python
+Full installation instructions for casual use are detailed on the 
+[GenePattern website](http://www.broadinstitute.org/cancer/software/genepattern/genepattern-notebooks-installation).
+
+## Development Install
+
+The installation instructions below are intended for developers who want to install the 
+project from PIP or GitHub for purposes of software development.
+
+### Install Python
 
 In order to get the GenePattern Notebook working you will first need to install a compatible 
 version of Python. This means you will need either Python 2.7 or Python 3.4+.
@@ -21,20 +32,36 @@ You may wish to install the Anaconda distribution of Python from Continuum Analy
 a scientific version of Python that ships with many of the most popular Python packages for 
 science, math and data analysis (ex: NumPy, SciPy, Pandas, Matplotlib, IPython, etc.).
 
-## Install PIP
+### Install PIP
 
 Install PIP (Python Package Index) if not already installed (PIP may come with Anaconda 
 distribution; see https://pip.pypa.io/en/latest/installing.html). This is Python's preferred 
 package management system.
 
-## Install GenePattern Notebook
+Now you should choose to either install GenePattern Notebook from GitHub or from PIP. If you
+don't know which method you would prefer, then we recommend doing the PIP installation. Then 
+skip to the appropriate step below.
 
-The best way to install GenePattern Notebook is through PIP. It can be installed by executing
+### Install GenePattern Notebook from GitHub
+
+Copy the following file genepattern-notebook/profile/extensions/genepattern.py and place it 
+on your Python path. This is the GenePattern Notebook extension that will be loaded into
+Jupyter. 
+
+If you don't already have Jupyter installed, you can install it from PIP by running:
+
+> pip install jupyter
+
+From here go to the "Launch Jupyter" step below.
+
+### Install GenePattern Notebook from PIP
+
+The easiest way to install GenePattern Notebook is through PIP. It can be installed by executing
 the following command:
 
 > pip install genepattern-notebook
 
-## Launch Jupyter
+### Launch Jupyter
 
 Finally, you may launch Jupyter Notebook by issuing the following command at the terminal:
 
@@ -42,7 +69,7 @@ Finally, you may launch Jupyter Notebook by issuing the following command at the
 
 This will start up the notebook kernel and launch your web browser pointing to the Notebook.
 
-## Updating GenePattern Notebook
+### Updating GenePattern Notebook
 
 If you want to update GenePattern Notebook to a more recent version on PIP, run the following 
 command:
@@ -51,14 +78,17 @@ command:
 
 # Known Issues
 
+**The current version of the code only works with GenePattern 3.9.3 and up!**
+
 Users using the GenePattern Notebook with an older version of GenePattern (3.9.3 or 3.9.4) may
 need to log into the GenePattern UI before making use of the notebook. The server status 
-message and child jobs will also be unavailable.
+message and child jobs will also be unavailable. If you are using one of these older versions,
+we recommend that you upgrade to the latest version of GenePattern.
 
 # Feature Support
 
-Most common GenePattern features are supported in the GenePattern Notebook. A few, however, have 
-yet to be implemented. GenePattern features that are not yet supported are:
+Most common GenePattern features are supported in the GenePattern Notebook environment. A few, 
+however, have yet to be implemented. GenePattern features that are not yet supported include:
 
 * Batch job submission
 * GenomeSpace integration
