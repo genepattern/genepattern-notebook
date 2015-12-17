@@ -69,6 +69,18 @@ Finally, you may launch Jupyter Notebook by issuing the following command at the
 
 This will start up the notebook kernel and launch your web browser pointing to the Notebook.
 
+### Load the GenePattern extension
+
+Once Jupyter notebook is started, create a new notebook document and the GenePattern extension
+can be loaded by executing the following command inside the notebook:
+
+> %reload_ext genepattern
+
+The first time this command is executed it may take a few seconds to fully run. In the background
+it is downloading the necessary client-side files. Once this command runs, the GenePattern cell
+type will appear in the Jupyter menu. Create a cell of this type to begin using the GenePattern
+extension.
+
 ### Updating GenePattern Notebook
 
 If you want to update GenePattern Notebook to a more recent version on PIP, run the following 
