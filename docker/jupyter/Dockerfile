@@ -62,12 +62,7 @@ RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
     pip3 --no-cache-dir install requests[security]
 
 
-#RUN pip3 install ipython[all]==3.2
 RUN pip3 install jupyter
-
-#RUN pip2 install -i https://testpypi.python.org/pypi genepattern-notebook && \
-#	pip install -i https://testpypi.python.org/pypi genepattern-notebook && \
-#	pip3 install -i https://testpypi.python.org/pypi genepattern-notebook
 
 RUN pip3 install -i https://testpypi.python.org/pypi genepattern-notebook
 
@@ -76,6 +71,10 @@ RUN pip3 install -i https://testpypi.python.org/pypi genepattern-notebook
 RUN mkdir -p -m 700 /root/.jupyter/ && \
     echo "c.NotebookApp.ip = '*'" >> /root/.jupyter/jupyter_notebook_config.py
 
+#RUN jupyter nbextension install genepattern
+ 
+COPY custom.js /root/.jupyter/custom/custom.js
+   
 VOLUME /notebooks
 WORKDIR /notebooks
 
@@ -83,5 +82,5 @@ WORKDIR /notebooks
 EXPOSE 8888
 
 ENTRYPOINT ["tini", "--"]
-CMD ["ipython", "notebook", "--port=8888", "--no-browser", "--ip=0.0.0.0"]
+CMD ["ipython", "notebook", "--port=8888", "--no-browser", "--ip=0.0.0.0", "--NotebookApp.server_extensions=['genepattern']"]
 
