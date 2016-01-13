@@ -995,14 +995,18 @@ GenePattern.notebook.init.launch_init = function() {
     if (!gpInDropdown) {
         dropdown.append(
                 $("<option value='code'>GenePattern</option>")
-            )
-            .change(function(event) {
-                var type = $(event.target).find(":selected").text();
-                if (type === "GenePattern") {
-                    // DO ACTION
-                    GenePattern.notebook.changeGenePatternPrompt();
-                }
-            });
+            );
+
+        dropdown.change(function(event) {
+            var type = $(event.target).find(":selected").text();
+            if (type === "GenePattern") {
+                // DO ACTION
+                GenePattern.notebook.changeGenePatternPrompt();
+            }
+        });
+
+        // Reverse the ordering of events so we check for ours first
+        $._data( $("#cell_type")[0], "events" ).change.reverse();
     }
 
     var cellMenu = $("#change_cell_type");

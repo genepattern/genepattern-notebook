@@ -2,42 +2,27 @@
 
 c = get_config()
 
-# Add some users.
-c.JupyterHub.admin_users = {'tabor', 'tmtabor'}
+# The ip for the proxy API handlers
+c.JupyterHub.proxy_api_ip = '0.0.0.0'
 
-c.JupyterHub.log_level = 10
-c.JupyterHub.authenticator_class = 'gpauthenticator.LocalGenePatternAuthenticator'
+# The ip for this process
+c.JupyterHub.hub_ip = '0.0.0.0'
 
-c.LocalGitHubOAuthenticator.create_system_users = True
+# The IP address (or hostname) the single-user server should listen on
+c.Spawner.ip = '0.0.0.0'
 
-c.Authenticator.whitelist = whitelist = set()
-c.JupyterHub.admin_users = admin = set()
+# Add gpauthenticator.py to the Python path, if necessary
+# import sys
+# sys.path.append('/home/genepattern/')
 
-import os
-import sys
+# Set GenePatternAuthenticator as the authenticator
+import gpauthenticator
+c.JupyterHub.authenticator_class = gpauthenticator.GenePatternAuthenticator
 
-join = os.path.join
+# Set DockerSpawner as the spawner
+import dockerspawner
+c.JupyterHub.spawner_class = dockerspawner.DockerSpawner
 
-here = os.path.dirname(__file__)
-root = os.environ.get('OAUTHENTICATOR_DIR', here)
-sys.path.insert(0, root)
-
-with open(join(root, 'userlist')) as f:
-    for line in f:
-        if not line:
-            continue
-        parts = line.split()
-        name = parts[0]
-        whitelist.add(name)
-        if len(parts) > 1 and parts[1] == 'admin':
-            admin.add(name)
-
-
-# ssl config
-ssl = join(root, 'ssl')
-keyfile = join(ssl, 'ssl.key')
-certfile = join(ssl, 'ssl.cert')
-if os.path.exists(keyfile):
-    c.JupyterHub.ssl_key = keyfile
-if os.path.exists(certfile):
-    c.JupyterHub.ssl_cert = certfile
+# The docker instances need access to the Hub, so the default loopback port doesn't work:
+from IPython.utils.localinterfaces import public_ips
+c.JupyterHub.hub_ip = public_ips()[0]

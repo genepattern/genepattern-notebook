@@ -1,0 +1,1 @@
+This is a Docker image for easily running the GenePattern Notebook environment.
