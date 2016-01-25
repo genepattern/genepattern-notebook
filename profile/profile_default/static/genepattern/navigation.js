@@ -514,7 +514,7 @@ GenePattern.notebook.changeGenePatternPrompt = function() {
         buttons : {
             "Cancel" : {},
             "Change Cell Type" : {
-                "class" : "btn-danger",
+                "class" : "btn-warning",
                 "click" : function() {
                     if (GenePattern.authenticated) {
                         GenePattern.notebook.widgetSelectDialog(cell);
