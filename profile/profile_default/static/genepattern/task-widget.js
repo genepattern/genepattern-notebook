@@ -1119,10 +1119,15 @@ define(["widgets/js/widget",
      *      Dynamic Dropdowns
      */
     $.widget("gp.runTask", {
+        // Flags for whether events have been called on the widget
+        _widgetRendered: false,
+        _paramsLoaded: false,
+
         options: {
             lsid: null,
             name: null,
-            task: null
+            task: null,
+            cell: null
         },
 
         /**
@@ -1342,7 +1347,6 @@ define(["widgets/js/widget",
                     if (task !== null) {
                         widget._buildHeader();
                         widget._buildForm();
-                        $(widget.element).trigger("runTask.paramLoad");
                     }
                     else {
                         widget._showUninstalledMessage();
@@ -1356,6 +1360,7 @@ define(["widgets/js/widget",
 
             // Trigger gp.widgetRendered event on cell element
             setTimeout(function() {
+                widget._widgetRendered = true;
                 widget.element.closest(".cell").trigger("gp.widgetRendered");
             }, 10);
 
@@ -1608,7 +1613,7 @@ define(["widgets/js/widget",
          */
         _parseJobSpec: function() {
             var dict = {};
-            var code = this.element.closest(".cell").data("cell").code_mirror.getValue();
+            var code = this.options.cell.code_mirror.getValue();
             var lines = code.split("\n");
 
             for (var i = 0; i < lines.length; i++) {
@@ -1729,6 +1734,8 @@ define(["widgets/js/widget",
                         if (Object.keys(reloadVals).length == 0) {
                             widget._addJobSpec(params);
                         }
+                        widget._paramsLoaded = true;
+                        $(widget.element).trigger("runTask.paramLoad");
                     },
                     error: function(exception) {
                         widget.errorMessage("Could not load task: " + exception.statusText);
@@ -1766,7 +1773,7 @@ define(["widgets/js/widget",
          * @private
          */
         _addJobSpec: function(params) {
-            var code = this.element.closest(".cell").data("cell").code_mirror.getValue();
+            var code = this.options.cell.code_mirror.getValue();
             var lines = code.split("\n");
             var jobSpecName = null;
             var insertAfter = null;
@@ -1805,7 +1812,7 @@ define(["widgets/js/widget",
 
             // Set the new code
             code = lines.join("\n");
-            this.element.closest(".cell").data("cell").code_mirror.setValue(code);
+            this.options.cell.code_mirror.setValue(code);
 
             return code;
         },
@@ -1817,7 +1824,7 @@ define(["widgets/js/widget",
          * @param value
          */
         updateCode: function(paramName, value) {
-            var code = this.element.closest(".cell").data("cell").code_mirror.getValue();
+            var code = this.options.cell.code_mirror.getValue();
             var lines = code.split("\n");
             var jobSpecName = null;
             var codeToLookFor = '.set_parameter("' + paramName + '"';
@@ -1880,7 +1887,7 @@ define(["widgets/js/widget",
 
             // Set the new code
             code = lines.join("\n");
-            this.element.closest(".cell").data("cell").code_mirror.setValue(code);
+            this.options.cell.code_mirror.setValue(code);
 
             return code;
         },
@@ -1897,7 +1904,7 @@ define(["widgets/js/widget",
             var message = this.element.find(".gp-widget-task-message");
 
             if (code.is(":hidden")) {
-                this.element.closest(".cell").data("cell").code_mirror.refresh();
+                this.options.cell.code_mirror.refresh();
                 var raw = this.element.closest(".cell").find(".input").html();
                 code.html(raw);
 
@@ -2335,12 +2342,14 @@ define(["widgets/js/widget",
                     // Determine which identifier is used
                     if (lsid) {
                         this.$el.runTask({
-                            lsid: lsid
+                            lsid: lsid,
+                            cell: this.options.cell
                         });
                     }
                     else {
                         this.$el.runTask({
-                            name: name
+                            name: name,
+                            cell: this.options.cell
                         });
                     }
 
