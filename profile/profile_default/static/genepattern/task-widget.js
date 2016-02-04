@@ -2223,7 +2223,10 @@ define(["widgets/js/widget",
                     // Submit the job input
                     jobInput.submit({
                         success: function(response, jobNumber) {
-                            widget.successMessage("Job successfully submitted! Job ID: " + jobNumber);
+                            //widget.successMessage("Job successfully submitted! Job ID: " + jobNumber);
+
+                            // Collapse the task widget
+                            widget.expandCollapse();
 
                             // Create a new cell for the job widget
                             var cell = Jupyter.notebook.insert_cell_below();
