@@ -621,6 +621,7 @@ define(["widgets/js/widget",
                         // Mark the file as uploaded
                         var display = widget._singleDisplay(file);
                         widget._replaceValue(display, url);
+                        widget._updateCode();
 
                         if (pObj.success) {
                             pObj.success(response, url);
@@ -2092,7 +2093,7 @@ define(["widgets/js/widget",
                 if (required) {
                     var input = param.find(".gp-widget-task-param-input");
                     var value = this._getInputValue(input);
-                    if (value === null || value === "") {
+                    if (value === null || value === "" || value.length === 0) {
                         param.addClass("gp-widget-task-param-missing");
                         missing.push(param.attr("name"));
                         validated = false;
@@ -2195,62 +2196,59 @@ define(["widgets/js/widget",
          * Submit the Run Task form to the server
          */
         submit: function() {
-            // Create the job input
-            var task = GenePattern.task(this.options.lsid);
-            var jobInput = task.jobInput();
             var widget = this;
 
-            this.uploadAll({
-                success: function() {
-                    // Assign values from the inputs to the job input
-                    var uiParams = widget.element.find(".gp-widget-task-param");
-                    for (var i = 0; i < uiParams.length; i++) {
-                        var uiParam = $(uiParams[i]);
-                        var uiInput = uiParam.find(".gp-widget-task-param-input");
-                        var uiValue = widget._getInputValue(uiInput);
+            // Create the job input
+            widget.getTask(function(task) {
+                var jobInput = task.jobInput();
 
-                        if (uiValue !== null) {
-                            // Wrap value in list if not already wrapped
-                            if (uiValue.constructor !== Array) {
-                                uiValue = [uiValue];
+                widget.uploadAll({
+                    success: function() {
+                        // Assign values from the inputs to the job input
+                        var uiParams = widget.element.find(".gp-widget-task-param");
+                        for (var i = 0; i < uiParams.length; i++) {
+                            var uiParam = $(uiParams[i]);
+                            var uiInput = uiParam.find(".gp-widget-task-param-input");
+                            var uiValue = widget._getInputValue(uiInput);
+
+                            if (uiValue !== null) {
+                                // Wrap value in list if not already wrapped
+                                if (uiValue.constructor !== Array) {
+                                    uiValue = [uiValue];
+                                }
+
+                                var objParam = jobInput.params()[i];
+                                objParam.values(uiValue);
                             }
-
-                            var objParam = jobInput.params()[i];
-                            objParam.values(uiValue);
                         }
+
+                        // Submit the job input
+                        jobInput.submit({
+                            success: function(response, jobNumber) {
+                                //widget.successMessage("Job successfully submitted! Job ID: " + jobNumber);
+
+                                // Collapse the task widget
+                                widget.expandCollapse();
+
+                                // Create a new cell for the job widget
+                                var cell = Jupyter.notebook.insert_cell_below();
+
+                                // Set the code for the job widget
+                                var code = GenePattern.notebook.buildJobCode(jobNumber);
+                                cell.code_mirror.setValue(code);
+
+                                // Execute cell.
+                                cell.execute();
+                            },
+                            error: function(exception) {
+                                widget.errorMessage("Error submitting job: " + exception.statusText);
+                            }
+                        });
+                    },
+                    error: function(exception) {
+                        widget.errorMessage("Error uploading in preparation of job submission: " + exception.statusText);
                     }
-
-                    // Submit the job input
-                    jobInput.submit({
-                        success: function(response, jobNumber) {
-                            //widget.successMessage("Job successfully submitted! Job ID: " + jobNumber);
-
-                            // Collapse the task widget
-                            widget.expandCollapse();
-
-                            // Create a new cell for the job widget
-                            var cell = Jupyter.notebook.insert_cell_below();
-
-                            // Set the code for the job widget
-                            var code = GenePattern.notebook.buildJobCode(jobNumber);
-                            cell.code_mirror.setValue(code);
-
-                            // Execute cell.
-                            cell.execute();
-
-                            // Scroll to the new cell
-                            $('#site').animate({
-                                scrollTop: $(cell.element).position().top
-                            }, 500);
-                        },
-                        error: function(exception) {
-                            widget.errorMessage("Error submitting job: " + exception.statusText);
-                        }
-                    });
-                },
-                error: function(exception) {
-                    widget.errorMessage("Error uploading in preparation of job submission: " + exception.statusText);
-                }
+                });
             });
         },
 
