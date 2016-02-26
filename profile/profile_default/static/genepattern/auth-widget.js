@@ -73,7 +73,7 @@ define(["widgets/js/widget",
                                         .attr("data-placement", "bottom")
                                         .append(
                                             $("<span></span>")
-                                                .addClass("fa fa-arrow-up")
+                                                .addClass("fa fa-minus")
                                         )
                                         .tooltip()
                                         .click(function() {
@@ -285,8 +285,6 @@ define(["widgets/js/widget",
                 setTimeout(function() {
                     element.find(".panel-body").hide();
                     var indicator = element.find(".widget-slide-indicator").find("span");
-                    indicator.removeClass("fa-arrow-up");
-                    indicator.addClass("fa-arrow-down");
 
                     // Display the logged in message
                     // widget._displayLoggedIn();
@@ -572,14 +570,14 @@ define(["widgets/js/widget",
             var indicator = this.element.find(".widget-slide-indicator").find("span");
             if (toSlide.is(":hidden")) {
                 toSlide.slideDown();
-                indicator.removeClass("fa-arrow-down");
-                indicator.addClass("fa-arrow-up");
+                indicator.removeClass("fa-plus");
+                indicator.addClass("fa-minus");
                 this.element.find(".widget-code").slideUp();
             }
             else {
                 toSlide.slideUp();
-                indicator.removeClass("fa-arrow-up");
-                indicator.addClass("fa-arrow-down");
+                indicator.removeClass("fa-minus");
+                indicator.addClass("fa-plus");
             }
         },
 
@@ -605,7 +603,7 @@ define(["widgets/js/widget",
             }
             else {
                 // If normally collapsed
-                var collapsed = this.element.find(".widget-slide-indicator").find(".fa-arrow-down").length > 0;
+                var collapsed = this.element.find(".widget-slide-indicator").find(".fa-plus").length > 0;
                 if (collapsed) {
                     code.slideUp();
                 }

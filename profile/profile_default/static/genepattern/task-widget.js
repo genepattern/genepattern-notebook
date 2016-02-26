@@ -621,6 +621,7 @@ define(["widgets/js/widget",
                         // Mark the file as uploaded
                         var display = widget._singleDisplay(file);
                         widget._replaceValue(display, url);
+                        widget._updateCode();
 
                         if (pObj.success) {
                             pObj.success(response, url);
@@ -1119,10 +1120,15 @@ define(["widgets/js/widget",
      *      Dynamic Dropdowns
      */
     $.widget("gp.runTask", {
+        // Flags for whether events have been called on the widget
+        _widgetRendered: false,
+        _paramsLoaded: false,
+
         options: {
             lsid: null,
             name: null,
-            task: null
+            task: null,
+            cell: null
         },
 
         /**
@@ -1183,7 +1189,7 @@ define(["widgets/js/widget",
                                     .attr("data-placement", "bottom")
                                     .append(
                                         $("<span></span>")
-                                            .addClass("fa fa-arrow-up")
+                                            .addClass("fa fa-minus")
                                     )
                                     .tooltip()
                                     .click(function() {
@@ -1342,7 +1348,6 @@ define(["widgets/js/widget",
                     if (task !== null) {
                         widget._buildHeader();
                         widget._buildForm();
-                        $(widget.element).trigger("runTask.paramLoad");
                     }
                     else {
                         widget._showUninstalledMessage();
@@ -1356,6 +1361,7 @@ define(["widgets/js/widget",
 
             // Trigger gp.widgetRendered event on cell element
             setTimeout(function() {
+                widget._widgetRendered = true;
                 widget.element.closest(".cell").trigger("gp.widgetRendered");
             }, 10);
 
@@ -1455,13 +1461,13 @@ define(["widgets/js/widget",
             var indicator = this.element.find(".widget-slide-indicator").find("span");
             if (toSlide.is(":hidden")) {
                 toSlide.slideDown();
-                indicator.removeClass("fa-arrow-down");
-                indicator.addClass("fa-arrow-up");
+                indicator.removeClass("fa-plus");
+                indicator.addClass("fa-minus");
             }
             else {
                 toSlide.slideUp();
-                indicator.removeClass("fa-arrow-up");
-                indicator.addClass("fa-arrow-down");
+                indicator.removeClass("fa-minus");
+                indicator.addClass("fa-plus");
             }
         },
 
@@ -1608,7 +1614,7 @@ define(["widgets/js/widget",
          */
         _parseJobSpec: function() {
             var dict = {};
-            var code = this.element.closest(".cell").data("cell").code_mirror.getValue();
+            var code = this.options.cell.code_mirror.getValue();
             var lines = code.split("\n");
 
             for (var i = 0; i < lines.length; i++) {
@@ -1729,6 +1735,8 @@ define(["widgets/js/widget",
                         if (Object.keys(reloadVals).length == 0) {
                             widget._addJobSpec(params);
                         }
+                        widget._paramsLoaded = true;
+                        $(widget.element).trigger("runTask.paramLoad");
                     },
                     error: function(exception) {
                         widget.errorMessage("Could not load task: " + exception.statusText);
@@ -1766,7 +1774,7 @@ define(["widgets/js/widget",
          * @private
          */
         _addJobSpec: function(params) {
-            var code = this.element.closest(".cell").data("cell").code_mirror.getValue();
+            var code = this.options.cell.code_mirror.getValue();
             var lines = code.split("\n");
             var jobSpecName = null;
             var insertAfter = null;
@@ -1805,7 +1813,7 @@ define(["widgets/js/widget",
 
             // Set the new code
             code = lines.join("\n");
-            this.element.closest(".cell").data("cell").code_mirror.setValue(code);
+            this.options.cell.code_mirror.setValue(code);
 
             return code;
         },
@@ -1817,7 +1825,7 @@ define(["widgets/js/widget",
          * @param value
          */
         updateCode: function(paramName, value) {
-            var code = this.element.closest(".cell").data("cell").code_mirror.getValue();
+            var code = this.options.cell.code_mirror.getValue();
             var lines = code.split("\n");
             var jobSpecName = null;
             var codeToLookFor = '.set_parameter("' + paramName + '"';
@@ -1880,7 +1888,7 @@ define(["widgets/js/widget",
 
             // Set the new code
             code = lines.join("\n");
-            this.element.closest(".cell").data("cell").code_mirror.setValue(code);
+            this.options.cell.code_mirror.setValue(code);
 
             return code;
         },
@@ -1897,7 +1905,7 @@ define(["widgets/js/widget",
             var message = this.element.find(".gp-widget-task-message");
 
             if (code.is(":hidden")) {
-                this.element.closest(".cell").data("cell").code_mirror.refresh();
+                this.options.cell.code_mirror.refresh();
                 var raw = this.element.closest(".cell").find(".input").html();
                 code.html(raw);
 
@@ -1937,7 +1945,7 @@ define(["widgets/js/widget",
                 code.slideUp();
             }
 
-            var collapsed = this.element.find(".widget-slide-indicator").find(".fa-arrow-down").length > 0;
+            var collapsed = this.element.find(".widget-slide-indicator").find(".fa-plus").length > 0;
             if (collapsed) {
                 this.expandCollapse();
             }
@@ -2085,7 +2093,7 @@ define(["widgets/js/widget",
                 if (required) {
                     var input = param.find(".gp-widget-task-param-input");
                     var value = this._getInputValue(input);
-                    if (value === null || value === "") {
+                    if (value === null || value === "" || value.length === 0) {
                         param.addClass("gp-widget-task-param-missing");
                         missing.push(param.attr("name"));
                         validated = false;
@@ -2188,59 +2196,59 @@ define(["widgets/js/widget",
          * Submit the Run Task form to the server
          */
         submit: function() {
-            // Create the job input
-            var task = GenePattern.task(this.options.lsid);
-            var jobInput = task.jobInput();
             var widget = this;
 
-            this.uploadAll({
-                success: function() {
-                    // Assign values from the inputs to the job input
-                    var uiParams = widget.element.find(".gp-widget-task-param");
-                    for (var i = 0; i < uiParams.length; i++) {
-                        var uiParam = $(uiParams[i]);
-                        var uiInput = uiParam.find(".gp-widget-task-param-input");
-                        var uiValue = widget._getInputValue(uiInput);
+            // Create the job input
+            widget.getTask(function(task) {
+                var jobInput = task.jobInput();
 
-                        if (uiValue !== null) {
-                            // Wrap value in list if not already wrapped
-                            if (uiValue.constructor !== Array) {
-                                uiValue = [uiValue];
+                widget.uploadAll({
+                    success: function() {
+                        // Assign values from the inputs to the job input
+                        var uiParams = widget.element.find(".gp-widget-task-param");
+                        for (var i = 0; i < uiParams.length; i++) {
+                            var uiParam = $(uiParams[i]);
+                            var uiInput = uiParam.find(".gp-widget-task-param-input");
+                            var uiValue = widget._getInputValue(uiInput);
+
+                            if (uiValue !== null) {
+                                // Wrap value in list if not already wrapped
+                                if (uiValue.constructor !== Array) {
+                                    uiValue = [uiValue];
+                                }
+
+                                var objParam = jobInput.params()[i];
+                                objParam.values(uiValue);
                             }
-
-                            var objParam = jobInput.params()[i];
-                            objParam.values(uiValue);
                         }
+
+                        // Submit the job input
+                        jobInput.submit({
+                            success: function(response, jobNumber) {
+                                //widget.successMessage("Job successfully submitted! Job ID: " + jobNumber);
+
+                                // Collapse the task widget
+                                widget.expandCollapse();
+
+                                // Create a new cell for the job widget
+                                var cell = Jupyter.notebook.insert_cell_below();
+
+                                // Set the code for the job widget
+                                var code = GenePattern.notebook.buildJobCode(jobNumber);
+                                cell.code_mirror.setValue(code);
+
+                                // Execute cell.
+                                cell.execute();
+                            },
+                            error: function(exception) {
+                                widget.errorMessage("Error submitting job: " + exception.statusText);
+                            }
+                        });
+                    },
+                    error: function(exception) {
+                        widget.errorMessage("Error uploading in preparation of job submission: " + exception.statusText);
                     }
-
-                    // Submit the job input
-                    jobInput.submit({
-                        success: function(response, jobNumber) {
-                            widget.successMessage("Job successfully submitted! Job ID: " + jobNumber);
-
-                            // Create a new cell for the job widget
-                            var cell = Jupyter.notebook.insert_cell_below();
-
-                            // Set the code for the job widget
-                            var code = GenePattern.notebook.buildJobCode(jobNumber);
-                            cell.code_mirror.setValue(code);
-
-                            // Execute cell.
-                            cell.execute();
-
-                            // Scroll to the new cell
-                            $('#site').animate({
-                                scrollTop: $(cell.element).position().top
-                            }, 500);
-                        },
-                        error: function(exception) {
-                            widget.errorMessage("Error submitting job: " + exception.statusText);
-                        }
-                    });
-                },
-                error: function(exception) {
-                    widget.errorMessage("Error uploading in preparation of job submission: " + exception.statusText);
-                }
+                });
             });
         },
 
@@ -2335,12 +2343,14 @@ define(["widgets/js/widget",
                     // Determine which identifier is used
                     if (lsid) {
                         this.$el.runTask({
-                            lsid: lsid
+                            lsid: lsid,
+                            cell: this.options.cell
                         });
                     }
                     else {
                         this.$el.runTask({
-                            name: name
+                            name: name,
+                            cell: this.options.cell
                         });
                     }
 

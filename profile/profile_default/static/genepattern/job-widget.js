@@ -122,7 +122,7 @@ define([
                                             .attr("data-placement", "bottom")
                                             .append(
                                                 $("<span></span>")
-                                                    .addClass("fa fa-arrow-up")
+                                                    .addClass("fa fa-minus")
                                             )
                                             .tooltip()
                                             .click(function() {
@@ -316,13 +316,13 @@ define([
             var indicator = this.element.find(".widget-slide-indicator").find("span");
             if (toSlide.is(":hidden")) {
                 toSlide.slideDown();
-                indicator.removeClass("fa-arrow-down");
-                indicator.addClass("fa-arrow-up");
+                indicator.removeClass("fa-plus");
+                indicator.addClass("fa-minus");
             }
             else {
                 toSlide.slideUp();
-                indicator.removeClass("fa-arrow-up");
-                indicator.addClass("fa-arrow-down");
+                indicator.removeClass("fa-minus");
+                indicator.addClass("fa-plus");
             }
         },
 
@@ -663,7 +663,7 @@ define([
                 code.slideUp();
             }
 
-            var collapsed = this.element.find(".widget-slide-indicator:first").find(".fa-arrow-down").length > 0;
+            var collapsed = this.element.find(".widget-slide-indicator:first").find(".fa-plus").length > 0;
             if (collapsed) {
                 this.expandCollapse();
             }

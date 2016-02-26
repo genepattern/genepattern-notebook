@@ -514,7 +514,7 @@ GenePattern.notebook.changeGenePatternPrompt = function() {
         buttons : {
             "Cancel" : {},
             "Change Cell Type" : {
-                "class" : "btn-danger",
+                "class" : "btn-warning",
                 "click" : function() {
                     if (GenePattern.authenticated) {
                         GenePattern.notebook.widgetSelectDialog(cell);
@@ -780,11 +780,24 @@ GenePattern.notebook.buildMenu = function(widget, element, name, href, kind, ind
                     cell.element.on("gp.widgetRendered", function() {
                         var widgetElement = cell.element.find(".gp-widget");
                         var widget = widgetElement.data("widget");
-                        widgetElement.on("runTask.paramLoad", function() {
+
+                        // Define what to do to receive the file
+                        var receiveFile = function() {
                             setTimeout(function() {
                                 widget.receiveFile(element.attr("href"), fixedKind);
                             }, 100);
-                        });
+                        };
+
+                        // Check to see whether params have already been loaded
+                        var alreadyLoaded = widget._paramsLoaded;
+
+                        // If already loaded, receive file
+                        if (alreadyLoaded) {
+                            receiveFile();
+                        }
+
+                        // Otherwise wait until they are loaded.
+                        widgetElement.on("runTask.paramLoad", receiveFile);
                     });
                     cell.execute();
                 }, 10);
