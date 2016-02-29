@@ -640,6 +640,13 @@ GenePattern.notebook.buildMenu = function(widget, element, name, href, kind, ind
                 .append(
                     $("<a></a>")
                         .addClass("list-group-item")
+                        .text("Download File")
+                        .attr("href", href + "?download")
+                        .attr("target", "_blank")
+                )
+                .append(
+                    $("<a></a>")
+                        .addClass("list-group-item")
                         .text("Open in New Tab")
                         .attr("href", href)
                         .attr("target", "_blank")
@@ -657,6 +664,13 @@ GenePattern.notebook.buildMenu = function(widget, element, name, href, kind, ind
                 $("<label></label>")
                     .text(name)
             )
+            .append(
+                $("<a></a>")
+                    .addClass("list-group-item")
+                    .text("Download File")
+                    .attr("href", href + "?download")
+                    .attr("target", "_blank")
+                )
             .append(
                 $("<a></a>")
                     .addClass("list-group-item")
