@@ -982,6 +982,7 @@ define([
 
             if (outputs) {
                 for (var i = 0; i < outputs.length; i++) {
+                    var wrapper = $("<div></div>");
                     var indexString = i.toString();
                     var output = outputs[i];
                     var link = $("<a></a>")
@@ -1001,8 +1002,8 @@ define([
                     // Build and attach the file menu
                     GenePattern.notebook.buildMenu(widget, link, output["link"]["name"], output["link"]["href"], output["kind"], indexString, fullMenu);
 
-                    link.appendTo(outputsList);
-                    $("<br/>").appendTo(outputsList);
+                    link.appendTo(wrapper);
+                    wrapper.appendTo(outputsList);
                 }
             }
             else {
