@@ -1076,7 +1076,8 @@ require(["jquery"], function() {
             }
             return {
                 lsid: lsid,
-                params: params
+                params: params,
+                tags: ["GenePattern Notebook"]
             };
         };
 
