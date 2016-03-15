@@ -11,18 +11,39 @@
  * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not
  * responsible for its use, misuse, or functionality.
  */
+var GenePattern = GenePattern || {};
+GenePattern.notebook = GenePattern.notebook || {};
 
-// Add shim to support Jupyter 3.x and 4.x
+// Add shim to support Jupyter 4.x
 var Jupyter = Jupyter || IPython || {};
 
-// Add file path shim for Jupyter 3/4
-var STATIC_PATH = location.origin;
-if (Jupyter.version >= "4.0.0") {
-    STATIC_PATH += Jupyter.contents.base_url + "custom/genepattern/";
-}
-else STATIC_PATH += "/static/genepattern/";
+// The GenePattern theme is only supported in Jupyter 4+
+var STATIC_PATH = "../custom/genepattern/";
+
+/**
+ * Attaches the loading screen
+ *
+ * @returns {*|jQuery}
+ */
+GenePattern.notebook.loadingScreen = function() {
+    return $("<div></div>")
+        .addClass("loading-screen")
+        .append(
+            $("<img/>")
+                .attr("src", STATIC_PATH + "GP_logo_on_black.png")
+        );
+};
 
 require(["jquery"], function() {
+    $("head")
+    // Import styles used by GenePattern theme
+    .append(
+        $('<link rel="stylesheet" type="text/css" />')
+            .attr("rel", "stylesheet")
+            .attr("type", "text/css")
+            .attr('href', STATIC_PATH + 'gp-theme.css')
+    );
+
     // Add the loading screen
     $("body").append(GenePattern.notebook.loadingScreen());
 
@@ -40,7 +61,7 @@ require(["jquery"], function() {
                 var cells = Jupyter.notebook.get_cells();
                 $.each(cells, function(i, cell) {
                     var code = cell.get_text();
-                    if (Jupyter.notebook.get_cells()[0].get_text().indexOf("GPAuthWidget(") > -1) {
+                    if (Jupyter.notebook.get_cells()[0].get_text().indexOf("%reload_ext genepattern") > -1) {
                         authWidgetFound = true;
                     }
                 });
@@ -49,7 +70,7 @@ require(["jquery"], function() {
             // Add a new auth widget
             if (!authWidgetFound) {
                 var cell = Jupyter.notebook.insert_cell_above("code", 0);
-                var code = GenePattern.notebook.init.buildCode("http://genepattern.broadinstitute.org/gp", "", "");
+                var code = "%reload_ext genepattern";
                 cell.code_mirror.setValue(code);
                 cell.execute();
             }

@@ -1,14 +1,14 @@
-/*/!**/
- /** Import the styles used by the GenePattern notebook skin*/
- /**!/*/
- /*@import url("/static/genepattern/gp-navigation.css");*/
+/*
+ * Import the styles used by the GenePattern notebook skin
+ */
+ @import url("../custom/genepattern/gp-navigation.css");
 
-/*/!**/
- /** Import the styles used by the GenePattern widgets*/
- /**!/*/
-/*@import url("/static/genepattern/gp-widget.css");*/
+/*
+ * Import the styles used by the GenePattern widgets
+ */
+@import url("../custom/genepattern/gp-widget.css");
 
-/*/!**/
- /** Import the styles used by the GenePattern notebook skin*/
- /**!/*/
- /*/!*@import url("/static/genepattern/gp-theme.css");*!/*/
+/*
+ * Import the styles used by the GenePattern notebook skin
+ */
+ @import url("../custom/genepattern/gp-theme.css");

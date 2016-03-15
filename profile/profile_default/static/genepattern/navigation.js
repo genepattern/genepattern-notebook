@@ -25,20 +25,6 @@ if (Jupyter.version >= "4.0.0") {
 else STATIC_PATH += "/static/genepattern/";
 
 /**
- * Attaches the loading screen
- *
- * @returns {*|jQuery}
- */
-GenePattern.notebook.loadingScreen = function() {
-    return $("<div></div>")
-        .addClass("loading-screen")
-        .append(
-            $("<img/>")
-                .attr("src", STATIC_PATH + "GP_logo_on_black.png")
-        );
-};
-
-/**
  * Attach the left-hand slider tab
  *
  * @returns {*|jQuery}
