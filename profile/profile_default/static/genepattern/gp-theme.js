@@ -72,7 +72,9 @@ require(["jquery"], function() {
                 var cell = Jupyter.notebook.insert_cell_above("code", 0);
                 var code = "%reload_ext genepattern";
                 cell.code_mirror.setValue(code);
-                cell.execute();
+                setTimeout(function () {
+                    Jupyter.notebook.get_cell(0).execute();
+                }, 1000);
             }
         }, 1);
     });
@@ -81,7 +83,12 @@ require(["jquery"], function() {
     if ($(document).find("#notebooks").length > 0 || $("#texteditor-container").length > 0) {
         // Hide the loading screen
         setTimeout(function () {
-            $(".loading-screen").toggle("fade");
+            $(".loading-screen").hide("fade");
         }, 100);
     }
+
+    // Backup attempt to fade loading screen if it's still up after two seconds
+    setTimeout(function () {
+        $(".loading-screen").hide("fade");
+    }, 2000);
 });

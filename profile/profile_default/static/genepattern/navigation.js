@@ -1021,7 +1021,7 @@ GenePattern.notebook.init.launch_init = function() {
 
     // Hide the loading screen
     setTimeout(function () {
-        $(".loading-screen").toggle("fade");
+        $(".loading-screen").hide("fade");
     }, 100);
 };
 
