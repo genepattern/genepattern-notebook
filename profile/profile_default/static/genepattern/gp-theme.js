@@ -76,4 +76,12 @@ require(["jquery"], function() {
             }
         }, 1);
     });
+
+    // If the notebook listing page, display with alternate event model
+    if ($(document).find("#notebooks").length > 0 || $("#texteditor-container").length > 0) {
+        // Hide the loading screen
+        setTimeout(function () {
+            $(".loading-screen").toggle("fade");
+        }, 100);
+    }
 });

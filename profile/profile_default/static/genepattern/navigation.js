@@ -1033,7 +1033,7 @@ requirejs([
     STATIC_PATH + "job-widget.js",
     STATIC_PATH + "task-widget.js"], function() {
     // If in a notebook, display with the full event model
-    //$([IPython.events]).on('kernel_ready.Kernel kernel_created.Session notebook_loaded.Notebook', GenePattern.notebook.init.notebook_init_wrapper);
+    $([IPython.events]).on('kernel_ready.Kernel kernel_created.Session notebook_loaded.Notebook', GenePattern.notebook.init.notebook_init_wrapper);
 
     // If the notebook listing page, display with alternate event model
     if ($(document).find("#notebooks").length > 0) {
