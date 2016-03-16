@@ -908,6 +908,15 @@ define([
             // Check if the visualizer has already been displayed
             var displayed = viewerDiv.find("iframe").length > 0;
 
+            // Check whether the launchUrl is relative
+            if (launchUrl.indexOf("/") === 0) {
+                // Get server launchUrl without /gp
+                launchUrl = launchUrl.slice(3);
+
+                // Make into a full URL
+                launchUrl = GenePattern.server() + launchUrl;
+            }
+
             // Display the visualizer if not already displayed
             if (!displayed) {
                 viewerDiv.append(
