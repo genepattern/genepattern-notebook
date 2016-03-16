@@ -11,7 +11,7 @@ responsible for its use, misuse, or functionality.
 
 __author__ = 'Thorin Tabor'
 __copyright__ = 'Copyright 2015-2016, Broad Institute'
-__version__ = '0.4.6'
+__version__ = '0.4.7'
 __status__ = 'Beta'
 __license__ = 'BSD'
 
