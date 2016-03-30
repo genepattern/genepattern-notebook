@@ -1,3 +1,6 @@
+[![Version](https://img.shields.io/pypi/v/genepattern-notebook.svg)](https://pypi.python.org/pypi/genepattern-notebook)
+[![Downloads](https://img.shields.io/pypi/dm/genepattern-notebook.svg)](https://pypi.python.org/pypi/genepattern-notebook)
+
 GenePattern Notebook
 ====================
 
