@@ -25,20 +25,6 @@ if (Jupyter.version >= "4.0.0") {
 else STATIC_PATH += "/static/genepattern/";
 
 /**
- * Attaches the loading screen
- *
- * @returns {*|jQuery}
- */
-GenePattern.notebook.loadingScreen = function() {
-    return $("<div></div>")
-        .addClass("loading-screen")
-        .append(
-            $("<img/>")
-                .attr("src", STATIC_PATH + "GP_logo_on_black.png")
-        );
-};
-
-/**
  * Attach the left-hand slider tab
  *
  * @returns {*|jQuery}
@@ -501,56 +487,41 @@ GenePattern.notebook.updateSliderData = function(url, value) {
     }
 };
 
-GenePattern.notebook.changeGenePatternPrompt = function() {
+GenePattern.notebook.toGenePatternCell = function() {
     var dialog = require('base/js/dialog');
     var cell = Jupyter.notebook.get_selected_cell();
 
-    dialog.modal({
-        notebook: Jupyter.notebook,
-        keyboard_manager: this.keyboard_manager,
-        title : "Change to GenePattern Widget?",
-        body : "Are you sure you want to change this cell's type to a GenePattern widget? This will cause " +
-                "you to lose any code or other information already entered into the cell.",
-        buttons : {
-            "Cancel" : {},
-            "Change Cell Type" : {
-                "class" : "btn-warning",
-                "click" : function() {
-                    if (GenePattern.authenticated) {
-                        GenePattern.notebook.widgetSelectDialog(cell);
-                    }
-                    else {
-                        // Get the auth widget code
-                        var code = GenePattern.notebook.init.buildCode("http://genepattern.broadinstitute.org/gp", "", "");
+    if (GenePattern.authenticated) {
+        GenePattern.notebook.widgetSelectDialog(cell);
+    }
+    else {
+        // Get the auth widget code
+        var code = GenePattern.notebook.init.buildCode("http://genepattern.broadinstitute.org/gp", "", "");
 
-                        // Put the code in the cell
-                        cell.code_mirror.setValue(code);
+        // Put the code in the cell
+        cell.code_mirror.setValue(code);
 
-                        function isWidgetPresent() { return cell.element.find(".gp-widget").length > 0; }
-                        function isRunning() { return cell.element.hasClass("running") }
+        function isWidgetPresent() { return cell.element.find(".gp-widget").length > 0; }
+        function isRunning() { return cell.element.hasClass("running") }
 
-                        var widgetPresent = isWidgetPresent();
-                        var running = isRunning();
+        var widgetPresent = isWidgetPresent();
+        var running = isRunning();
 
-                        function ensure_widget() {
-                            if (!widgetPresent && !running) {
-                                cell.execute();
-                            }
-                            if (!widgetPresent) {
-                                setTimeout(function() {
-                                    widgetPresent = isWidgetPresent();
-                                    running = isRunning();
-                                    ensure_widget();
-                                }, 500);
-                            }
-                        }
-
-                        ensure_widget();
-                    }
-                }
+        function ensure_widget() {
+            if (!widgetPresent && !running) {
+                cell.execute();
+            }
+            if (!widgetPresent) {
+                setTimeout(function() {
+                    widgetPresent = isWidgetPresent();
+                    running = isRunning();
+                    ensure_widget();
+                }, 500);
             }
         }
-    });
+
+        ensure_widget();
+    }
 };
 
 /**
@@ -655,6 +626,13 @@ GenePattern.notebook.buildMenu = function(widget, element, name, href, kind, ind
                 .append(
                     $("<a></a>")
                         .addClass("list-group-item")
+                        .text("Download File")
+                        .attr("href", href + "?download")
+                        .attr("target", "_blank")
+                )
+                .append(
+                    $("<a></a>")
+                        .addClass("list-group-item")
                         .text("Open in New Tab")
                         .attr("href", href)
                         .attr("target", "_blank")
@@ -672,6 +650,13 @@ GenePattern.notebook.buildMenu = function(widget, element, name, href, kind, ind
                 $("<label></label>")
                     .text(name)
             )
+            .append(
+                $("<a></a>")
+                    .addClass("list-group-item")
+                    .text("Download File")
+                    .attr("href", href + "?download")
+                    .attr("target", "_blank")
+                )
             .append(
                 $("<a></a>")
                     .addClass("list-group-item")
@@ -890,7 +875,7 @@ GenePattern.notebook.init.notebook_init_wrapper = function () {
             help : 'to GenePattern',
             help_index : 'cc',
             handler : function () {
-                GenePattern.notebook.changeGenePatternPrompt();
+                GenePattern.notebook.toGenePatternCell();
                 return false;
             }}
         );
@@ -1014,7 +999,7 @@ GenePattern.notebook.init.launch_init = function() {
             var type = $(event.target).find(":selected").text();
             if (type === "GenePattern") {
                 // DO ACTION
-                GenePattern.notebook.changeGenePatternPrompt();
+                GenePattern.notebook.toGenePatternCell();
             }
         });
 
@@ -1029,14 +1014,14 @@ GenePattern.notebook.init.launch_init = function() {
             .append(
                 $("<li id='to_genepattern' title='Insert a GenePattern widget cell'><a href='#'>GenePattern</a></option>")
                     .click(function() {
-                        GenePattern.notebook.changeGenePatternPrompt();
+                        GenePattern.notebook.toGenePatternCell();
                     })
             );
     }
 
     // Hide the loading screen
     setTimeout(function () {
-        $(".loading-screen").toggle("fade");
+        $(".loading-screen").hide("fade");
     }, 100);
 };
 
@@ -1048,7 +1033,7 @@ requirejs([
     STATIC_PATH + "job-widget.js",
     STATIC_PATH + "task-widget.js"], function() {
     // If in a notebook, display with the full event model
-    //$([IPython.events]).on('kernel_ready.Kernel kernel_created.Session notebook_loaded.Notebook', GenePattern.notebook.init.notebook_init_wrapper);
+    $([IPython.events]).on('kernel_ready.Kernel kernel_created.Session notebook_loaded.Notebook', GenePattern.notebook.init.notebook_init_wrapper);
 
     // If the notebook listing page, display with alternate event model
     if ($(document).find("#notebooks").length > 0) {

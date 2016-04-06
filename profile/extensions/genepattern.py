@@ -11,9 +11,9 @@ responsible for its use, misuse, or functionality.
 
 __author__ = 'Thorin Tabor'
 __copyright__ = 'Copyright 2015-2016, Broad Institute'
-__version__ = '0.4.7'
+__version__ = '0.4.8'
 __status__ = 'Beta'
-__license__ = 'BSD'
+__license__ = 'BSD-style'
 
 from gp import GPResource
 import os
@@ -249,7 +249,7 @@ def download_client_files():
         os.makedirs(client_dir)
 
     # Get the necessary file list in JSON
-    list_url = 'https://api.github.com/repos/genepattern/genepattern-notebook/contents/profile/profile_default/static/genepattern?ref=' + __version__ # 'develop'
+    list_url = 'https://api.github.com/repos/genepattern/genepattern-notebook/contents/profile/profile_default/static/genepattern?ref=' + __version__  # 'develop'
     try:
         request = urllib2.Request(list_url)
         response = urllib2.urlopen(request)
