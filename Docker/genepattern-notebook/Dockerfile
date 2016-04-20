@@ -63,13 +63,14 @@ RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
 
 
 #RUN pip3 install ipython[all]==3.2
-RUN pip3 install jupyter
+RUN pip3 install notebook==4.1
+RUN pip3 install ipywidgets==4.1.1
 
-#RUN pip2 install -i https://testpypi.python.org/pypi genepattern-notebook && \
-#	pip install -i https://testpypi.python.org/pypi genepattern-notebook && \
-#	pip3 install -i https://testpypi.python.org/pypi genepattern-notebook
+#RUN pip2 install genepattern-notebook && \
+#	pip install genepattern-notebook && \
+#	pip3 install genepattern-notebook
 
-RUN pip3 install -i https://testpypi.python.org/pypi genepattern-notebook
+RUN pip3 install genepattern-notebook
 
 
 #add a notebook profile
@@ -83,4 +84,4 @@ WORKDIR /notebooks
 EXPOSE 8888
 
 ENTRYPOINT ["tini", "--"]
-CMD ["ipython", "notebook", "--port=8888", "--no-browser", "--ip=0.0.0.0"]
+CMD ["jupyter", "notebook", "--port=8888", "--no-browser", "--ip=0.0.0.0"]
