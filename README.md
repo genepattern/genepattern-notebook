@@ -12,6 +12,11 @@ GenePattern Notebooks are built on the [Jupyter Notebook](https://jupyter.org/) 
 of use and ability to encapsulate an entire scientific research narrative, without the need 
 to write code.
 
+ ***NOTE:*** On April 15th a new version of Jupyter Notebook environment was released (4.2). 
+ This version includes major updates to Jupyter's extension and widget frameworks. As a 
+ consequence, the current version the GenePattern Notebook extension isn't fully compatible with 
+ the new release. We are working to update GenePattern Notebook to fix this as soon as possible.
+
 # Installation
 
 Full installation instructions for casual use are detailed on the 
