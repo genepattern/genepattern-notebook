@@ -859,14 +859,17 @@ GenePattern.notebook.init.main_init_wrapper = function(evt) {
     GenePattern.notebook.init.launch_init(evt);
 
     // Mark init as done
-    GenePattern.notebook.init.launch_init.done_init = true;
+    GenePattern.notebook.init.done_init = true;
 };
 
 /**
  * Initialize GenePattern Notebook from the notebook page
  */
 GenePattern.notebook.init.notebook_init_wrapper = function () {
-    if (!GenePattern.notebook.init.launch_init.done_init  && Jupyter.notebook.kernel) {
+    if (!GenePattern.notebook.init.done_init  && Jupyter.notebook.kernel) {
+        // Mark init as done
+        GenePattern.notebook.init.done_init = true;
+
         // Call the core init function
         GenePattern.notebook.init.launch_init();
 
@@ -903,9 +906,6 @@ GenePattern.notebook.init.notebook_init_wrapper = function () {
                 $("#slider").hide("slide");
             }
         });
-
-        // Mark init as done
-        GenePattern.notebook.init.launch_init.done_init = true;
     }
 };
 

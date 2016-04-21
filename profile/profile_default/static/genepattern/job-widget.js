@@ -22,12 +22,10 @@ if (Jupyter.version >= "4.0.0") {
 }
 else STATIC_PATH += "/static/genepattern/";
 
-define([
-    "widgets/js/widget",
-    "widgets/js/manager",
-    "jqueryui",
-    STATIC_PATH + "gp.js",
-    STATIC_PATH + "navigation.js"], function (widget, manager) {
+define("gp_job", ["jupyter-js-widgets",
+                  "jqueryui",
+                  STATIC_PATH + "gp.js",
+                  STATIC_PATH + "navigation.js"], function (widgets) {
 
     /**
      * Widget for viewing the job results of a launched job.
@@ -1093,56 +1091,30 @@ define([
         }
     });
 
-    var DOMWidgetView = widget.DOMWidgetView;
-    var WidgetManager = Jupyter.WidgetManager;
+    var JobWidgetView = widgets.DOMWidgetView.extend({
+        render: function () {
+            // Render the view.
+            this.setElement($('<div></div>'));
+            var jobNumber = this.model.get('job_number');
+            $(this.$el).jobResults({
+                jobNumber: jobNumber
+            });
 
-    function register_widget() {
-        var JobWidgetView = DOMWidgetView.extend({
-            render: function () {
-                // Double check to make sure that this is the correct cell
-                if ($(this.options.cell.element).hasClass("running")) {
-                    // Render the view.
-                    this.setElement($('<div></div>'));
-                    var jobNumber = this.model.get('job_number');
-                    this.$el.jobResults({
-                        jobNumber: jobNumber
-                    });
-
-                    // Hide the code by default
-                    var element = this.$el;
-                    setTimeout(function() {
-                        // Protect against the "double render" bug in Jupyter 3.2.1
-                        element.parent().find(".gp-widget-job:not(:first-child)").remove();
-
-                        // Hide the code
-                        element.closest(".cell").find(".input")
-                            .css("height", "0")
-                            .css("overflow", "hidden");
-                    }, 1);
-                }
-            }
-        });
-
-        // Register the JobWidgetView with the widget manager.
-        WidgetManager.register_widget_view('JobWidgetView', JobWidgetView);
-    }
-
-    function wait_until_ready() {
-        if (WidgetManager && DOMWidgetView) {
-            register_widget();
-        }
-        else {
+            // Hide the code by default
+            var element = this.$el;
             setTimeout(function() {
-                DOMWidgetView = Jupyter.DOMWidgetView;
-                WidgetManager = Jupyter.WidgetManager;
+                // Protect against the "double render" bug in Jupyter 3.2.1
+                element.parent().find(".gp-widget-job:not(:first-child)").remove();
 
-                wait_until_ready();
-            }, 200);
+                // Hide the code
+                element.closest(".cell").find(".input")
+                    .css("height", "0")
+                    .css("overflow", "hidden");
+            }, 1);
         }
+    });
+
+    return {
+        JobWidgetView: JobWidgetView
     }
-
-    // Ensure that everything is loaded correctly before registering the widget
-    wait_until_ready();
-
-    return {};
 });

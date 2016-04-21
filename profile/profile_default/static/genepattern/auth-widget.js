@@ -4,7 +4,7 @@
  * @author Thorin Tabor
  * @requires - jQuery, navigation.js
  *
- * Copyright 2015 The Broad Institute, Inc.
+ * Copyright 2015-2016 The Broad Institute, Inc.
  *
  * SOFTWARE COPYRIGHT NOTICE
  * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
@@ -22,11 +22,10 @@ if (Jupyter.version >= "4.0.0") {
 }
 else STATIC_PATH += "/static/genepattern/";
 
-define(["widgets/js/widget",
-        "widgets/js/manager",
-        "jqueryui",
-        STATIC_PATH + "gp.js",
-        STATIC_PATH + "navigation.js"], function (widget, manager) {
+define("gp_auth", ["jupyter-js-widgets",
+                   "jqueryui",
+                   STATIC_PATH + "gp.js",
+                   STATIC_PATH + "navigation.js"], function (widgets) {
 
     $.widget("gp.auth", {
         options: {
@@ -887,63 +886,37 @@ define(["widgets/js/widget",
         });
     };
 
-    var DOMWidgetView = widget.DOMWidgetView;
-    var WidgetManager = Jupyter.WidgetManager;
+    var AuthWidgetView = widgets.DOMWidgetView.extend({
+        render: function () {
+            var cell = this.options.cell;
 
-    function register_widget() {
-        var AuthWidgetView = DOMWidgetView.extend({
-            render: function () {
-                var cell = this.options.cell;
-
-                // Double check to make sure that this is the correct cell
-                if ($(cell.element).hasClass("running")) {
-                    // Check to see if this auth widget was manually created, if so replace with full code
-                    if (cell.code_mirror.getValue().indexOf("# !AUTOEXEC") === -1) {
-                        var code = GenePattern.notebook.init.buildCode("http://genepattern.broadinstitute.org/gp", "", "");
-                        cell.code_mirror.setValue(code);
-                        cell.execute();
-                    }
-
-                    // Render the view.
-                    this.setElement($('<div></div>'));
-                    this.$el.auth({
-                        cell: this.options.cell
-                    });
-
-                    // Hide the code by default
-                    var element = this.$el;
-                    setTimeout(function() {
-                        // Protect against the "double render" bug in Jupyter 3.2.1
-                        element.parent().find(".gp-widget-auth:not(:first-child)").remove();
-
-                        element.closest(".cell").find(".input")
-                            .css("height", "0")
-                            .css("overflow", "hidden");
-                    }, 1);
-                }
+            // Check to see if this auth widget was manually created, if so replace with full code
+            if (cell.code_mirror.getValue().indexOf("# !AUTOEXEC") === -1) {
+                var code = GenePattern.notebook.init.buildCode("http://genepattern.broadinstitute.org/gp", "", "");
+                cell.code_mirror.setValue(code);
+                cell.execute();
             }
-        });
 
-        // Register the JobWidgetView with the widget manager.
-        WidgetManager.register_widget_view('AuthWidgetView', AuthWidgetView);
-    }
+            // Render the view.
+            this.setElement($('<div></div>'));
+            $(this.$el).auth({
+                cell: cell
+            });
 
-    function wait_until_ready() {
-        if (WidgetManager && DOMWidgetView) {
-            register_widget();
-        }
-        else {
+            // Hide the code by default
+            var element = this.$el;
             setTimeout(function() {
-                DOMWidgetView = Jupyter.DOMWidgetView;
-                WidgetManager = Jupyter.WidgetManager;
+                // Protect against the "double render" bug in Jupyter 3.2.1
+                element.parent().find(".gp-widget-auth:not(:first-child)").remove();
 
-                wait_until_ready();
-            }, 200);
+                element.closest(".cell").find(".input")
+                    .css("height", "0")
+                    .css("overflow", "hidden");
+            }, 1);
         }
+    });
+
+    return {
+        AuthWidgetView: AuthWidgetView
     }
-
-    // Ensure that everything is loaded correctly before registering the widget
-    wait_until_ready();
-
-    return {};
 });

@@ -56,7 +56,7 @@ requirejs([
 
     // Otherwise, if not initialized after two seconds, manually init
     setTimeout(function() {
-        if (!GenePattern.notebook.init.launch_init.done_init  && Jupyter.notebook.kernel) {
+        if (!GenePattern.notebook.init.done_init  && Jupyter.notebook.kernel) {
             GenePattern.notebook.init.notebook_init_wrapper();
         }
     }, 2000);

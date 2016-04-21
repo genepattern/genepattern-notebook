@@ -11,7 +11,7 @@ responsible for its use, misuse, or functionality.
 
 __author__ = 'Thorin Tabor'
 __copyright__ = 'Copyright 2015-2016, Broad Institute'
-__version__ = '0.4.8'
+__version__ = '0.5.0'
 __status__ = 'Beta'
 __license__ = 'BSD-style'
 
@@ -82,7 +82,8 @@ class GPAuthWidget(GPResource, widgets.DOMWidget):
     Contains methods to get the info of the job, and to wait on a running job by
     polling the server until the job is completed.
     """
-    _view_name = Unicode('AuthWidgetView', sync=True)  # Define the widget's view
+    _view_name = Unicode('AuthWidgetView').tag(sync=True)
+    _view_module = Unicode('gp_auth').tag(sync=True)
 
     def __init__(self, uri, **kwargs):
         super(GPAuthWidget, self).__init__(uri)
@@ -93,14 +94,6 @@ class GPAuthWidget(GPResource, widgets.DOMWidget):
         self.on_msg(self._handle_custom_msg)
 
     def _handle_custom_msg(self, content):
-        """
-        Handle a msg from the front-end.
-
-        Parameters
-        ----------
-        content: dict
-        Content of the msg.
-        """
         if 'event' in content and content['event'] == 'error':
             self.errors()
             self.errors(self)
@@ -113,29 +106,14 @@ class GPJobWidget(GPResource, widgets.DOMWidget):
     Contains methods to get the info of the job, and to wait on a running job by
     polling the server until the job is completed.
     """
-    _view_name = Unicode('JobWidgetView', sync=True)  # Define the widget's view
-    job_number = Integer(0, sync=True)
+    _view_name = Unicode('JobWidgetView').tag(sync=True)
+    _view_module = Unicode('gp_job').tag(sync=True)
+    job_number = Integer(0).tag(sync=True)
 
     def __init__(self, job, **kwargs):
         super(GPJobWidget, self).__init__(job.uri)
         widgets.DOMWidget.__init__(self, **kwargs)
         self.job_number = job.job_number
-
-        self.errors = widgets.CallbackDispatcher(accepted_nargs=[0, 1])
-        self.on_msg(self._handle_custom_msg)
-
-    def _handle_custom_msg(self, content):
-        """
-        Handle a msg from the front-end.
-
-        Parameters
-        ----------
-        content: dict
-        Content of the msg.
-        """
-        if 'event' in content and content['event'] == 'error':
-            self.errors()
-            self.errors(self)
 
 
 class GPTaskWidget(GPResource, widgets.DOMWidget):
@@ -145,7 +123,8 @@ class GPTaskWidget(GPResource, widgets.DOMWidget):
     Contains methods to get the info of the job, and to wait on a running job by
     polling the server until the job is completed.
     """
-    _view_name = Unicode('TaskWidgetView', sync=True)  # Define the widget's view
+    _view_name = Unicode('TaskWidgetView').tag(sync=True)
+    _view_module = Unicode('gp_task').tag(sync=True)
     lsid = Unicode("", sync=True)
     name = Unicode("", sync=True)
 
@@ -157,22 +136,6 @@ class GPTaskWidget(GPResource, widgets.DOMWidget):
             self.lsid = task.uri
         else:
             self.name = task.uri
-
-        self.errors = widgets.CallbackDispatcher(accepted_nargs=[0, 1])
-        self.on_msg(self._handle_custom_msg)
-
-    def _handle_custom_msg(self, content):
-        """
-        Handle a msg from the front-end.
-
-        Parameters
-        ----------
-        content: dict
-        Content of the msg.
-        """
-        if 'event' in content and content['event'] == 'error':
-            self.errors()
-            self.errors(self)
 
     def is_uri_lsid(self, uri):
         if uri.startswith("urn"):
@@ -249,7 +212,7 @@ def download_client_files():
         os.makedirs(client_dir)
 
     # Get the necessary file list in JSON
-    list_url = 'https://api.github.com/repos/genepattern/genepattern-notebook/contents/profile/profile_default/static/genepattern?ref=' + __version__  # 'develop'
+    list_url = 'https://api.github.com/repos/genepattern/genepattern-notebook/contents/profile/profile_default/static/genepattern?ref=' + 'develop' # __version__
     try:
         request = urllib2.Request(list_url)
         response = urllib2.urlopen(request)
