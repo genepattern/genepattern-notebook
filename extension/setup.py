@@ -1,4 +1,5 @@
 from distutils.core import setup
+import subprocess
 
 setup(name='genepattern-notebook',
     py_modules=['genepattern'],
@@ -26,3 +27,11 @@ setup(name='genepattern-notebook',
         'ipywidgets'
     ],
 )
+
+# Enable the required nbextension for ipywidgets
+subprocess.call(["jupyter", "nbextension", "enable", "--py", "widgetsnbextension"])
+
+# Enable the GenePattern Notebook extension
+subprocess.call(["jupyter", "nbextension", "install", "--py", "genepattern"])
+subprocess.call(["jupyter", "nbextension", "enable", "--py", "genepattern"])
+subprocess.call(["jupyter", "serverextension", "enable", "--py", "genepattern"])
