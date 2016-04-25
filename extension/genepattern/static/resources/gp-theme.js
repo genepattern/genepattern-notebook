@@ -17,8 +17,8 @@ GenePattern.notebook = GenePattern.notebook || {};
 // Add shim to support Jupyter 4.x
 var Jupyter = Jupyter || IPython || {};
 
-// The GenePattern theme is only supported in Jupyter 4+
-var STATIC_PATH = "../custom/genepattern/";
+// Add file path shim for Jupyter 3/4
+var STATIC_PATH = location.origin + Jupyter.contents.base_url + "nbextensions/genepattern/resources/";
 
 /**
  * Attaches the loading screen

@@ -18,11 +18,7 @@ GenePattern.notebook = GenePattern.notebook || {};
 var Jupyter = Jupyter || IPython || {};
 
 // Add file path shim for Jupyter 3/4
-var STATIC_PATH = location.origin;
-if (Jupyter.version >= "4.0.0") {
-    STATIC_PATH += Jupyter.contents.base_url + "custom/genepattern/";
-}
-else STATIC_PATH += "/static/genepattern/";
+var STATIC_PATH = location.origin + Jupyter.contents.base_url + "nbextensions/genepattern/resources/";
 
 /**
  * Attach the left-hand slider tab
