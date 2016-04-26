@@ -30,8 +30,6 @@ GenePattern.notebook.sliderTab = function() {
     return $("<span></span>")
             .addClass("fa fa-th sidebar-button sidebar-button-main")
             .attr("title", "GenePattern Options")
-            .attr("data-toggle", "tooltip")
-            .attr("data-placement", "right")
             .css("display", auth_view)
             .click(function() {
                 $("#slider").show("slide");
@@ -92,13 +90,8 @@ GenePattern.notebook.slider = function() {
             $("<span></span>")
                 .addClass("fa fa-th sidebar-button sidebar-button-slider")
                 .attr("title", "GenePattern Options")
-                .attr("data-toggle", "tooltip")
-                .attr("data-placement", "right")
                 .click(function() {
                     $("#slider").hide("slide");
-
-                    // Fix a bug where the tooltip will sometimes remain open
-                    $(".ui-tooltip-content").hide();
                 })
         )
 
