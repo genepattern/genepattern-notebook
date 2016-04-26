@@ -1,1 +1,2 @@
-recursive-include genepattern *
+include genepattern/static/*
+include genepattern/static/resources/*
