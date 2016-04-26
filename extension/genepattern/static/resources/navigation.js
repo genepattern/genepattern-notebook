@@ -915,12 +915,10 @@ GenePattern.notebook.init.notebook_init_wrapper = function () {
 GenePattern.notebook.init.buildCode = function(server, username, password) {
     return '# !AUTOEXEC\n\
 \n\
-%reload_ext gp\n\
 %reload_ext genepattern\n\
 \n\
-# Don\'t have the GenePattern library? It can be downloaded from: \n\
-# http://genepattern.broadinstitute.org/gp/downloads/gp-python.zip \n\
-# or installed through PIP: pip install genepattern-python \n\
+# Don\'t have the GenePattern Notebook? It can be installed from PIP: \n\
+# pip install genepattern-notebook \n\
 import gp\n\
 \n\
 # The following widgets are components of the GenePattern Notebook extension.\n\
