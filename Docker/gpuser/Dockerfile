@@ -3,7 +3,7 @@
 
 FROM jupyter/scipy-notebook
 
-MAINTAINER Thorin Tabor <tabor@broadinstitute.org>
+MAINTAINER Thorin Tabor <thorin@broadinstitute.org>
 
 # fetch juptyerhub-singleuser entrypoint
 ADD https://raw.githubusercontent.com/genepattern/genepattern-notebook/develop/Docker/gpuser/singleuser.sh /usr/local/bin/jupyterhub-singleuser

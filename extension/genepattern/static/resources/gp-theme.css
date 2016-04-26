@@ -1,0 +1,107 @@
+/**
+ * Loading screen styles
+ */
+
+.loading-screen {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 40pt;
+    background: #eeeeee url("/nbextensions/genepattern/resources/aurora5.png") center center;
+    background-size: cover;
+    color: white;
+    padding-top: 200px;
+
+}
+
+/**
+ * General theme styles
+ */
+
+#header {
+    background: url("/nbextensions/genepattern/resources/aurora5.png") center center;
+    padding: 10px;
+    min-height: 130px;
+}
+
+/* Don't expand header on main notebook listing page */
+body[data-terminals-available='True'] #header,
+body.edit_app #header {
+    min-height: unset;
+}
+
+.header-bar {
+	display: none;
+}
+
+img.current_kernel_logo {
+    display: none !important;
+}
+
+body {
+    background-color: white;
+    color: #333333;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    line-height: 1.42857;
+    overflow: hidden;
+}
+
+/* Hide the clusters tab */
+#tabs li:last-of-type {
+	display:none
+}
+
+#save_widget {
+	color: white;
+	text-shadow: 0 0 6px #002244;
+}
+
+#save_widget #notebook_name:hover {
+	color: #f1f2f2;
+}
+
+.navbar-text {
+	color: white;
+	text-shadow: 0 0 6px #002244;
+}
+
+#kernel_indicator, #modal_indicator.modal_indicator {
+	text-shadow: none;
+}
+
+#current-mode {
+    text-shadow: none;
+}
+
+#maintoolbar-container .btn-group:last-of-type {
+    display: none;
+}
+
+#notebook, #site {
+	background-color: #f1f2f2;
+}
+
+#ipython-main-app {
+	background-color: #fff;
+    box-shadow: 0 0 12px 1px rgba(87, 87, 87, 0.2);
+    min-height: 0;
+    height: auto;
+}
+
+#tab_content {
+    padding: 15px;
+}
+
+#slider {
+    top: 129px;
+}
+
+.sidebar-button-main {
+    top: 230px;
+}

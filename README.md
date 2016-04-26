@@ -2,6 +2,7 @@
 [![Downloads](https://img.shields.io/pypi/dm/genepattern-notebook.svg)](https://pypi.python.org/pypi/genepattern-notebook)
 [![Documentation Status](https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat)](http://genepattern.org/genepattern-notebooks)
 [![Join the chat at https://gitter.im/genepattern](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/genepattern?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[//]: # ( [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/genepattern/genepattern-notebook) )
 
 GenePattern Notebook
 ====================
@@ -13,11 +14,6 @@ GenePattern Notebooks are built on the [Jupyter Notebook](https://jupyter.org/) 
 (formerly called IPython Notebook) and extend it so that users can take advantage of its ease 
 of use and ability to encapsulate an entire scientific research narrative, without the need 
 to write code.
-
- ***NOTE:*** On April 15th a new version of Jupyter Notebook environment was released (4.2). 
- This version includes major updates to Jupyter's extension and widget frameworks. As a 
- consequence, the current version the GenePattern Notebook extension isn't fully compatible with 
- the new release. We are working to update GenePattern Notebook to fix this as soon as possible.
 
 # Installation
 
