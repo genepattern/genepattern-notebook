@@ -57,9 +57,9 @@ RUN curl -L https://github.com/krallin/tini/releases/download/v0.6.0/tini > tini
 RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
     python2 get-pip.py && \
     python3 get-pip.py && \
-    rm get-pip.py && \
-    pip2 --no-cache-dir install requests[security] && \
-    pip3 --no-cache-dir install requests[security]
+    rm get-pip.py # && \
+#    pip2 --no-cache-dir install requests[security] && \
+#    pip3 --no-cache-dir install requests[security]
 
 
 #RUN pip3 install ipython[all]==3.2
