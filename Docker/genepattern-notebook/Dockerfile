@@ -2,7 +2,7 @@
 # Another Docker container should inherit with `FROM jupyter/notebook`
 # to run actual services.
 
-FROM ubuntu:latest
+FROM ubuntu:wily
 
 MAINTAINER Ted Liefeld
 
