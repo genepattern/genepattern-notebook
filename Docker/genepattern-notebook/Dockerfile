@@ -63,8 +63,8 @@ RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
 
 
 #RUN pip3 install ipython[all]==3.2
-RUN pip3 install notebook==4.1
-RUN pip3 install ipywidgets==4.1.1
+RUN pip3 install notebook
+RUN pip3 install ipywidgets
 
 #RUN pip2 install genepattern-notebook && \
 #	pip install genepattern-notebook && \
@@ -72,10 +72,15 @@ RUN pip3 install ipywidgets==4.1.1
 
 RUN pip3 install genepattern-notebook
 
-
 #add a notebook profile
 RUN mkdir -p -m 700 /root/.jupyter/ && \
     echo "c.NotebookApp.ip = '*'" >> /root/.jupyter/jupyter_notebook_config.py
+
+# Enable the extension
+RUN jupyter nbextension enable --py widgetsnbextension
+RUN jupyter nbextension install --py genepattern
+RUN jupyter nbextension enable --py genepattern
+RUN jupyter serverextension enable --py genepattern
 
 VOLUME /notebooks
 WORKDIR /notebooks
