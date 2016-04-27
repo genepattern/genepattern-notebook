@@ -12,5 +12,11 @@ RUN chmod 755 /usr/local/bin/jupyterhub-singleuser
 # Install GenePattern Notebook
 RUN pip install genepattern-notebook
 
+# Enable the extension
+RUN jupyter nbextension enable --py widgetsnbextension
+RUN jupyter nbextension install --py genepattern
+RUN jupyter nbextension enable --py genepattern
+RUN jupyter serverextension enable --py genepattern
+
 ADD singleuser.sh /srv/singleuser/singleuser.sh
 CMD ["sh", "/srv/singleuser/singleuser.sh"]
