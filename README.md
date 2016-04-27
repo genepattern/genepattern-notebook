@@ -50,15 +50,15 @@ skip to the appropriate step below.
 
 ### Install GenePattern Notebook from GitHub
 
-Copy the following file genepattern-notebook/profile/extensions/genepattern.py and place it 
-on your Python path. This is the GenePattern Notebook extension that will be loaded into
-Jupyter. 
+Copy the contents of genepattern-notebook/extension to your development computer and ensure 
+that the resulting directory if on your Python path. To test this, open Python and try to 
+*import genepattern*. If this is successful, you have a copy of the extension available.
 
 If you don't already have Jupyter installed, you can install it from PIP by running:
 
 > pip install jupyter
 
-From here go to the "Launch Jupyter" step below.
+From here go to the "Load the GenePattern extension" step below.
 
 ### Install GenePattern Notebook from PIP
 
@@ -66,6 +66,16 @@ The easiest way to install GenePattern Notebook is through PIP. It can be instal
 the following command:
 
 > pip install genepattern-notebook
+
+### Load the GenePattern extension
+
+Before you the GenePattern extension for the very first time, you should make sure that it is 
+enable in Jupyter. To do this run the following on the command line: 
+
+> jupyter nbextension enable --py widgetsnbextension
+> jupyter nbextension install --py genepattern
+> jupyter nbextension enable --py genepattern
+> jupyter serverextension enable --py genepattern
 
 ### Launch Jupyter
 
@@ -75,24 +85,12 @@ Finally, you may launch Jupyter Notebook by issuing the following command at the
 
 This will start up the notebook kernel and launch your web browser pointing to the Notebook.
 
-### Load the GenePattern extension
-
-Once Jupyter notebook is started, create a new notebook document and the GenePattern extension
-can be loaded by executing the following command inside the notebook:
-
-> %reload_ext genepattern
-
-The first time this command is executed it may take a few seconds to fully run. In the background
-it is downloading the necessary client-side files. Once this command runs, the GenePattern cell
-type will appear in the Jupyter menu. Create a cell of this type to begin using the GenePattern
-extension.
-
 ### Updating GenePattern Notebook
 
 If you want to update GenePattern Notebook to a more recent version on PIP, run the following 
 command:
 
-> pip install -U --no-deps genepattern-notebook
+> pip install -upgrade --no-deps genepattern-notebook
 
 # Known Issues
 
