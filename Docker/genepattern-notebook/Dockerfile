@@ -2,7 +2,7 @@
 # Another Docker container should inherit with `FROM jupyter/notebook`
 # to run actual services.
 
-FROM ubuntu:latest
+FROM ubuntu:wily
 
 MAINTAINER Ted Liefeld
 
@@ -14,13 +14,13 @@ ENV LC_ALL en_US.UTF-8
 ENV PYTHONIOENCODING UTF-8
 
 # Remove preinstalled copy of python that blocks our ability to install development python.
-RUN DEBIAN_FRONTEND=noninteractive apt-get remove -yq \
-        python3-minimal \
-        python3.4 \
-        python3.4-minimal \
-        libpython3-stdlib \
-        libpython3.4-stdlib \
-        libpython3.4-minimal
+# RUN DEBIAN_FRONTEND=noninteractive apt-get remove -yq \
+#        python3-minimal \
+#        python3.4 \
+#        python3.4-minimal \
+#        libpython3-stdlib \
+#        libpython3.4-stdlib \
+#        libpython3.4-minimal
 
 # Python binary and source dependencies
 RUN apt-get update -qq && \
@@ -57,9 +57,9 @@ RUN curl -L https://github.com/krallin/tini/releases/download/v0.6.0/tini > tini
 RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
     python2 get-pip.py && \
     python3 get-pip.py && \
-    rm get-pip.py && \
-    pip2 --no-cache-dir install requests[security] && \
-    pip3 --no-cache-dir install requests[security]
+    rm get-pip.py # && \
+#    pip2 --no-cache-dir install requests[security] && \
+#    pip3 --no-cache-dir install requests[security]
 
 
 #RUN pip3 install ipython[all]==3.2
