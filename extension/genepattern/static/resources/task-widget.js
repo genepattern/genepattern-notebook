@@ -1450,16 +1450,21 @@ define("gp_task", ["jupyter-js-widgets",
 
         /**
          * Expand or collapse the task widget
+         *
+         *     expand - optional parameter used to force an expand or collapse,
+         *         leave undefined to toggle back and forth
          */
-        expandCollapse: function() {
+        expandCollapse: function(expand) {
             var toSlide = this.element.find(".panel-body");
             var indicator = this.element.find(".widget-slide-indicator").find("span");
-            if (toSlide.is(":hidden")) {
+            var isHidden = toSlide.is(":hidden");
+
+            if (isHidden || expand) {
                 toSlide.slideDown();
                 indicator.removeClass("fa-plus");
                 indicator.addClass("fa-minus");
             }
-            else {
+            else if (expand === false || !isHidden) {
                 toSlide.slideUp();
                 indicator.removeClass("fa-minus");
                 indicator.addClass("fa-plus");

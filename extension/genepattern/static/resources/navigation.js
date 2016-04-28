@@ -818,6 +818,9 @@ GenePattern.notebook.buildMenu = function(widget, element, name, href, kind, ind
                 $('#site').animate({
                     scrollTop: $(theWidget.element).position().top
                 }, 500);
+
+                // Expand the cell, if necessary
+                theWidget.expandCollapse(true);
             });
         });
     }
