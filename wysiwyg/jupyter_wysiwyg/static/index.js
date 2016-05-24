@@ -44,20 +44,6 @@ define([
         // Editor settings
         editor.on('instanceReady', function( ev ) {
             editor.setReadOnly(false);
-            ev.editor.dataProcessor.writer.setRules('p', {
-                indent : false,
-                breakBeforeOpen : false,
-                breakAfterOpen : false,
-                breakBeforeClose : false,
-                breakAfterClose : false
-            });
-            ev.editor.dataProcessor.writer.setRules('blockquote', {
-                indent : false,
-                breakBeforeOpen : false,
-                breakAfterOpen : false,
-                breakBeforeClose : false,
-                breakAfterClose : false
-            });
         });
 
         // Attach editor to cell
@@ -83,11 +69,7 @@ define([
         });
 
         // Change status
-        var status = cell.element.find(".wysiwyg-status");
-        status.removeClass("wysiwyg-off");
-        status.addClass("wysiwyg-on");
-        status.empty();
-        status.append("OFF");
+        toggle_button_mode(cell);
     }
 
     /**
@@ -107,14 +89,26 @@ define([
         editor.destroy();
 
         // Change status
-        var status = cell.element.find(".wysiwyg-status");
-        status.removeClass("wysiwyg-on");
-        status.addClass("wysiwyg-off");
-        status.empty();
-        status.append("ON");
+        toggle_button_mode(cell);
 
         // Hide the WYSIWYG button
         hide_wysiwyg_button(cell);
+    }
+
+    function toggle_button_mode(cell) {
+        var status = cell.element.find(".wysiwyg-status");
+        if (is_wysiwyg_mode(cell)) {
+            status.removeClass("wysiwyg-on");
+            status.addClass("wysiwyg-off");
+            status.empty();
+            status.append("ON");
+        }
+        else {
+            status.removeClass("wysiwyg-off");
+            status.addClass("wysiwyg-on");
+            status.empty();
+            status.append("OFF");
+        }
     }
 
     /**
@@ -168,7 +162,7 @@ define([
 
             // Create the WYSIWYG toggle button
             var wysiwyg_button = $("<button></button>")
-                .addClass("btn btn-info btn-sm wysiwyg-toggle")
+                .addClass("btn btn-default btn-sm wysiwyg-toggle")
                 .append("WYSIWYG")
                 .append($("<br/>"))
                 .append(
@@ -208,6 +202,9 @@ define([
         // Attach WYSIWYG button when a new cell is created
         $([Jupyter.events]).on('create.Cell', function(event, target) {
             add_wysiwyg_button(target.cell);
+            setTimeout(function() {
+                if (!target.cell.rendered) show_wysiwyg_button(target.cell);
+            }, 100);
         });
         $([Jupyter.events]).on('edit_mode.Cell', function(event, target) {
             show_wysiwyg_button(target.cell);
