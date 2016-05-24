@@ -7,8 +7,6 @@ define([
     WYSIWYG_PATH + "ckeditor/ckeditor.js",
     WYSIWYG_PATH + "ckeditor/adapters/jquery.js"], function(Jupyter) {
 
-    console.log("INSIDE FIRST: " + WYSIWYG_PATH + "ckeditor/adapters/jquery.js");
-
     /**
      * Take a Markdown cell and initialize WYSIWYG mode for the cell
      *
@@ -21,7 +19,12 @@ define([
 
         // Get the DOM elements
         var textbox = cell.element.find(".text_cell_render");
-        var content = $(textbox).text().trim();
+
+        // Special case to remove anchor links before editing
+        textbox.find(".anchor-link").remove();
+
+        // Special case for placeholder text in empty cells
+        if (cell.get_text().length === 0) textbox.empty();
 
         // Initialize CKEditor
         var editor = CKEDITOR.replace(textbox[0], {
@@ -68,6 +71,9 @@ define([
         editor.on('blur', function( ev ) {
             Jupyter.notebook.keyboard_manager.enable();
         });
+        cell.element.find(".inner_cell").dblclick(function(event) {
+            is_wysiwyg_mode(cell) ? event.stopPropagation() : {};
+        });
 
         // Save editor changes to model
         editor.on('change', function( ev ) {
@@ -75,6 +81,13 @@ define([
             var cellData = editor.getData();
             $(editor.element.$).closest(".cell").data("cell").code_mirror.setValue(cellData);
         });
+
+        // Change status
+        var status = cell.element.find(".wysiwyg-status");
+        status.removeClass("wysiwyg-off");
+        status.addClass("wysiwyg-on");
+        status.empty();
+        status.append("OFF");
     }
 
     /**
@@ -92,6 +105,54 @@ define([
 
         // Destroy the editor instance
         editor.destroy();
+
+        // Change status
+        var status = cell.element.find(".wysiwyg-status");
+        status.removeClass("wysiwyg-on");
+        status.addClass("wysiwyg-off");
+        status.empty();
+        status.append("ON");
+
+        // Hide the WYSIWYG button
+        hide_wysiwyg_button(cell);
+    }
+
+    /**
+     * Check to see if WYSIWYG mode is turned on for the given cell
+     *
+     * @param cell - Jupyter cell object for WYSIWYG mode
+     * @returns {boolean}
+     */
+    function is_wysiwyg_mode(cell) {
+        // Get the status message of the cell
+        var status = cell.element.find(".wysiwyg-status");
+
+        // Return error if no status message
+        if (status.length < 1) {
+            console.log("ERROR: Could not get WYSIWYG status for cell");
+            return false;
+        }
+
+        // Return status
+        return status.hasClass("wysiwyg-on");
+    }
+
+    /**
+     * Show the WYSIWYG button
+     *
+     * @param cell - Jupyter cell object for WYSIWYG mode
+     */
+    function show_wysiwyg_button(cell) {
+        cell.element.find(".wysiwyg-toggle").show();
+    }
+
+    /**
+     * Hide the WYSIWYG button
+     *
+     * @param cell - Jupyter cell object for WYSIWYG mode
+     */
+    function hide_wysiwyg_button(cell) {
+        cell.element.find(".wysiwyg-toggle").hide();
     }
 
     /**
@@ -102,8 +163,27 @@ define([
      */
     function add_wysiwyg_button(cell) {
         if (cell.cell_type === "markdown" && cell.rendered) {
-            // TODO: Implement, Remove this debugging line
-            console.log("Dummy button added to cell: " + cell);
+            // Get the blank left area
+            var blank_area = cell.element.find(".input_prompt");
+
+            // Create the WYSIWYG toggle button
+            var wysiwyg_button = $("<button></button>")
+                .addClass("btn btn-info btn-sm wysiwyg-toggle")
+                .append("WYSIWYG")
+                .append($("<br/>"))
+                .append(
+                    $("<span></span>")
+                        .addClass("wysiwyg-status wysiwyg-off")
+                        .append("ON")
+                )
+                .click(function(event) {
+                    is_wysiwyg_mode(cell) ? disable_wysiwyg_mode(cell) : init_wysiwyg_mode(cell);
+                    event.stopPropagation();
+                })
+                .hide();
+
+            // Append the button to the UI
+            blank_area.append(wysiwyg_button);
         }
     }
 
@@ -122,16 +202,18 @@ define([
      * Load the WYSIWYG nbextension
      */
     function load_ipython_extension() {
-        // TODO: Remove debugging lines
-        window.disable_wysiwyg_mode = disable_wysiwyg_mode;
-        window.init_wysiwyg_mode = init_wysiwyg_mode;
-
         // Attach WYSIWYG buttons to existing cells when a notebook is loaded
         attach_buttons();
 
         // Attach WYSIWYG button when a new cell is created
         $([Jupyter.events]).on('create.Cell', function(event, target) {
             add_wysiwyg_button(target.cell);
+        });
+        $([Jupyter.events]).on('edit_mode.Cell', function(event, target) {
+            show_wysiwyg_button(target.cell);
+        });
+        $([Jupyter.events]).on('command_mode.Cell', function(event, target) {
+            if (target.cell.rendered) hide_wysiwyg_button(target.cell);
         });
     }
 
