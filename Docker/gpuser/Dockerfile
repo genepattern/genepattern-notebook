@@ -24,7 +24,10 @@ RUN jupyter serverextension enable --py genepattern
 
 USER jovyan
 
-ADD singleuser.sh /srv/singleuser/singleuser.sh
+# ADD singleuser.sh /srv/singleuser/singleuser.sh
 # smoke test that it's importable at least
-RUN sh /srv/singleuser/singleuser.sh -h
-CMD ["sh", "/srv/singleuser/singleuser.sh"]
+# RUN sh /srv/singleuser/singleuser.sh -h
+# CMD ["sh", "/srv/singleuser/singleuser.sh"]
+
+RUN sh /usr/local/bin/singleuser.sh -h
+CMD ["sh", "/usr/local/bin/singleuser.sh"]
