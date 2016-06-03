@@ -101,13 +101,13 @@ define([
             status.removeClass("wysiwyg-on");
             status.addClass("wysiwyg-off");
             status.empty();
-            status.append("ON");
+            status.append("WYSIWYG");
         }
         else {
             status.removeClass("wysiwyg-off");
             status.addClass("wysiwyg-on");
             status.empty();
-            status.append("OFF");
+            status.append("Done");
         }
     }
 
@@ -162,13 +162,13 @@ define([
 
             // Create the WYSIWYG toggle button
             var wysiwyg_button = $("<button></button>")
-                .addClass("btn btn-default btn-sm wysiwyg-toggle")
-                .append("WYSIWYG")
-                .append($("<br/>"))
+                .addClass("btn btn-info btn-sm wysiwyg-toggle")
+                .css("display", "block")
+                .css("width", "100%")
                 .append(
                     $("<span></span>")
                         .addClass("wysiwyg-status wysiwyg-off")
-                        .append("ON")
+                        .append("WYSIWYG")
                 )
                 .click(function(event) {
                     is_wysiwyg_mode(cell) ? disable_wysiwyg_mode(cell) : init_wysiwyg_mode(cell);
