@@ -233,7 +233,7 @@ require(["jquery"], function() {
             },
             success: function (response) {
                 // Create the Task object
-                var task = GenePattern.Task(response);
+                var task = new GenePattern.Task(response);
 
                 // Add params to Task object
                 var params = response['params'];
