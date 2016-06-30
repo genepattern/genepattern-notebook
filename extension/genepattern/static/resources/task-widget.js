@@ -476,6 +476,18 @@ define("gp_task", ["jupyter-js-widgets",
                     return false;
                 }
             });
+
+            // Cannot find exact value to remove, could have uploaded the file
+            // This changes the value from the file name to the uploaded URL
+            // Try removing the matching URL
+            $.each(this._values, function(i, e) {
+                var server = GenePattern.server();
+                var display = widget._singleDisplay(e);
+                if (display.indexOf(server) === 0   && display.endsWith(value)) {
+                    widget._values.splice(i, 1);
+                    return false;
+                }
+            });
         },
 
         /**
@@ -1450,16 +1462,21 @@ define("gp_task", ["jupyter-js-widgets",
 
         /**
          * Expand or collapse the task widget
+         *
+         *     expand - optional parameter used to force an expand or collapse,
+         *         leave undefined to toggle back and forth
          */
-        expandCollapse: function() {
+        expandCollapse: function(expand) {
             var toSlide = this.element.find(".panel-body");
             var indicator = this.element.find(".widget-slide-indicator").find("span");
-            if (toSlide.is(":hidden")) {
+            var isHidden = toSlide.is(":hidden");
+
+            if (isHidden || expand) {
                 toSlide.slideDown();
                 indicator.removeClass("fa-plus");
                 indicator.addClass("fa-minus");
             }
-            else {
+            else if (expand === false || !isHidden) {
                 toSlide.slideUp();
                 indicator.removeClass("fa-minus");
                 indicator.addClass("fa-plus");
@@ -1491,7 +1508,7 @@ define("gp_task", ["jupyter-js-widgets",
 
             // Show the message
             this.element.find(".gp-widget-task-name").empty().text("Module Not Installed");
-            this.errorMessage("The module used by this widget is not installed on this GenePattern server.");
+            this.errorMessage("This module is not installed on this GenePattern server.");
             this.element.find(".gp-widget-task-subheader").hide();
             this.element.find(".gp-widget-task-footer").hide();
         },
@@ -1922,7 +1939,7 @@ define("gp_task", ["jupyter-js-widgets",
                 form.slideDown();
 
                 // Only show message if there is one
-                if (message.hasClass("alert-success") || message.hasClass("alert-error")) {
+                if (message.hasClass("alert-success") || message.hasClass("alert-danger")) {
                     message.slideDown();
                 }
 
