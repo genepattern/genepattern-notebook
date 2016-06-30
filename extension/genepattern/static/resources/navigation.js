@@ -479,38 +479,66 @@ GenePattern.notebook.updateSliderData = function(url, value) {
 GenePattern.notebook.toGenePatternCell = function() {
     var dialog = require('base/js/dialog');
     var cell = Jupyter.notebook.get_selected_cell();
+    var contents = cell.get_text().trim();
 
-    if (GenePattern.authenticated) {
-        GenePattern.notebook.widgetSelectDialog(cell);
+    // Define cell change internal function
+    var cellChange = function(cell) {
+        if (GenePattern.authenticated) {
+            GenePattern.notebook.widgetSelectDialog(cell);
+        }
+        else {
+            // Get the auth widget code
+            var code = GenePattern.notebook.init.buildCode("http://genepattern.broadinstitute.org/gp", "", "");
+
+            // Put the code in the cell
+            cell.code_mirror.setValue(code);
+
+            function isWidgetPresent() { return cell.element.find(".gp-widget").length > 0; }
+            function isRunning() { return cell.element.hasClass("running") }
+
+            var widgetPresent = isWidgetPresent();
+            var running = isRunning();
+
+            function ensure_widget() {
+                if (!widgetPresent && !running) {
+                    cell.execute();
+                }
+                if (!widgetPresent) {
+                    setTimeout(function() {
+                        widgetPresent = isWidgetPresent();
+                        running = isRunning();
+                        ensure_widget();
+                    }, 500);
+                }
+            }
+
+            ensure_widget();
+        }
+    };
+
+    // Prompt for change if the cell has contents
+    if (contents !== "") {
+        dialog.modal({
+            notebook: Jupyter.notebook,
+            keyboard_manager: this.keyboard_manager,
+            title : "Change to GenePattern Cell?",
+            body : "Are you sure you want to change this to a GenePattern cell? This will cause " +
+                "you to lose any code or other information already entered into the cell.",
+            buttons : {
+                "Cancel" : {},
+                "Change Cell Type" : {
+                    "class" : "btn-warning",
+                    "click" : function() {
+                        cellChange(cell);
+                    }
+                }
+            }
+        });
     }
     else {
-        // Get the auth widget code
-        var code = GenePattern.notebook.init.buildCode("http://genepattern.broadinstitute.org/gp", "", "");
-
-        // Put the code in the cell
-        cell.code_mirror.setValue(code);
-
-        function isWidgetPresent() { return cell.element.find(".gp-widget").length > 0; }
-        function isRunning() { return cell.element.hasClass("running") }
-
-        var widgetPresent = isWidgetPresent();
-        var running = isRunning();
-
-        function ensure_widget() {
-            if (!widgetPresent && !running) {
-                cell.execute();
-            }
-            if (!widgetPresent) {
-                setTimeout(function() {
-                    widgetPresent = isWidgetPresent();
-                    running = isRunning();
-                    ensure_widget();
-                }, 500);
-            }
-        }
-
-        ensure_widget();
+        cellChange(cell);
     }
+
 };
 
 /**
