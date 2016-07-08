@@ -12,7 +12,7 @@ from jupyterhub.auth import Authenticator, LocalAuthenticator
 
 class GenePatternAuthenticator(Authenticator):
     # URL of the GenePattern server you are authenticating with
-    GENEPATTERN_URL = "http://genepattern.broadinstitute.org/gp"
+    GENEPATTERN_URL = "https://genepattern.broadinstitute.org/gp"
 
     @gen.coroutine
     def authenticate(self, handler, data):

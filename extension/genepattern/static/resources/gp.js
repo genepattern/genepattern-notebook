@@ -39,7 +39,7 @@ require(["jquery"], function() {
 
     /**
      * Sets or returns the server at which this library is pointed
-     * Example: http://genepattern.broadinstitute.org/gp
+     * Example: https://genepattern.broadinstitute.org/gp
      *
      * @returns {string|null}
      */
