@@ -25,3 +25,16 @@
 6. Test the deploy by uninstalling and reinstalling the package: 
 > sudo pip uninstall genepattern-notebook;
 > sudo pip install genepattern-notebook
+
+# How to Deploy to Conda
+
+1. Deploy to Production PyPi
+2. Navigate to Anaconda directory
+> cd anaconda
+3. Run the following, removing the existing directory if necessary:
+> conda skeleton pypi genepattern-notebook --version XXX
+4. Build the package:
+> conda build genepattern-notebook
+5. Upload the newly built package:
+> anaconda upload /Users/tabor/anaconda/conda-bld/osx-64/genepattern-notebook-XXX-py35_0.tar.bz2 -u genepattern
+4. Log into the [Anaconda website](https://anaconda.org/) to make sure everything is good.

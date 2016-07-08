@@ -18,7 +18,7 @@ file for using the authenticator.
 3. Edit the config to declare GenePatternAuthenticator as the authenticator 
 (see example jupyterhib_config.py file)
 4. Edit gpauthenticator.py to point to your GenePattern server of choice
-> GENEPATTERN_URL = "http://genepattern.broadinstitute.org/gp"
+> GENEPATTERN_URL = "https://genepattern.broadinstitute.org/gp"
 5. Put the gpauthenticator.py file on your Python path
 6. Start your JupyterHub server using the config
 > sudo nohup jupyterhub --ip=0.0.0.0 --port=8000 --config=/path/to/jupyterhub_config.py &

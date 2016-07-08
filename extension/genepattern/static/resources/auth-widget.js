@@ -26,7 +26,7 @@ define("gp_auth", ["jupyter-js-widgets",
     $.widget("gp.auth", {
         options: {
             servers: [                                              // Expects a list of lists with [name, url] pairs
-                ['Broad Institute', 'http://genepattern.broadinstitute.org/gp'],
+                ['Broad Institute', 'https://genepattern.broadinstitute.org/gp'],
                 ['Indiana University', 'http://gp.indiana.edu/gp'],
                 ['Broad Internal (Broad Institute Users Only)', 'https://gpbroad.broadinstitute.org/gp'],
                 ['Custom GenePattern Server', 'Custom']
@@ -347,7 +347,7 @@ define("gp_auth", ["jupyter-js-widgets",
                 body : $("<div></div>")
                             .append("Enter the URL to your custom GenePattern server below. Please use the full URL, " +
                                     "including http:// as well as any port numbers and the trailing /gp. For example: " +
-                                    "http://genepattern.broadinstitute.org/gp")
+                                    "https://genepattern.broadinstitute.org/gp")
                             .append($("<br/><br/>"))
                             .append($("<label style='font-weight: bold;'>Server URL </label>"))
                             .append(urlTextBox),
@@ -888,7 +888,7 @@ define("gp_auth", ["jupyter-js-widgets",
 
             // Check to see if this auth widget was manually created, if so replace with full code
             if (cell.code_mirror.getValue().indexOf("# !AUTOEXEC") === -1) {
-                var code = GenePattern.notebook.init.buildCode("http://genepattern.broadinstitute.org/gp", "", "");
+                var code = GenePattern.notebook.init.buildCode("https://genepattern.broadinstitute.org/gp", "", "");
                 cell.code_mirror.setValue(code);
                 cell.execute();
             }
