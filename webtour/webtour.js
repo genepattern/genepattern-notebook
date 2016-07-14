@@ -23,80 +23,82 @@ define([
         window.introJs = introJs;
     }
 
-    function tour_setup() {
-        // Increment the step counter
-        GenePattern.notebook.tourStep++;
+    /**
+     * Tour for inside a notebook
+     */
+    function nbTour() {
+        // Declare setup and cleanup functions
+        function tour_setup() {
+            // Add the mockup elements for selection, if missing
+            if ($(".fakeout").length < 1) {
+                var add_cell = $("#insert_above_below");
+                var fake_add_cell = $("<div></div>");
+                fake_add_cell.attr("id", "fake_add_cell");
+                fake_add_cell.addClass("fakeout");
+                fake_add_cell.css("position", "absolute");
+                fake_add_cell.css("top", add_cell.offset().top);
+                fake_add_cell.css("left", add_cell.offset().left);
+                fake_add_cell.css("height", add_cell.height());
+                fake_add_cell.css("width", add_cell.width());
 
-        // Add the mockup elements for selection, if missing
-        if ($(".fakeout").length < 1) {
-            var add_cell = $("#insert_above_below");
-            var fake_add_cell = $("<div></div>");
-            fake_add_cell.attr("id", "fake_add_cell");
-            fake_add_cell.addClass("fakeout");
-            fake_add_cell.css("position", "absolute");
-            fake_add_cell.css("top", add_cell.offset().top);
-            fake_add_cell.css("left", add_cell.offset().left);
-            fake_add_cell.css("height", add_cell.height());
-            fake_add_cell.css("width", add_cell.width());
+                var execute_cell = $("#run_int");
+                var fake_execute_cell = $("<div></div>");
+                fake_execute_cell.attr("id", "fake_execute_cell");
+                fake_execute_cell.addClass("fakeout");
+                fake_execute_cell.css("position", "absolute");
+                fake_execute_cell.css("top", execute_cell.offset().top);
+                fake_execute_cell.css("left", execute_cell.offset().left);
+                fake_execute_cell.css("height", execute_cell.height());
+                fake_execute_cell.css("width", execute_cell.width() / 3);
 
-            var execute_cell = $("#run_int");
-            var fake_execute_cell = $("<div></div>");
-            fake_execute_cell.attr("id", "fake_execute_cell");
-            fake_execute_cell.addClass("fakeout");
-            fake_execute_cell.css("position", "absolute");
-            fake_execute_cell.css("top", execute_cell.offset().top);
-            fake_execute_cell.css("left", execute_cell.offset().left);
-            fake_execute_cell.css("height", execute_cell.height());
-            fake_execute_cell.css("width", execute_cell.width() / 3);
+                var change_type = $("#cell_type");
+                var fake_change_type = $("<div></div>");
+                fake_change_type.attr("id", "fake_change_type");
+                fake_change_type.addClass("fakeout");
+                fake_change_type.css("position", "absolute");
+                fake_change_type.css("top", change_type.offset().top);
+                fake_change_type.css("left", change_type.offset().left);
+                fake_change_type.css("height", change_type.height());
+                fake_change_type.css("width", change_type.width());
 
-            var change_type = $("#cell_type");
-            var fake_change_type = $("<div></div>");
-            fake_change_type.attr("id", "fake_change_type");
-            fake_change_type.addClass("fakeout");
-            fake_change_type.css("position", "absolute");
-            fake_change_type.css("top", change_type.offset().top);
-            fake_change_type.css("left", change_type.offset().left);
-            fake_change_type.css("height", change_type.height());
-            fake_change_type.css("width", change_type.width());
+                $("body")
+                    .append(fake_add_cell)
+                    .append(fake_execute_cell)
+                    .append(fake_change_type);
 
-            $("body")
-                .append(fake_add_cell)
-                .append(fake_execute_cell)
-                .append(fake_change_type);
+                // Add a GenePattern cell for Step 6
+                var cell = Jupyter.notebook.insert_cell_above(0);
+                Jupyter.notebook.select(0);
+                GenePattern.notebook.toGenePatternCell();
 
-            // Add a GenePattern cell for Step 6
-            var cell = Jupyter.notebook.insert_cell_above(0);
-            Jupyter.notebook.select(0);
-            GenePattern.notebook.toGenePatternCell();
-
-            // Show the slider button
-            $(".sidebar-button-main").show();
+                // Show the slider button
+                $(".sidebar-button-main").show();
+            }
         }
-    }
+        function tour_cleanup() {
+            // Remove the mockup elements
+            $(".fakeout").remove();
 
-    function tour_cleanup() {
-        // Remove the mockup elements
-        $(".fakeout").remove();
+            // Remove the GP cell
+            Jupyter.notebook.delete_cell(0);
 
-        // Remove the GP cell
-        Jupyter.notebook.delete_cell(0);
-
-        // Hide the slider button, if not authenticated
-        if (!GenePattern.authenticated) {
-            $(".sidebar-button-main").hide();
+            // Hide the slider button, if not authenticated
+            if (!GenePattern.authenticated) {
+                $(".sidebar-button-main").hide();
+            }
         }
-    }
 
-    function notebookTour() {
+        // Set up the tour
         tour_setup();
 
+        // Define the tour
         var intro = introJs();
-          intro.setOptions({
+        intro.setOptions({
             showStepNumbers: false,
             skipLabel: "End Tour",
             steps: [
                 {
-                    intro: "<h4>GenePattern Notebook</h4><p>Welcome to the GenePattern Notebook envrionment! This is a brief tour of its most important features.</p>"
+                    intro: "<h4>GenePattern Notebook</h4><p>Welcome to the GenePattern Notebook environment! This is a brief tour of its most important features.</p>"
                 },
                 {
                     element: $(".cell")[0],
@@ -129,18 +131,18 @@ define([
             ]
           });
 
+        // Attach events
         intro.onbeforechange(function() {
             tour_setup();
         });
-
         intro.onexit(function() {
             tour_cleanup();
         });
-
         intro.oncomplete(function() {
             tour_cleanup();
         });
 
+        // Start the tour
         intro.start();
     }
 
@@ -148,8 +150,7 @@ define([
     window.GenePattern = GenePattern || {};
     window.GenePattern.notebook = GenePattern.notebook || {};
 
-    window.GenePattern.notebook.notebookTour = notebookTour;
-    window.GenePattern.notebook.tourStep = 0;
+    window.GenePattern.notebook.nbTour = nbTour;
 
     return {
         load_ipython_extension: load_ipython_extension
