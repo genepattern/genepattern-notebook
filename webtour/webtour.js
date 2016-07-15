@@ -66,21 +66,25 @@ define([
                     .append(fake_execute_cell)
                     .append(fake_change_type);
 
-                // Add a GenePattern cell for Step 6
-                var cell = Jupyter.notebook.insert_cell_above(0);
-                Jupyter.notebook.select(0);
-                GenePattern.notebook.toGenePatternCell();
+                // Add a GenePattern cell for Step 6, if necessary
+                var auth_widget_found = $(".gp-widget-auth").length > 0;
+                if (!auth_widget_found) {
+                    var cell = Jupyter.notebook.insert_cell_above(0);
+                    setTimeout(function() {
+                        Jupyter.notebook.select(0);
+                        GenePattern.notebook.toGenePatternCell();
+                    }, 10);
+                }
 
-                // Show the slider button
-                $(".sidebar-button-main").show();
+                setTimeout(function() {
+                    // Show the slider button
+                    $(".sidebar-button-main").show();
+                }, 1000);
             }
         }
         function tour_cleanup() {
             // Remove the mockup elements
             $(".fakeout").remove();
-
-            // Remove the GP cell
-            Jupyter.notebook.delete_cell(0);
 
             // Hide the slider button, if not authenticated
             if (!GenePattern.authenticated) {
@@ -117,12 +121,14 @@ define([
                     intro: "<h4>Change Cell Type</h4>Every cell has a type. Types include code cells, markdown cells and GenePattern cells.<br><br><b>To get started using GenePattern features, first change a cell to the GenePattern type.</b>"
                 },
                 {
-                    element: $(".cell")[0],
-                    intro: "<h4>GenePattern Cells</h4>GenePattern cells are interactive widgets that allow the notebook environment to access the hundreds of analytic modules available in GenePattern. There are three types of GenePattern cells: login cells, analysis cells and job cells."
+                    element: $(".gp-widget")[0],
+                    intro: "<h4>GenePattern Cells</h4>GenePattern cells are interactive widgets that allow the notebook environment to access the hundreds of analytic modules available in GenePattern. There are three types of GenePattern cells: login cells, analysis cells and job cells.",
+                    position: "top"
                 },
                 {
-                    element: $(".cell")[0],
-                    intro: "<h4>GenePattern Login</h4>In order to run analyses in GenePattern, you must first log into a GenePattern server. A GenePattern login cell allows you to select a server and enter your GenePattern username and password. If you don't have a GenePattern account, you can register an account by clicking the Register an Account button."
+                    element: $(".gp-widget-auth")[0],
+                    intro: "<h4>GenePattern Login</h4>In order to run analyses in GenePattern, you must first log into a GenePattern server. A GenePattern login cell allows you to select a server and enter your GenePattern username and password. If you don't have a GenePattern account, you can register an account by clicking the Register an Account button.",
+                    position: "top"
                 },
                 {
                     element: $(".sidebar-button-main")[0],
@@ -146,11 +152,17 @@ define([
         intro.start();
     }
 
-    // Make the functions accessible
-    window.GenePattern = GenePattern || {};
-    window.GenePattern.notebook = GenePattern.notebook || {};
+    // Attach to button
+    $([Jupyter.events]).on('kernel_ready.Kernel kernel_created.Session notebook_loaded.Notebook', function() {
+        $("#tour-button").click(function() {
+            nbTour();
+        });
+    });
 
-    window.GenePattern.notebook.nbTour = nbTour;
+    // Make available at top namespace
+    window.nbTour = nbTour;
+
+
 
     return {
         load_ipython_extension: load_ipython_extension
