@@ -50,7 +50,15 @@ if ($("#ipython-main-app").length > 0) {
             window.tour_setup = tour_setup;
 
             // Set up the tour
-            //tour_setup();
+            tour_setup();
+
+            // Create the step selectors
+            var selectors = [];
+            selectors.push( $(".list_item.row")[0] );                    // step 1
+            selectors.push( $("#new-buttons")[0] );                      // step 2
+            selectors.push( $(".list_item.row:contains('.ipynb')")[0] ); // step 3
+            selectors.push( $("#alternate_upload")[0] );                 // step 4
+            selectors.push( $(".dynamic-buttons")[0] );                  // step 5
 
             // Define the tour
             var intro = introJs();
@@ -62,34 +70,34 @@ if ($("#ipython-main-app").length > 0) {
                         intro: "<h4>GenePattern Notebook</h4><p>Welcome to the GenePattern Notebook environment! This is a brief tour of how to get started.</p>"
                     },
                     {
-                        element: $(".list_item.row")[0],
+                        element: selectors[0],
                         intro: "<h4>Notebook Files</h4>Your notebook directory contains a list of available notebook files, as well as other supporting files."
                     },
                     {
-                        element: $("#new-buttons")[0],
-                        intro: "<h4>Create a New Notebook</h4>To create a new notebook click here and select the scripting environment that you prefer. No scripting knowledge is necessary in the GenePattern Notebook environment, but the ability to write code will remain available to you in case you want it. If you do not know which environment you would prefer, we recommend Python 2."
+                        element: selectors[1],
+                        intro: "<h4>Create a New Notebook</h4>To create a new notebook click here and select the scripting environment that you prefer. If you do not know which environment you would prefer, we recommend Python 2."
                     },
                     {
-                        element: $(".list_item.row:contains('.ipynb')")[0],
-                        intro: "<h4>Run an Existing Notebook</h4>You can launch an existing notebook simply by clicking on one of the notebook files in the list. A variety of example notebooks have been provided for you."
+                        element: selectors[2],
+                        intro: "<h4>Run an Existing Notebook</h4>You can launch an existing notebook simply by clicking on the name of one of the notebook files in the list.<br><br><b>We recommend starting with the GenePattern Notebook Tutotial notebook.</b>"
                     },
                     {
-                        element: $("#alternate_upload")[0],
+                        element: selectors[3],
                         intro: "<h4>Upload a Notebook File</h4>To upload a notebook file or other supporting file, click the upload button and select the file on your computer.</b>"
                     },
                     {
-                        element: $(".dynamic-buttons")[0],
+                        element: selectors[4],
                         intro: "<h4>File Actions</h4>Checking a file will provide a number of actions that can be taken on the selected files. These will be displayed here when a file is checked."
                     }
                 ]
               });
 
-            //intro.onexit(function() {
-            //    tour_cleanup();
-            //});
-            //intro.oncomplete(function() {
-            //    tour_cleanup();
-            //});
+            intro.onexit(function() {
+                tour_cleanup();
+            });
+            intro.oncomplete(function() {
+                tour_cleanup();
+            });
 
             intro.start();
         }
