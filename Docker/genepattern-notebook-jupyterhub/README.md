@@ -1,3 +1,6 @@
+![docker pulls](https://img.shields.io/docker/pulls/genepattern/genepattern-notebook-jupyterhub.svg)
+![docker stars](https://img.shields.io/docker/stars/genepattern/genepattern-notebook-jupyterhub.svg)
+
 This is a Docker image intended for use with JupyterHub and GenePattern Notebooks. The code here is based 
 off of the [jupyter/singleuser](https://github.com/jupyter/dockerspawner/tree/master/singleuser) code.
 
