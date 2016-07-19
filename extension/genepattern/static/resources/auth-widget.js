@@ -445,6 +445,9 @@ define("gp_auth", ["jupyter-js-widgets",
          * @private
          */
         _isURLCustom: function(url) {
+            // Hack for pointing the old http URL of the public server at the new https URL
+            if (url === "http://genepattern.broadinstitute.org/gp") return false;
+
             var widget = this;
             var serverSelect = widget.element.find("[name=server]");
             return serverSelect.find("option[value='" + url + "']").length === 0;
