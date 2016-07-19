@@ -1,4 +1,4 @@
-# Build as genepattern/gpuser
+# Build as genepattern/genepattern-notebook-jupyterhub
 # Run with the DockerSpawner in JupyterHub
 
 FROM jupyter/scipy-notebook
@@ -10,11 +10,11 @@ EXPOSE 8888
 USER root
 
 # fetch juptyerhub-singleuser entrypoint
-RUN wget -q https://raw.githubusercontent.com/genepattern/genepattern-notebook/develop/Docker/gpuser/singleuser.sh -O /usr/local/bin/singleuser.sh
+RUN wget -q https://raw.githubusercontent.com/genepattern/genepattern-notebook/master/Docker/genepattern-notebook-jupyterhub/singleuser.sh -O /usr/local/bin/singleuser.sh
 RUN chmod 755 /usr/local/bin/singleuser.sh
 
 # Install the missing Qt4 API (used by matplotlib)
-RUN apt-get install python-qt4
+RUN apt-get update && apt-get install -y python-qt4
 
 # Install GenePattern Notebook
 RUN pip install genepattern-notebook
