@@ -17,13 +17,15 @@ RUN chmod 755 /usr/local/bin/singleuser.sh
 RUN apt-get update && apt-get install -y python-qt4
 
 # Install GenePattern Notebook
-RUN pip install genepattern-notebook
+RUN pip install genepattern-notebook jupyter-wysiwyg
 
 # Enable the extension
 RUN jupyter nbextension enable --py widgetsnbextension
 RUN jupyter nbextension install --py genepattern
 RUN jupyter nbextension enable --py genepattern
 RUN jupyter serverextension enable --py genepattern
+RUN jupyter nbextension install --py jupyter_wysiwyg
+RUN jupyter nbextension enable --py jupyter_wysiwyg
 
 USER jovyan
 
