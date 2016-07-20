@@ -479,6 +479,7 @@ GenePattern.notebook.updateSliderData = function(url, value) {
 GenePattern.notebook.toGenePatternCell = function() {
     var dialog = require('base/js/dialog');
     var cell = Jupyter.notebook.get_selected_cell();
+    var index = Jupyter.notebook.get_selected_index();
     var contents = cell.get_text().trim();
 
     // Define cell change internal function
@@ -488,7 +489,7 @@ GenePattern.notebook.toGenePatternCell = function() {
         }
         else {
             // Get the auth widget code
-            var code = GenePattern.notebook.init.buildCode("http://genepattern.broadinstitute.org/gp", "", "");
+            var code = GenePattern.notebook.init.buildCode("https://genepattern.broadinstitute.org/gp", "", "");
 
             // Put the code in the cell
             cell.code_mirror.setValue(code);
@@ -516,6 +517,18 @@ GenePattern.notebook.toGenePatternCell = function() {
         }
     };
 
+    // Define cell type check
+    var typeCheck = function(cell) {
+        var cell_type = cell.cell_type;
+        if (cell_type !== "code") {
+            Jupyter.notebook.to_code(index);
+        }
+        setTimeout(function() {
+            var cell = Jupyter.notebook.get_selected_cell();
+            cellChange(cell);
+        }, 10);
+    };
+
     // Prompt for change if the cell has contents
     if (contents !== "") {
         dialog.modal({
@@ -529,14 +542,14 @@ GenePattern.notebook.toGenePatternCell = function() {
                 "Change Cell Type" : {
                     "class" : "btn-warning",
                     "click" : function() {
-                        cellChange(cell);
+                        typeCheck(cell);
                     }
                 }
             }
         });
     }
     else {
-        cellChange(cell);
+        typeCheck(cell);
     }
 
 };
