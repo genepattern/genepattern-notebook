@@ -26,6 +26,8 @@ ENV PYTHONIOENCODING UTF-8
 RUN apt-get update -qq && \
     DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
         build-essential \
+        build-dep \
+        python-matplotlib \
         ca-certificates \
         curl \
         git \
@@ -60,7 +62,7 @@ RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
     rm get-pip.py # && \
 
 RUN pip3 install notebook ipywidgets
-RUN pip3 install pandas numexpr matplotlib scipy scikit-learn sympy
+RUN pip3 install pandas numexpr scipy scikit-learn sympy
 RUN pip3 install genepattern-notebook jupyter-wysiwyg
 
 #add a notebook profile
