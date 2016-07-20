@@ -58,19 +58,10 @@ RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
     python2 get-pip.py && \
     python3 get-pip.py && \
     rm get-pip.py # && \
-#    pip2 --no-cache-dir install requests[security] && \
-#    pip3 --no-cache-dir install requests[security]
 
-
-#RUN pip3 install ipython[all]==3.2
-RUN pip3 install notebook
-RUN pip3 install ipywidgets
-
-#RUN pip2 install genepattern-notebook && \
-#	pip install genepattern-notebook && \
-#	pip3 install genepattern-notebook
-
-RUN pip3 install genepattern-notebook
+RUN pip3 install notebook ipywidgets
+RUN pip3 install pandas numexpr matplotlib scipy scikit-learn sympy
+RUN pip3 install genepattern-notebook jupyter-wysiwyg
 
 #add a notebook profile
 RUN mkdir -p -m 700 /root/.jupyter/ && \
@@ -81,6 +72,8 @@ RUN jupyter nbextension enable --py widgetsnbextension
 RUN jupyter nbextension install --py genepattern
 RUN jupyter nbextension enable --py genepattern
 RUN jupyter serverextension enable --py genepattern
+RUN jupyter nbextension install --py jupyter_wysiwyg
+RUN jupyter nbextension enable --py jupyter_wysiwyg
 
 VOLUME /notebooks
 WORKDIR /notebooks
