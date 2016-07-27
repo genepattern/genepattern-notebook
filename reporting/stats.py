@@ -6,8 +6,10 @@ import datetime
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
 
-# Development placeholder variable
+# Environment configuration
 x = "???"
+home_dir = '/home/user/'
+sudo_req = 'sudo ' # Make blank if sudo is not required
 
 
 def get_disk_usage() :
@@ -17,14 +19,14 @@ def get_disk_usage() :
     disk = {}
 
     # Get the amount of general disk space used
-    cmd_out = commands.getstatusoutput('df -h | grep "/dev/sda1"')[1] # DEV: /dev/disk1
+    cmd_out = commands.getstatusoutput('df -h | grep "/dev/sda1"')[1]
     cmd_parts = cmd_out.split()
     disk["gen_disk_used"] = cmd_parts[2]
     disk["gen_disk_total"] = cmd_parts[3]
     disk["gen_disk_percent"] = cmd_parts[4]
 
     # Get the amount of Docker disk space used
-    cmd_out = commands.getstatusoutput('df -h | grep "/dev/mapper/vg_system-docker"')[1] # DEV: /dev/disk1
+    cmd_out = commands.getstatusoutput('df -h | grep "/dev/mapper/vg_system-docker"')[1]
     cmd_parts = cmd_out.split()
     disk["docker_disk_used"] = cmd_parts[2]
     disk["docker_disk_total"] = cmd_parts[3]
@@ -39,7 +41,7 @@ def get_nb_count():
     """
 
     # Gather a list of all running containers
-    cmd_out = commands.getstatusoutput('sudo docker ps')[1] # DEV: ls -al
+    cmd_out = commands.getstatusoutput(sudo_req + 'docker ps')[1]
     cmd_lines = cmd_out.split('\n')
     containers = []
     for line in cmd_lines:
@@ -56,11 +58,11 @@ def get_nb_count():
             continue
 
         # Weekly query
-        cmd_out = commands.getstatusoutput('sudo docker exec ' + d + ' find . -type f -not -path \'*\.*\' -mtime -7 -name *.ipynb | wc -l')[1] # DEV: ls -l | wc -l
+        cmd_out = commands.getstatusoutput(sudo_req + 'docker exec ' + d + ' find . -type f -not -path \'*\.*\' -mtime -7 -name *.ipynb | wc -l')[1]
         user_week = int(cmd_out.strip())
         nb_count['week'] += user_week
 
-        cmd_out = commands.getstatusoutput('sudo docker exec ' + d + ' find . -type f -not -path \'*/\.*\' -name *.ipynb | wc -l')[1] # DEV: ls -l | wc -l
+        cmd_out = commands.getstatusoutput(sudo_req + 'docker exec ' + d + ' find . -type f -not -path \'*/\.*\' -name *.ipynb | wc -l')[1]
         user_total = int(cmd_out.strip())
         nb_count['total'] += user_total
 
@@ -75,12 +77,12 @@ def get_users():
     users = {}
 
     # Read the file of existing users
-    user_file = file('users.lst', 'r')
+    user_file = file(home_dir + 'users.lst', 'r')
     user_list = user_file.readlines()
     user_list = [u.strip() for u in user_list] # Clean new lines
 
     # Gather a list of all running containers
-    cmd_out = commands.getstatusoutput('sudo docker ps -a | grep "jupyter-"')[1] # DEV: ls -al
+    cmd_out = commands.getstatusoutput(sudo_req + 'docker ps -a | grep "jupyter-"')[1]
     cmd_lines = cmd_out.split('\n')
     containers = []
     for line in cmd_lines:
@@ -97,7 +99,7 @@ def get_users():
     users['total'] = len(set(user_list) | set(containers))
 
     # Update the users file
-    user_file = file('users.lst', 'w')
+    user_file = file(home_dir + 'users.lst', 'w')
     for u in (set(user_list) | set(containers)):
         user_file.write("%s\n" % u)
     user_file.close()
@@ -113,11 +115,11 @@ def get_logins():
     logins = {}
 
     # Count the number of logins in the weekly log
-    cmd_out = commands.getstatusoutput('cat jupyterhub.log | grep -c "User logged in"')[1] # DEV: cat LICENSE.txt | grep -c "d"
+    cmd_out = commands.getstatusoutput('cat ' + home_dir + 'jupyterhub.log | grep -c "User logged in"')[1]
     logins['week'] = int(cmd_out.strip())
 
     # Read the total number of logins
-    login_file = file('logins.log', 'w+')
+    login_file = file(home_dir + 'logins.log', 'w+')
     total_count = login_file.read().strip()
     if len(total_count) == 0: # Handle an empty file
         total_count = 0
@@ -131,8 +133,8 @@ def get_logins():
     login_file.close()
 
     # Move the log to backup
-    commands.getstatusoutput('mv jupyterhub.log jupyterhub.log.old')
-    commands.getstatusoutput('touch jupyterhub.log')
+    commands.getstatusoutput('mv ' + home_dir + 'jupyterhub.log ' + home_dir + 'jupyterhub.log.old')
+    commands.getstatusoutput('touch ' + home_dir + 'jupyterhub.log')
 
     return logins
 
