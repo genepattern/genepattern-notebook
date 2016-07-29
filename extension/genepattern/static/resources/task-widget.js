@@ -481,9 +481,13 @@ define("gp_task", ["jupyter-js-widgets",
             // This changes the value from the file name to the uploaded URL
             // Try removing the matching URL
             $.each(this._values, function(i, e) {
-                var server = GenePattern.server();
+                var parser = document.createElement('a');
+                parser.href = GenePattern.server();
+
                 var display = widget._singleDisplay(e);
-                if (display.indexOf(server) === 0   && display.endsWith(value)) {
+                var foundHost = display.indexOf(parser.host) === 7 || display.indexOf(parser.host) === 8;
+
+                if (foundHost && display.endsWith(value)) {
                     widget._values.splice(i, 1);
                     return false;
                 }
