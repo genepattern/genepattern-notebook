@@ -146,12 +146,12 @@ def send_mail(users, logins, disk, nb_count):
     :return:
     """
     today = str(datetime.date.today())
-    fromaddr = "gp-exec@broadinstitute.org"
+    fromaddr = "gp-dev@broadinstitute.org"
     toaddr = "gp-dev@broadinstitute.org"
     msg = MIMEMultipart()
     msg['From'] = fromaddr
     msg['To'] = toaddr
-    msg['Subject'] = "GenePattern Notebook Usage Statistics, week ending " + today
+    msg['Subject'] = "GenePattern Notebook Repository Usage Statistics, week ending " + today
 
     body = """
         <html>
