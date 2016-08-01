@@ -4,17 +4,101 @@ import commands
 import smtplib
 import datetime
 import sys
+import shutil
+import base64
+import json
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
+
+if sys.version_info.major > 2:
+    import urllib.request as urllib2
+else:
+    import urllib2
 
 # Environment configuration
 x = "???"
 home_dir = '/home/user/'
 sudo_req = 'sudo '  # Make blank if sudo is not required
 test_email = 'user@broadinstitute.org'
+admin_login = 'username:password'
 
 # Handle arguments
 test_run = True if (len(sys.argv) >= 2 and sys.argv[1] == '--test') else False
+
+
+def _poll_docker(image):
+    request = urllib2.Request('https://registry.hub.docker.com/v2/repositories/genepattern/' + image + '/')
+    response = urllib2.urlopen(request)
+    json_str = response.read().decode('utf-8')
+    image_json = json.loads(json_str)
+    return {'stars': image_json['star_count'], 'pulls': image_json['pull_count']}
+
+
+def get_docker():
+    docker = {}
+    docker['notebook'] = _poll_docker('genepattern-notebook')
+    docker['jupyterhub'] = _poll_docker('genepattern-notebook-jupyterhub')
+    return docker
+
+
+def _poll_pypi(package):
+    request = urllib2.Request('https://pypi.python.org/pypi/' + package + '/json')
+    response = urllib2.urlopen(request)
+    json_str = response.read().decode('utf-8')
+    package_json = json.loads(json_str)
+
+    # Total the downloads
+    total = 0
+    for release in package_json['releases']:
+        total += package_json['releases'][release][0]['downloads']
+
+    return {'weekly': package_json['info']['downloads']['last_week'], 'total': total}
+
+
+def get_pypi():
+    pypi = {}
+    pypi['notebook'] = _poll_pypi('genepattern-notebook')
+    pypi['python'] = _poll_pypi('genepattern-python')
+    pypi['wysiwyg'] = _poll_pypi('jupyter-wysiwyg')
+    return pypi
+
+
+def _poll_genepattern(gp_url):
+    """
+    Poll the provided GenePattern server for the number of GenePattern Notebook jobs launched in the last week
+
+    :param gp_url: The URL of the GenePattern server, not including /gp...
+    :return: Return the number of GenePattern Notebook jobs launched on this server
+    """
+    request = urllib2.Request(gp_url + '/gp/rest/v1/jobs/?tag=GenePattern%20Notebook&pageSize=1000&includeChildren=true&includeOutputFiles=false&includePermissions=false')
+    base64string = base64.encodestring(bytearray(admin_login, 'utf-8')).decode('utf-8').replace('\n', '')
+    request.add_header("Authorization", "Basic %s" % base64string)
+    response = urllib2.urlopen(request)
+    json_str = response.read().decode('utf-8')
+    jobs_json = json.loads(json_str)
+    count = 0
+
+    for job in jobs_json['items']:
+        timestamp = job['dateSubmitted']
+        date = datetime.datetime.strptime(timestamp.split('T')[0], '%Y-%m-%d')
+        if date >= datetime.datetime.now() - datetime.timedelta(days=8):
+            count += 1
+        if 'children' in job:
+            child_count = len(job['children']['items'])
+            count += child_count
+
+    return count
+
+
+def get_weekly_jobs():
+    """
+    Assemble the number of GenePattern Notebook jobs launched on each server
+    """
+    weekly_jobs = {}
+    weekly_jobs['prod'] = _poll_genepattern('https://genepattern.broadinstitute.org')
+    weekly_jobs['broad'] = _poll_genepattern('https://gpbroad.broadinstitute.org')
+    weekly_jobs['iu'] = _poll_genepattern('http://gp.indiana.edu')
+    return weekly_jobs
 
 
 def get_disk_usage() :
@@ -142,14 +226,13 @@ def get_logins():
 
     # Move the log to backup
     if not test_run:
-        import shutil
         shutil.copyfileobj(file(home_dir + 'nohup.out', 'r'), file(home_dir + 'nohup.out.old', 'w'))
         open(home_dir + 'nohup.out', 'w').close()
 
     return logins
 
 
-def send_mail(users, logins, disk, nb_count):
+def send_mail(users, logins, disk, nb_count, weekly_jobs, docker, pypi):
     """
     Send the weekly report in an email
     :param disk:
@@ -170,6 +253,7 @@ def send_mail(users, logins, disk, nb_count):
                 <table width="100%%">
                     <tr>
                         <td width="50%%" valign="top">
+                            <h2>Notebook Repository</h2>
                             <h3>Total repository users</h3>
                             <table border="1">
                                 <tr>
@@ -179,15 +263,15 @@ def send_mail(users, logins, disk, nb_count):
                                 <tr>
                                     <td>Total</td>
                                     <td>%s</td>
-                                <tr>
+                                </tr>
                                 <tr>
                                     <td>Returning</td>
                                     <td>%s</td>
-                                <tr>
+                                </tr>
                                 <tr>
                                     <td>New</td>
                                     <td>%s</td>
-                                <tr>
+                                </tr>
                             </table>
 
                             <h3>Repository user logins</h3>
@@ -199,11 +283,27 @@ def send_mail(users, logins, disk, nb_count):
                                 <tr>
                                     <td>Total</td>
                                     <td>%s</td>
-                                <tr>
+                                </tr>
                                 <tr>
                                     <td>This week</td>
                                     <td>%s</td>
+                                </tr>
+                            </table>
+
+                            <h3>Repository notebook files created</h3>
+                            <table border="1">
                                 <tr>
+                                    <th>Notebooks</th>
+                                    <th>#</th>
+                                </tr>
+                                <tr>
+                                    <td>Total</td>
+                                    <td>%s</td>
+                                </tr>
+                                <tr>
+                                    <td>Modified</td>
+                                    <td>%s</td>
+                                </tr>
                             </table>
 
                             <h3>Repository disk space used</h3>
@@ -219,16 +319,17 @@ def send_mail(users, logins, disk, nb_count):
                                     <td>%s</td>
                                     <td>%s</td>
                                     <td>%s</td>
-                                <tr>
+                                </tr>
                                 <tr>
                                     <td>Docker Disk</td>
                                     <td>%s</td>
                                     <td>%s</td>
                                     <td>%s</td>
-                                <tr>
+                                </tr>
                             </table>
                         </td>
                         <td width="50%%" valign="top">
+                            <h2>Notebook Extension</h2>
                             <h3>Total notebook jobs run</h3>
                             <table border="1">
                                 <tr>
@@ -238,15 +339,15 @@ def send_mail(users, logins, disk, nb_count):
                                 <tr>
                                     <td>GP Prod</td>
                                     <td>%s</td>
-                                <tr>
+                                </tr>
                                 <tr>
                                     <td>GP Broad</td>
                                     <td>%s</td>
-                                <tr>
+                                </tr>
                                 <tr>
                                     <td>GP @ IU</td>
                                     <td>%s</td>
-                                <tr>
+                                </tr>
                             </table>
 
                             <h3>Notebook jobs run this week</h3>
@@ -258,33 +359,60 @@ def send_mail(users, logins, disk, nb_count):
                                 <tr>
                                     <td>GP Prod</td>
                                     <td>%s</td>
-                                <tr>
+                                </tr>
                                 <tr>
                                     <td>GP Broad</td>
                                     <td>%s</td>
-                                <tr>
+                                </tr>
                                 <tr>
                                     <td>GP @ IU</td>
                                     <td>%s</td>
-                                <tr>
+                                </tr>
                             </table>
 
-                            <h3>Repository notebook files created</h3>
+                            <h3>DockerHub stats</h3>
                             <table border="1">
                                 <tr>
-                                    <th>Notebooks</th>
-                                    <th>#</th>
+                                    <th>Image</th>
+                                    <th>Stars</th>
+                                    <th>Pulls</th>
                                 </tr>
                                 <tr>
-                                    <td>Total</td>
+                                    <td>gp-notebook</td>
                                     <td>%s</td>
-                                <tr>
-                                <tr>
-                                    <td>Modified</td>
                                     <td>%s</td>
+                                </tr>
                                 <tr>
+                                    <td>gp-jupyterhub</td>
+                                    <td>%s</td>
+                                    <td>%s</td>
+                                </tr>
                             </table>
-                        <td>
+
+                            <h3>PyPI downloads</h3>
+                            <table border="1">
+                                <tr>
+                                    <th>Package</th>
+                                    <th>Weekly</th>
+                                    <th>Total</th>
+                                </tr>
+                                <tr>
+                                    <td>genepattern-notebook</td>
+                                    <td>%s</td>
+                                    <td>%s</td>
+                                </tr>
+                                <tr>
+                                    <td>genepattern-python</td>
+                                    <td>%s</td>
+                                    <td>%s</td>
+                                </tr>
+                                <tr>
+                                    <td>jupyter-wysiwyg</td>
+                                    <td>%s</td>
+                                    <td>%s</td>
+                                </tr>
+                            </table>
+                        </td>
                     </tr>
                 </table>
             </body>
@@ -302,6 +430,10 @@ def send_mail(users, logins, disk, nb_count):
         logins['total'],
         logins['week'],
 
+        # Notebook files
+        nb_count['total'],
+        nb_count['week'],
+
         # Disk Usage
         disk["gen_disk_used"],
         disk["gen_disk_total"],
@@ -314,11 +446,16 @@ def send_mail(users, logins, disk, nb_count):
         x, x, x,
 
         # Weekly jobs
-        x, x, x,
+        weekly_jobs['prod'], weekly_jobs['broad'], weekly_jobs['iu'],
 
-        # Notebook files
-        nb_count['total'],
-        nb_count['week'])
+        # Docker stats
+        docker['notebook']['stars'], docker['notebook']['pulls'],
+        docker['jupyterhub']['stars'], docker['jupyterhub']['pulls'],
+
+        # PyPI stats
+        pypi['notebook']['weekly'], pypi['notebook']['total'],
+        pypi['python']['weekly'], pypi['python']['total'],
+        pypi['wysiwyg']['weekly'], pypi['wysiwyg']['total'])
 
     msg.attach(MIMEText(body, 'html'))
 
@@ -333,4 +470,7 @@ disk = get_disk_usage()
 nb_count = get_nb_count()
 users = get_users()
 logins = get_logins()
-send_mail(users, logins, disk, nb_count)
+weekly_jobs = get_weekly_jobs()
+docker = get_docker()
+pypi = get_pypi()
+send_mail(users, logins, disk, nb_count, weekly_jobs, docker, pypi)
