@@ -3,13 +3,18 @@
 import commands
 import smtplib
 import datetime
+import sys
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
 
 # Environment configuration
 x = "???"
 home_dir = '/home/user/'
-sudo_req = 'sudo ' # Make blank if sudo is not required
+sudo_req = 'sudo '  # Make blank if sudo is not required
+test_email = 'user@broadinstitute.org'
+
+# Handle arguments
+test_run = True if (len(sys.argv) >= 2 and sys.argv[1] == '--test') else False
 
 
 def get_disk_usage() :
@@ -58,11 +63,11 @@ def get_nb_count():
             continue
 
         # Weekly query
-        cmd_out = commands.getstatusoutput(sudo_req + 'docker exec ' + d + ' find . -type f -not -path \'*\.*\' -mtime -7 -name *.ipynb | wc -l')[1]
+        cmd_out = commands.getstatusoutput(sudo_req + 'docker exec ' + d + " find . -type f -not -path '*/\.*' -mtime -7 -name *.ipynb | wc -l")[1]
         user_week = int(cmd_out.strip())
         nb_count['week'] += user_week
 
-        cmd_out = commands.getstatusoutput(sudo_req + 'docker exec ' + d + ' find . -type f -not -path \'*/\.*\' -name *.ipynb | wc -l')[1]
+        cmd_out = commands.getstatusoutput(sudo_req + 'docker exec ' + d + " find . -type f -not -path '*/\.*' -name *.ipynb | wc -l")[1]
         user_total = int(cmd_out.strip())
         nb_count['total'] += user_total
 
@@ -79,7 +84,7 @@ def get_users():
     # Read the file of existing users
     user_file = file(home_dir + 'users.lst', 'r')
     user_list = user_file.readlines()
-    user_list = [u.strip() for u in user_list] # Clean new lines
+    user_list = [u.strip() for u in user_list]  # Clean new lines
 
     # Gather a list of all running containers
     cmd_out = commands.getstatusoutput(sudo_req + 'docker ps -a | grep "jupyter-"')[1]
@@ -90,7 +95,7 @@ def get_users():
         last_part = cmd_parts[len(cmd_parts)-1]
         last_halves = last_part.split("-")
         if len(last_halves) < 2:
-            continue # Ignore container names we cannot parse
+            continue  # Ignore container names we cannot parse
         containers.append(last_halves[1])
 
     # Get the sets of users
@@ -99,10 +104,11 @@ def get_users():
     users['total'] = len(set(user_list) | set(containers))
 
     # Update the users file
-    user_file = file(home_dir + 'users.lst', 'w')
-    for u in (set(user_list) | set(containers)):
-        user_file.write("%s\n" % u)
-    user_file.close()
+    if not test_run:
+        user_file = file(home_dir + 'users.lst', 'w')
+        for u in (set(user_list) | set(containers)):
+            user_file.write("%s\n" % u)
+        user_file.close()
 
     return users
 
@@ -115,11 +121,11 @@ def get_logins():
     logins = {}
 
     # Count the number of logins in the weekly log
-    cmd_out = commands.getstatusoutput('cat ' + home_dir + 'jupyterhub.log | grep -c "User logged in"')[1]
+    cmd_out = commands.getstatusoutput('cat ' + home_dir + 'nohup.out | grep -c "User logged in"')[1]
     logins['week'] = int(cmd_out.strip())
 
     # Read the total number of logins
-    login_file = file(home_dir + 'logins.log', 'w+')
+    login_file = file(home_dir + 'logins.log', 'r')
     total_count = login_file.read().strip()
     if len(total_count) == 0: # Handle an empty file
         total_count = 0
@@ -129,12 +135,16 @@ def get_logins():
     # Add logins and update file
     total_count += logins['week']
     logins['total'] = total_count
-    login_file.write(str(total_count))
-    login_file.close()
+    if not test_run:
+        login_file = file(home_dir + 'logins.log', 'w')
+        login_file.write(str(total_count))
+        login_file.close()
 
     # Move the log to backup
-    commands.getstatusoutput('mv ' + home_dir + 'jupyterhub.log ' + home_dir + 'jupyterhub.log.old')
-    commands.getstatusoutput('touch ' + home_dir + 'jupyterhub.log')
+    if not test_run:
+        import shutil
+        shutil.copyfileobj(file(home_dir + 'nohup.out', 'r'), file(home_dir + 'nohup.out.old', 'w'))
+        open(home_dir + 'nohup.out', 'w').close()
 
     return logins
 
@@ -146,12 +156,12 @@ def send_mail(users, logins, disk, nb_count):
     :return:
     """
     today = str(datetime.date.today())
-    fromaddr = "gp-dev@broadinstitute.org"
-    toaddr = "gp-dev@broadinstitute.org"
+    fromaddr = "gp-dev@broadinstitute.org" if not test_run else test_email
+    toaddr = "gp-dev@broadinstitute.org" if not test_run else test_email
     msg = MIMEMultipart()
     msg['From'] = fromaddr
     msg['To'] = toaddr
-    msg['Subject'] = "GenePattern Notebook Repository Usage Statistics, week ending " + today
+    msg['Subject'] = "GenePattern Notebook Usage Statistics, week ending " + today
 
     body = """
         <html>
@@ -160,7 +170,7 @@ def send_mail(users, logins, disk, nb_count):
                 <table width="100%%">
                     <tr>
                         <td width="50%%" valign="top">
-                            <h3>Total users</h3>
+                            <h3>Total repository users</h3>
                             <table border="1">
                                 <tr>
                                     <th>Users</th>
@@ -180,7 +190,7 @@ def send_mail(users, logins, disk, nb_count):
                                 <tr>
                             </table>
 
-                            <h3>User logins</h3>
+                            <h3>Repository user logins</h3>
                             <table border="1">
                                 <tr>
                                     <th>Logins</th>
@@ -196,7 +206,7 @@ def send_mail(users, logins, disk, nb_count):
                                 <tr>
                             </table>
 
-                            <h3>Disk space used</h3>
+                            <h3>Repository disk space used</h3>
                             <table border="1">
                                 <tr>
                                     <th>File System</th>
@@ -219,7 +229,7 @@ def send_mail(users, logins, disk, nb_count):
                             </table>
                         </td>
                         <td width="50%%" valign="top">
-                            <h3>Total jobs run</h3>
+                            <h3>Total notebook jobs run</h3>
                             <table border="1">
                                 <tr>
                                     <th>Server</th>
@@ -239,7 +249,7 @@ def send_mail(users, logins, disk, nb_count):
                                 <tr>
                             </table>
 
-                            <h3>Jobs run this week</h3>
+                            <h3>Notebook jobs run this week</h3>
                             <table border="1">
                                 <tr>
                                     <th>Server</th>
@@ -259,7 +269,7 @@ def send_mail(users, logins, disk, nb_count):
                                 <tr>
                             </table>
 
-                            <h3>Notebook files created</h3>
+                            <h3>Repository notebook files created</h3>
                             <table border="1">
                                 <tr>
                                     <th>Notebooks</th>
