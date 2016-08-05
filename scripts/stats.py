@@ -27,6 +27,11 @@ test_run = True if (len(sys.argv) >= 2 and sys.argv[1] == '--test') else False
 
 
 def _poll_docker(image):
+    """
+    Poll DockerHub for stats on the GenePattern images
+    :param image:
+    :return:
+    """
     request = urllib2.Request('https://registry.hub.docker.com/v2/repositories/genepattern/' + image + '/')
     response = urllib2.urlopen(request)
     json_str = response.read().decode('utf-8')
@@ -35,6 +40,10 @@ def _poll_docker(image):
 
 
 def get_docker():
+    """
+    Gather all the available Docker stats
+    :return:
+    """
     docker = {}
     docker['notebook'] = _poll_docker('genepattern-notebook')
     docker['jupyterhub'] = _poll_docker('genepattern-notebook-jupyterhub')
@@ -42,6 +51,11 @@ def get_docker():
 
 
 def _poll_pypi(package):
+    """
+    Poll PyPI for stats on the GenePattern packages
+    :param package:
+    :return:
+    """
     request = urllib2.Request('https://pypi.python.org/pypi/' + package + '/json')
     response = urllib2.urlopen(request)
     json_str = response.read().decode('utf-8')
@@ -56,6 +70,10 @@ def _poll_pypi(package):
 
 
 def get_pypi():
+    """
+    Assemble the available PyPI stats
+    :return:
+    """
     pypi = {}
     pypi['notebook'] = _poll_pypi('genepattern-notebook')
     pypi['python'] = _poll_pypi('genepattern-python')
@@ -90,6 +108,29 @@ def _poll_genepattern(gp_url):
     return count
 
 
+def get_total_jobs(weekly_jobs):
+    # Read the file of total jobs
+    jobs_file = file(home_dir + 'jobs.lst', 'r')
+    jobs_list = jobs_file.readlines()
+    jobs_list = [j.strip() for j in jobs_list]  # Clean new lines
+
+    # Create the total jobs object
+    total_jobs = {}
+    total_jobs['prod'] = int(jobs_list[0]) + weekly_jobs['prod']
+    total_jobs['broad'] = int(jobs_list[1]) + weekly_jobs['broad']
+    total_jobs['iu'] = int(jobs_list[2]) + weekly_jobs['iu']
+
+    # Write the new totals back to the file
+    if not test_run:
+        jobs_file = file(home_dir + 'jobs.lst', 'w')
+        jobs_file.write("%s\n" % total_jobs['prod'])
+        jobs_file.write("%s\n" % total_jobs['broad'])
+        jobs_file.write("%s\n" % total_jobs['iu'])
+        jobs_file.close()
+
+    return total_jobs
+
+
 def get_weekly_jobs():
     """
     Assemble the number of GenePattern Notebook jobs launched on each server
@@ -101,7 +142,7 @@ def get_weekly_jobs():
     return weekly_jobs
 
 
-def get_disk_usage() :
+def get_disk_usage():
     """
     Handle determining disk usage on this VM
     """
@@ -211,7 +252,7 @@ def get_logins():
     # Read the total number of logins
     login_file = file(home_dir + 'logins.log', 'r')
     total_count = login_file.read().strip()
-    if len(total_count) == 0: # Handle an empty file
+    if len(total_count) == 0:  # Handle an empty file
         total_count = 0
     else:
         total_count = int(total_count)
@@ -232,7 +273,7 @@ def get_logins():
     return logins
 
 
-def send_mail(users, logins, disk, nb_count, weekly_jobs, docker, pypi):
+def send_mail(users, logins, disk, nb_count, weekly_jobs, docker, pypi, total_jobs):
     """
     Send the weekly report in an email
     :param disk:
@@ -443,7 +484,7 @@ def send_mail(users, logins, disk, nb_count, weekly_jobs, docker, pypi):
         disk["docker_disk_percent"],
 
         # Total jobs
-        x, x, x,
+        total_jobs['prod'], total_jobs['broad'], total_jobs['iu'],
 
         # Weekly jobs
         weekly_jobs['prod'], weekly_jobs['broad'], weekly_jobs['iu'],
@@ -473,4 +514,5 @@ logins = get_logins()
 weekly_jobs = get_weekly_jobs()
 docker = get_docker()
 pypi = get_pypi()
-send_mail(users, logins, disk, nb_count, weekly_jobs, docker, pypi)
+total_jobs = get_total_jobs(weekly_jobs)
+send_mail(users, logins, disk, nb_count, weekly_jobs, docker, pypi, total_jobs)
