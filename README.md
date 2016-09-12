@@ -73,8 +73,11 @@ Before you the GenePattern extension for the very first time, you should make su
 enable in Jupyter. To do this run the following on the command line: 
 
 > jupyter nbextension enable --py widgetsnbextension
+>
 > jupyter nbextension install --py genepattern
+>
 > jupyter nbextension enable --py genepattern
+>
 > jupyter serverextension enable --py genepattern
 
 ### Launch Jupyter
