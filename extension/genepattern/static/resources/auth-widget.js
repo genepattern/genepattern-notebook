@@ -615,7 +615,17 @@ define("gp_auth", ["jupyter-js-widgets",
 
         buildCode: function(server, username, password) {
             var code = GenePattern.notebook.init.buildCode(server, username, password);
-            this.options.cell.code_mirror.setValue(code);
+            var cell = this.options.cell;
+
+            if (cell.cell_type === 'markdown') {
+                console.log("ERROR: Attempting to turn markdown cell into widget in authWidget.buildCode()")
+            }
+            else if (cell.cell_type == 'code') {
+                cell.code_mirror.setValue(code);
+            }
+            else {
+                console.log("ERROR: Unknown cell type sent to authWidget.buildCode()");
+            }
         },
 
         executeCell: function() {
@@ -892,8 +902,18 @@ define("gp_auth", ["jupyter-js-widgets",
             // Check to see if this auth widget was manually created, if so replace with full code
             if (cell.code_mirror.getValue().indexOf("# !AUTOEXEC") === -1) {
                 var code = GenePattern.notebook.init.buildCode("https://genepattern.broadinstitute.org/gp", "", "");
-                cell.code_mirror.setValue(code);
-                cell.execute();
+
+                // Only set the code if this is, in fact, a code cell
+                if (cell.cell_type === 'markdown') {
+                    console.log("ERROR: Attempting to turn markdown cell into widget in AuthWidgetView.render()")
+                }
+                else if (cell.cell_type == 'code') {
+                    cell.code_mirror.setValue(code);
+                    cell.execute();
+                }
+                else {
+                    console.log("ERROR: Unknown cell type sent to AuthWidgetView.render()");
+                }
             }
 
             // Render the view.
