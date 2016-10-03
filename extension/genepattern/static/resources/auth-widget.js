@@ -12,6 +12,19 @@
  * responsible for its use, misuse, or functionality.
  */
 
+/**
+ *  Expects a list of lists with [name, url] pairs
+ *  Configure this list to change what users see
+ *  The top option is the default for the server
+ *  Remove the 'Custom GenePattern Server' option to disallow custom servers
+ */
+var GENEPATTERN_SERVERS = [
+    ['Broad Institute', 'https://genepattern.broadinstitute.org/gp'],
+    ['Indiana University', 'http://gp.indiana.edu/gp'],
+    ['Broad Internal (Broad Institute Users Only)', 'https://gpbroad.broadinstitute.org/gp'],
+    ['Custom GenePattern Server', 'Custom']
+];
+
 // Add shim to support Jupyter 3.x and 4.x
 var Jupyter = Jupyter || IPython || {};
 
@@ -25,13 +38,10 @@ define("gp_auth", ["jupyter-js-widgets",
 
     $.widget("gp.auth", {
         options: {
-            servers: [                                              // Expects a list of lists with [name, url] pairs
-                ['Broad Institute', 'https://genepattern.broadinstitute.org/gp'],
-                ['Indiana University', 'http://gp.indiana.edu/gp'],
-                ['Broad Internal (Broad Institute Users Only)', 'https://gpbroad.broadinstitute.org/gp'],
-                ['Custom GenePattern Server', 'Custom']
-            ],
-            cell: null                                              // Reference to the IPython cell
+            servers: GENEPATTERN_SERVERS,
+
+            // Reference to the IPython cell
+            cell: null
         },
 
         /**
@@ -901,7 +911,7 @@ define("gp_auth", ["jupyter-js-widgets",
 
             // Check to see if this auth widget was manually created, if so replace with full code
             if (cell.code_mirror.getValue().indexOf("# !AUTOEXEC") === -1) {
-                var code = GenePattern.notebook.init.buildCode("https://genepattern.broadinstitute.org/gp", "", "");
+                var code = GenePattern.notebook.init.buildCode(GENEPATTERN_SERVERS[0][1], "", "");
 
                 // Only set the code if this is, in fact, a code cell
                 if (cell.cell_type === 'markdown') {
