@@ -39,13 +39,13 @@ class GPDevelop(_develop):
 
 setup(name='genepattern-notebook',
       packages=['genepattern'],
-      version='0.5.3',
+      version='0.5.4',
       description='GenePattern Notebook extension for Jupyter',
       license='BSD',
       author='Thorin Tabor',
       author_email='thorin@broadinstitute.org',
       url='https://github.com/genepattern/genepattern-notebook',
-      download_url='https://github.com/genepattern/genepattern-notebook/archive/0.5.3.tar.gz',
+      download_url='https://github.com/genepattern/genepattern-notebook/archive/0.5.4.tar.gz',
       keywords=['genepattern', 'genomics', 'bioinformatics', 'ipython', 'jupyter'],
       classifiers=[
           'Development Status :: 4 - Beta',
