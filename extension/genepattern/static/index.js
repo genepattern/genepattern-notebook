@@ -34,12 +34,10 @@ define([
         // If reloading a notebook, display with the full event model
         $([Jupyter.events]).on('kernel_ready.Kernel kernel_created.Session notebook_loaded.Notebook', GenePattern.notebook.init.notebook_init_wrapper);
 
-        // Otherwise, if not initialized after two seconds, manually init
+        // Otherwise, if not initialized after half a second, manually init
         setTimeout(function() {
-            if (!GenePattern.notebook.init.done_init  && Jupyter.notebook.kernel) {
-                GenePattern.notebook.init.notebook_init_wrapper();
-            }
-        }, 2000);
+            GenePattern.notebook.init.wait_for_kernel();
+        }, 500);
     }
 
     return {

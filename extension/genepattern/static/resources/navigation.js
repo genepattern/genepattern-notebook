@@ -896,6 +896,20 @@ GenePattern.notebook.init.main_init_wrapper = function(evt) {
 };
 
 /**
+ * Wait for kernel and then init notebook widgets
+ */
+GenePattern.notebook.init.wait_for_kernel = function () {
+    if (!GenePattern.notebook.init.done_init  && Jupyter.notebook.kernel) {
+        GenePattern.notebook.init.notebook_init_wrapper();
+    }
+    else if (!GenePattern.notebook.init.done_init) {
+        setTimeout(function() {
+            GenePattern.notebook.init.wait_for_kernel();
+        }, 500);
+    }
+};
+
+/**
  * Initialize GenePattern Notebook from the notebook page
  */
 GenePattern.notebook.init.notebook_init_wrapper = function () {
