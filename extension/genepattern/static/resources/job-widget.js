@@ -913,6 +913,8 @@ define("gp_job", ["jupyter-js-widgets",
 
             // Display the visualizer if not already displayed
             if (!displayed) {
+                var urlWithToken = launchUrl + "#" + GenePattern.token;
+
                 viewerDiv.append(
                     $("<iframe/>")
                         .css("width", "100%")
@@ -920,7 +922,20 @@ define("gp_job", ["jupyter-js-widgets",
                         .css("overflow", "auto")
                         .css("margin-top", "10px")
                         .css("border", "1px solid rgba(10, 45, 105, 0.80)")
-                        .attr("src", launchUrl + "#" + GenePattern.token)
+                        .attr("src", urlWithToken)
+                );
+
+                // Add the pop out button
+                var statusDiv = this.element.find(".gp-widget-job-status");
+                statusDiv.empty();
+                statusDiv.append(
+                    $("<button></button>")
+                        .addClass("btn btn-default btn-sm")
+                        .css("margin-right", 5)
+                        .append("Pop out")
+                        .click(function() {
+                            window.open(urlWithToken);
+                        })
                 );
             }
         },
