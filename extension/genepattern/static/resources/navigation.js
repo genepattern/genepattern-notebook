@@ -288,6 +288,22 @@ GenePattern.notebook.removeKindVisualizers = function(kindMap) {
 };
 
 /**
+ * Strip version number from the LSID, if present
+ *
+ * @param lsid
+ */
+GenePattern.notebook.stripVersion = function(lsid) {
+    var parts = lsid.split(':');
+    if (parts.length === 6) {
+        parts.pop();
+        return parts.join(':');
+    }
+    else {
+        return lsid;
+    }
+};
+
+/**
  * Build the basic code for displaying a module widget
  *
  * @param module
@@ -296,9 +312,10 @@ GenePattern.notebook.buildModuleCode = function(module) {
     var baseName = module["name"].toLowerCase().replace(/\./g, '_');
     var taskName = baseName + "_task";
     var specName = baseName + "_job_spec";
+    var baseLsid = GenePattern.notebook.stripVersion(module["lsid"]);
 
     return "# !AUTOEXEC\n\n" +
-            taskName + " = gp.GPTask(gpserver, '" + module["lsid"] + "')\n" +
+            taskName + " = gp.GPTask(gpserver, '" + baseLsid + "')\n" +
             specName + " = " + taskName + ".make_job_spec()\n" +
             "GPTaskWidget(" + taskName + ")";
 };
