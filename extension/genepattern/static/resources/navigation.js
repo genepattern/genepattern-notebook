@@ -901,28 +901,15 @@ GenePattern.notebook.buildMenu = function(widget, element, name, href, kind, ind
 GenePattern.notebook.init = GenePattern.notebook.init || {};
 
 /**
- * Initialize GenePattern Notebook from the main notebook listing page
- *
- * @param evt
- */
-GenePattern.notebook.init.main_init_wrapper = function(evt) {
-    GenePattern.notebook.init.launch_init(evt);
-
-    // Mark init as done
-    GenePattern.notebook.init.done_init = true;
-};
-
-/**
  * Wait for kernel and then init notebook widgets
  */
-GenePattern.notebook.init.wait_for_kernel = function () {
+GenePattern.notebook.init.wait_for_kernel = function (id) {
+    console.log("wait_for_kernel");
     if (!GenePattern.notebook.init.done_init  && Jupyter.notebook.kernel) {
         GenePattern.notebook.init.notebook_init_wrapper();
     }
-    else if (!GenePattern.notebook.init.done_init) {
-        setTimeout(function() {
-            GenePattern.notebook.init.wait_for_kernel();
-        }, 500);
+    else if (GenePattern.notebook.init.done_init) {
+        clearInterval(id);
     }
 };
 
@@ -930,46 +917,54 @@ GenePattern.notebook.init.wait_for_kernel = function () {
  * Initialize GenePattern Notebook from the notebook page
  */
 GenePattern.notebook.init.notebook_init_wrapper = function () {
+    console.log("notebook_init_wrapper");
     if (!GenePattern.notebook.init.done_init  && Jupyter.notebook.kernel) {
-        // Mark init as done
-        GenePattern.notebook.init.done_init = true;
+        try {
+            // Call the core init function
+            GenePattern.notebook.init.launch_init();
 
-        // Call the core init function
-        GenePattern.notebook.init.launch_init();
+            // Initialize the GenePattern cell type keyboard shortcut
+            Jupyter.keyboard_manager.command_shortcuts.add_shortcut('g', {
+                    help: 'to GenePattern',
+                    help_index: 'cc',
+                    handler: function () {
+                        GenePattern.notebook.toGenePatternCell();
+                        return false;
+                    }
+                }
+            );
 
-        // Initialize the GenePattern cell type keyboard shortcut
-        Jupyter.keyboard_manager.command_shortcuts.add_shortcut('g', {
-            help : 'to GenePattern',
-            help_index : 'cc',
-            handler : function () {
-                GenePattern.notebook.toGenePatternCell();
-                return false;
-            }}
-        );
+            // Set event for hiding popovers & slider when user clicks away
+            $(document).on("click", function (e) {
+                var target = $(e.target);
 
-        // Set event for hiding popovers & slider when user clicks away
-        $(document).on("click", function (e) {
-            var target = $(e.target);
+                // Handle hiding popovers
+                var isPopover = target.is("[data-toggle=popover]");
+                var inPopover = target.closest(".popover").length > 0;
 
-            // Handle hiding popovers
-            var isPopover = target.is("[data-toggle=popover]");
-            var inPopover = target.closest(".popover").length > 0;
+                // Hide popover only if click not inside popover
+                if (!isPopover && !inPopover) {
+                    $(".popover").popover("hide");
+                }
 
-            // Hide popover only if click not inside popover
-            if (!isPopover && !inPopover) {
-                $(".popover").popover("hide");
-            }
+                // Handle hiding the slider
+                var inSlider = target.closest("#slider").length > 0;
+                var inTab = target.is(".sidebar-button-main");
+                var sliderVisible = $("#slider:visible").length > 0;
 
-            // Handle hiding the slider
-            var inSlider = target.closest("#slider").length > 0;
-            var inTab = target.is(".sidebar-button-main");
-            var sliderVisible = $("#slider:visible").length > 0;
+                // Hide slider only if click not inside slider
+                if (!inSlider && !inTab && sliderVisible) {
+                    $("#slider").hide("slide");
+                }
+            });
 
-            // Hide slider only if click not inside slider
-            if (!inSlider && !inTab && sliderVisible) {
-                $("#slider").hide("slide");
-            }
-        });
+            // Mark init as done
+            GenePattern.notebook.init.done_init = true;
+        }
+        catch(e) {
+            console.log(e);
+            GenePattern.notebook.init.wait_for_kernel();
+        }
     }
 };
 
@@ -1087,23 +1082,25 @@ GenePattern.notebook.init.launch_init = function() {
     }, 100);
 };
 
-requirejs([
-    "jquery",
-    STATIC_PATH + "gp.js",
-    STATIC_PATH + "navigation.js",
-    STATIC_PATH + "auth-widget.js",
-    STATIC_PATH + "job-widget.js",
-    STATIC_PATH + "task-widget.js"], function() {
-    // If in a notebook, display with the full event model
-    $([IPython.events]).on('kernel_ready.Kernel kernel_created.Session notebook_loaded.Notebook', GenePattern.notebook.init.notebook_init_wrapper);
+GenePattern.notebook.init.kernelReady = function() {
+    GenePattern.notebook.init.kernel_ready = true;
+    GenePattern.notebook.init.checkAllReady();
+};
 
-    // If the notebook listing page, display with alternate event model
-    if ($(document).find("#notebooks").length > 0) {
-        setTimeout(GenePattern.notebook.init.main_init_wrapper, 100);
-    }
+GenePattern.notebook.init.kernelCreated = function() {
+    GenePattern.notebook.init.kernel_created = true;
+    GenePattern.notebook.init.checkAllReady();
+};
 
-    // If the notebook text edit page, display with alternate event model
-    if ($("#texteditor-container").length > 0) {
-        setTimeout(GenePattern.notebook.init.main_init_wrapper, 100);
+GenePattern.notebook.init.notebookLoaded = function() {
+    GenePattern.notebook.init.notebook_loaded = true;
+    GenePattern.notebook.init.checkAllReady();
+};
+
+GenePattern.notebook.init.checkAllReady = function() {
+    if (GenePattern.notebook.init.kernel_ready &&
+        GenePattern.notebook.init.kernel_created &&
+        GenePattern.notebook.init.notebook_loaded) {
+        GenePattern.notebook.init.notebook_init_wrapper();
     }
-});
+};

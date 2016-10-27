@@ -6,12 +6,13 @@ var STATIC_PATH = location.origin + Jupyter.contents.base_url + "nbextensions/ge
 
 define([
     "base/js/namespace",
+    'base/js/events',
     "jquery",
     STATIC_PATH + "gp.js",
     STATIC_PATH + "navigation.js",
     STATIC_PATH + "auth-widget.js",
     STATIC_PATH + "job-widget.js",
-    STATIC_PATH + "task-widget.js"], function(Jupyter) {
+    STATIC_PATH + "task-widget.js"], function(Jupyter, events) {
 
     function load_ipython_extension() {
         $('head')
@@ -30,13 +31,9 @@ define([
                     .attr('href', STATIC_PATH + 'gp-widget.css')
             );
 
-        // Initiate the GenePattern Notebook extension
-        // If reloading a notebook, display with the full event model
-        $([Jupyter.events]).on('kernel_ready.Kernel kernel_created.Session notebook_loaded.Notebook', GenePattern.notebook.init.notebook_init_wrapper);
-
-        // Otherwise, if not initialized after half a second, manually init
-        setTimeout(function() {
-            GenePattern.notebook.init.wait_for_kernel();
+        // Wait for the kernel to be ready and then initialize the widgets
+        var interval = setInterval(function() {
+            GenePattern.notebook.init.wait_for_kernel(interval);
         }, 500);
     }
 
