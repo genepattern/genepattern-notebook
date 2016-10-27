@@ -45,7 +45,7 @@ setup(name='genepattern-notebook',
       author='Thorin Tabor',
       author_email='thorin@broadinstitute.org',
       url='https://github.com/genepattern/genepattern-notebook',
-      download_url='https://github.com/genepattern/genepattern-notebook/archive/0.5.4.tar.gz',
+      download_url='https://github.com/genepattern/genepattern-notebook/archive/0.5.5.tar.gz',
       keywords=['genepattern', 'genomics', 'bioinformatics', 'ipython', 'jupyter'],
       classifiers=[
           'Development Status :: 4 - Beta',
