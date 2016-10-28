@@ -1081,26 +1081,3 @@ GenePattern.notebook.init.launch_init = function() {
         $(".loading-screen").hide("fade");
     }, 100);
 };
-
-GenePattern.notebook.init.kernelReady = function() {
-    GenePattern.notebook.init.kernel_ready = true;
-    GenePattern.notebook.init.checkAllReady();
-};
-
-GenePattern.notebook.init.kernelCreated = function() {
-    GenePattern.notebook.init.kernel_created = true;
-    GenePattern.notebook.init.checkAllReady();
-};
-
-GenePattern.notebook.init.notebookLoaded = function() {
-    GenePattern.notebook.init.notebook_loaded = true;
-    GenePattern.notebook.init.checkAllReady();
-};
-
-GenePattern.notebook.init.checkAllReady = function() {
-    if (GenePattern.notebook.init.kernel_ready &&
-        GenePattern.notebook.init.kernel_created &&
-        GenePattern.notebook.init.notebook_loaded) {
-        GenePattern.notebook.init.notebook_init_wrapper();
-    }
-};

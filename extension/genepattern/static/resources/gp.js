@@ -190,7 +190,7 @@ require(["jquery"], function() {
 
         for (var i = 0; i < GenePattern._tasks.length; i++) {
             var task = GenePattern._tasks[i];
-            if (task.lsid() === pObj.lsid || task.lsid() === identifier) return task;
+            if (task.lsid().startsWith(pObj.lsid) || task.lsid().startsWith(identifier)) return task;
             if (task.name() === pObj.name || task.name() === identifier) return task;
         }
 
