@@ -20,7 +20,7 @@
  */
 var GENEPATTERN_SERVERS = [
     ['Broad Institute', 'https://genepattern.broadinstitute.org/gp'],
-    ['Indiana University', 'http://gp.indiana.edu/gp'],
+    ['Indiana University', 'https://gp.indiana.edu/gp'],
     ['Broad Internal (Broad Institute Users Only)', 'https://gpbroad.broadinstitute.org/gp'],
     ['Custom GenePattern Server', 'Custom']
 ];

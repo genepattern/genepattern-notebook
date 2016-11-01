@@ -493,7 +493,7 @@ GenePattern.notebook.updateSliderData = function(url, value) {
     }
 };
 
-GenePattern.notebook.toGenePatternCell = function() {
+GenePattern.notebook.toGenePatternCell = function(formerType) {
     var dialog = require('base/js/dialog');
     var cell = Jupyter.notebook.get_selected_cell();
     var index = Jupyter.notebook.get_selected_index();
@@ -555,7 +555,11 @@ GenePattern.notebook.toGenePatternCell = function() {
             body : "Are you sure you want to change this to a GenePattern cell? This will cause " +
                 "you to lose any code or other information already entered into the cell.",
             buttons : {
-                "Cancel" : {},
+                "Cancel" : {
+                    "click": function() {
+                        if (formerType) $("#cell_type").val(formerType).trigger("change");
+                    }
+                },
                 "Change Cell Type" : {
                     "class" : "btn-warning",
                     "click" : function() {
@@ -1006,6 +1010,20 @@ GPAuthWidget(gpserver)';
 };
 
 /**
+ * Automatically run all GenePattern widgets
+ */
+GenePattern.notebook.init.auto_run_widgets = function() {
+    console.log("auto_run_widgets");
+    require(["nbextensions/jupyter-js-widgets/extension"], function() {
+        $.each($(".cell"), function(index, val) {
+            if ($(val).html().indexOf("# !AUTOEXEC") > -1) {
+                Jupyter.notebook.get_cell(index).execute();
+            }
+        });
+    });
+};
+
+/**
  * Initialize GenePattern Notebook core functionality
  */
 GenePattern.notebook.init.launch_init = function() {
@@ -1032,16 +1050,12 @@ GenePattern.notebook.init.launch_init = function() {
 
     // Initialize tooltips
     $(function () {
-        $('[data-toggle="tooltip"]').tooltip()
+        $('[data-toggle="tooltip"]').tooltip();
     });
 
     // Auto-run widgets
     $(function () {
-        $.each($(".cell"), function(index, val) {
-            if ($(val).html().indexOf("# !AUTOEXEC") > -1) {
-                Jupyter.notebook.get_cell(index).execute();
-            }
-        });
+        GenePattern.notebook.init.auto_run_widgets();
     });
 
     // Add GenePattern "cell type" if not already in menu
@@ -1055,13 +1069,13 @@ GenePattern.notebook.init.launch_init = function() {
         dropdown.change(function(event) {
             var type = $(event.target).find(":selected").text();
             if (type === "GenePattern") {
-                // DO ACTION
-                GenePattern.notebook.toGenePatternCell();
+                var former_type = Jupyter.notebook.get_selected_cell().cell_type;
+                GenePattern.notebook.toGenePatternCell(former_type);
             }
         });
 
         // Reverse the ordering of events so we check for ours first
-        $._data( $("#cell_type")[0], "events" ).change.reverse();
+        $._data($("#cell_type")[0], "events").change.reverse();
     }
 
     var cellMenu = $("#change_cell_type");
