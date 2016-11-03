@@ -1113,15 +1113,21 @@ define("gp_job", ["jupyter-js-widgets",
 
             // Hide the code by default
             var element = this.$el;
-            setTimeout(function() {
-                // Protect against the "double render" bug in Jupyter 3.2.1
-                element.parent().find(".gp-widget-job:not(:first-child)").remove();
+            var hideCode = function() {
+                var cell = element.closest(".cell");
+                if (cell.length > 0) {
+                    // Protect against the "double render" bug in Jupyter 3.2.1
+                    element.parent().find(".gp-widget-job:not(:first-child)").remove();
 
-                // Hide the code
-                element.closest(".cell").find(".input")
+                    element.closest(".cell").find(".input")
                     .css("height", "0")
                     .css("overflow", "hidden");
-            }, 1);
+                }
+                else {
+                    setTimeout(hideCode, 10);
+                }
+            };
+            setTimeout(hideCode, 1);
         }
     });
 

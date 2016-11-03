@@ -279,11 +279,18 @@ define("gp_auth", ["jupyter-js-widgets",
 
             // Hide the code by default
             var element = this.element;
-            setTimeout(function() {
-                element.closest(".cell").find(".input")
+            var hideCode = function() {
+                var cell = element.closest(".cell");
+                if (cell.length > 0) {
+                    element.closest(".cell").find(".input")
                     .css("height", "0")
                     .css("overflow", "hidden");
-            }, 1);
+                }
+                else {
+                    setTimeout(hideCode, 10);
+                }
+            };
+            setTimeout(hideCode, 1);
 
             // Hide the login form if already authenticated
             if (GenePattern.authenticated) {
