@@ -1,8 +1,15 @@
-// Add shim to support Jupyter 3.x and 4.x
-var Jupyter = Jupyter || IPython || {};
-
-// Add file path shim for Jupyter 3/4
-var STATIC_PATH = location.origin + Jupyter.contents.base_url + "nbextensions/genepattern/resources/";
+/**
+ * @author Thorin Tabor
+ *
+ * Loads the GenePattern Notebook extension for Jupyter Notebook
+ *
+ * Copyright 2015-2016 The Broad Institute, Inc.
+ *
+ * SOFTWARE COPYRIGHT NOTICE
+ * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
+ * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not
+ * responsible for its use, misuse, or functionality.
+ */
 
 define([
     "base/js/namespace",
@@ -15,6 +22,8 @@ define([
     "nbextensions/genepattern/resources/task-widget"], function(Jupyter, events) {
 
     function load_ipython_extension() {
+        var STATIC_PATH = Jupyter.notebook.base_url + "nbextensions/genepattern/resources/";
+
         $('head')
             // Import styles used by GenePattern navigation
             .append(
