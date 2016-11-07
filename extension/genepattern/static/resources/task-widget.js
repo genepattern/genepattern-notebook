@@ -12,16 +12,10 @@
  * responsible for its use, misuse, or functionality.
  */
 
-// Add shim to support Jupyter 3.x and 4.x
-var Jupyter = Jupyter || IPython || {};
-
-// Add file path shim for Jupyter 3/4
-var STATIC_PATH = location.origin + Jupyter.contents.base_url + "nbextensions/genepattern/resources/";
-
-define("gp_task", ["jupyter-js-widgets",
-                   "jqueryui",
-                   STATIC_PATH + "gp.js",
-                   STATIC_PATH + "navigation.js"], function (widgets) {
+define("gp_task", ["base/js/namespace",
+                   "nbextensions/jupyter-js-widgets/extension",
+                   "nbextensions/genepattern/index",
+                   "jqueryui"], function (Jupyter, widgets) {
 
     /**
      * Widget for file input into a GenePattern Notebook.
@@ -1228,7 +1222,7 @@ define("gp_task", ["jupyter-js-widgets",
                     .append(
                         $("<img/>")
                             .addClass("gp-widget-logo")
-                            .attr("src", STATIC_PATH + "GP_logo_on_black.png")
+                            .attr("src", Jupyter.notebook.base_url + "nbextensions/genepattern/resources/" + "GP_logo_on_black.png")
                     )
                     .append(
                         $("<h3></h3>")
@@ -1307,7 +1301,7 @@ define("gp_task", ["jupyter-js-widgets",
                                     .addClass("gp-widget-loading")
                                     .append(
                                         $("<img />")
-                                            .attr("src", STATIC_PATH + "loader.gif")
+                                            .attr("src", Jupyter.notebook.base_url + "nbextensions/genepattern/resources/" + "loader.gif")
                                     )
                                     .hide()
                             )

@@ -17,9 +17,6 @@ GenePattern.notebook = GenePattern.notebook || {};
 // Add shim to support Jupyter 3.x and 4.x
 var Jupyter = Jupyter || IPython || {};
 
-// Add file path shim for Jupyter 3/4
-var STATIC_PATH = location.origin + Jupyter.contents.base_url + "nbextensions/genepattern/resources/";
-
 /**
  * Attach the left-hand slider tab
  *
