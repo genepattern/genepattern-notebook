@@ -187,11 +187,14 @@ require(["jquery"], function() {
         if (GenePattern._tasks === null) throw "gp task list has not been initialized";
 
         var identifier = typeof pObj === 'string'? pObj : null;
+        var isLsid = identifier.indexOf(':') > -1;
+        var isBaseLsid = (identifier.split(":").length - 1) === 4;
 
         for (var i = 0; i < GenePattern._tasks.length; i++) {
             var task = GenePattern._tasks[i];
-            if (task.lsid().startsWith(pObj.lsid) || task.lsid().startsWith(identifier)) return task;
-            if (task.name() === pObj.name || task.name() === identifier) return task;
+            if (isLsid && (task.lsid() === pObj.lsid || task.lsid() === identifier)) return task;
+            if (isBaseLsid && (task.lsid().startsWith(pObj.lsid) || task.lsid().startsWith(identifier))) return task;
+            if (!isBaseLsid && (task.name() === pObj.name || task.name() === identifier)) return task;
         }
 
         return null;
