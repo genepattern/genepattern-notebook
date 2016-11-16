@@ -856,10 +856,15 @@ GenePattern.notebook.buildMenu = function(widget, element, name, href, kind, ind
                 var cellIndex = pairing[0];
                 var taskWidget = pairing[1];
                 var task = GenePattern.task(taskWidget.options.lsid);
+                var name = task !== null ? task.name() : null;
+
+                // If task is null, extract the task name from the widget
+                if (task === null) name = $(taskWidget.element).find(".gp-widget-task-name").text().trim();
+
                 sendToExistingTask
                     .append(
                         $("<option></option>")
-                            .text(task.name() + " [Cell " + cellIndex + "]")
+                            .text(name + " [Cell " + cellIndex + "]")
                             .data("widget", taskWidget)
                     );
             });
