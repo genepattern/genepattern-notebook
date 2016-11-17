@@ -714,8 +714,8 @@ GenePattern.notebook.buildMenu = function(widget, element, name, href, kind, ind
             )
             .append(
                 $("<a></a>")
-                    .addClass("list-group-item gp-widget-job-view-code")
-                    .text("View Code Use")
+                    .addClass("list-group-item gp-widget-job-send-code")
+                    .text("Send to Code")
                     .attr("href", "#")
             )
             .append(
@@ -753,6 +753,18 @@ GenePattern.notebook.buildMenu = function(widget, element, name, href, kind, ind
                     )
             );
 
+        // Attach "Send to DataFrame" if GCT
+        console.log(kind);
+        if (kind.indexOf("gct") >= -1) {
+            console.log("INSIDE");
+            popover.find(".gp-widget-job-send-code").after(
+                $("<a></a>")
+                    .addClass("list-group-item gp-widget-job-send-dataframe")
+                    .text("Send to DataFrame")
+                    .attr("href", "#")
+            );
+        }
+
         element.popover({
             title: "",
             content: popover,
@@ -783,20 +795,30 @@ GenePattern.notebook.buildMenu = function(widget, element, name, href, kind, ind
 
         // Attach methods in a way that will not break when popover is hidden
         element.on('shown.bs.popover', function () {
-            var viewCodeButton = element.parent().find(".gp-widget-job-view-code");
+            var sendCodeButton = element.parent().find(".gp-widget-job-send-code");
+            var sendDataFrameButton = element.parent().find(".gp-widget-job-send-dataframe");
             var newTaskDropdown = element.parent().find(".gp-widget-job-new-task");
             var sendToExistingTask = element.parent().find('.gp-widget-job-existing-task');
 
             // Unbind old click events so they aren't double-bound
-            viewCodeButton.unbind("click");
+            sendCodeButton.unbind("click");
+            if (sendDataFrameButton) sendDataFrameButton.unbind("click");
             newTaskDropdown.unbind("change");
             sendToExistingTask.unbind("change");
 
-            // Attach the click method to "view code"
-            viewCodeButton.click(function() {
-                widget.codeDialog(widget.options.job, indexString);
+            // Attach the click method to "send to code"
+            sendCodeButton.click(function() {
+                widget.codeCell(widget.options.job, name);
                 $(".popover").popover("hide");
             });
+
+            // Attach the click method to "send to dataframe"
+            if (sendDataFrameButton) {
+                sendDataFrameButton.click(function() {
+                    widget.dataFrameCell(widget.options.job, name);
+                    $(".popover").popover("hide");
+                });
+            }
 
             // Attach "Send to New Task" clicks
             newTaskDropdown.change(function(event) {

@@ -1026,52 +1026,24 @@ define("gp_job", ["base/js/namespace",
         },
 
         /**
-         * Display a dialog containing code for the job or output file
+         * Insert a cell with code referencing the output file
          *
-         * @param job - the Job object
-         * @param fileIndex - index for which output file this is
+         * @param job
+         * @param fileName
          */
-        codeDialog: function(job, fileIndex) {
-            var dialog = require('base/js/dialog');
-            var jobCode = "thisJob = job" + job.jobNumber();
-            var fileCode = "thisFile = job" + job.jobNumber() + ".get_output_files()[" + fileIndex + "]";
+        codeCell: function(job, fileName) {
+            var code = "# More documentation can be obtained at the GenePattern website, or by calling help(job" + job.jobNumber() + ").\n" +
+                       "job" + job.jobNumber() + ".get_file(\"" + fileName + "\")";
+            var cell = Jupyter.notebook.insert_cell_below();
+            cell.code_mirror.setValue(code);
+        },
 
-            dialog.modal({
-                notebook: Jupyter.notebook,
-                keyboard_manager: this.keyboard_manager,
-                title : "Python Code",
-                body : $("<div></div>")
-                    .append(
-                        $("<p></p>")
-                            .text("The GenePattern jobs and files referenced by this widget can be accessed programmatically. "
-                                + "To obtain a reference to the GPJob object, copy and paste the following code:")
-                    )
-                    .append(
-                        $("<blockquote></blockquote>")
-                            .append(
-                                $("<code></code>")
-                                    .text(jobCode)
-                            )
-                    )
-                    .append(
-                        $("<p></p>")
-                            .text("To obtain a reference to the output file, the code below can be used:")
-                    )
-                    .append(
-                        $("<blockquote></blockquote>")
-                            .append(
-                                $("<code></code>")
-                                    .text(fileCode)
-                            )
-                    )
-                    .append(
-                        $("<p></p>")
-                            .html("More documentation can be obtained at the GenePattern website, or by calling <code>help(job" + job.jobNumber() + ")</code>.")
-                    ),
-                buttons : {
-                    "Close" : {}
-                }
-            });
+        dataFrameCell: function(job, fileName) {
+            var code = "# The code below will only run if pandas is installed: http://pandas.pydata.org\n" +
+                       "from gct import GCT\n" +
+                       "GCT(job" + job.jobNumber() + ".get_file(\"" + fileName + "\"))";
+            var cell = Jupyter.notebook.insert_cell_below();
+            cell.code_mirror.setValue(code);
         },
 
         /**
