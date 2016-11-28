@@ -754,9 +754,7 @@ GenePattern.notebook.buildMenu = function(widget, element, name, href, kind, ind
             );
 
         // Attach "Send to DataFrame" if GCT
-        console.log(kind);
-        if (kind.indexOf("gct") >= -1) {
-            console.log("INSIDE");
+        if (kind.indexOf("gct") !== -1) {
             popover.find(".gp-widget-job-send-code").after(
                 $("<a></a>")
                     .addClass("list-group-item gp-widget-job-send-dataframe")
