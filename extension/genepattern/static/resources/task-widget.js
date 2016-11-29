@@ -979,6 +979,14 @@ define("gp_task", ["base/js/namespace",
                 $("<select></select>")
                     .addClass("form-control choice-widget-select")
                     .change(function() {
+                        // Special case for a custom value
+                        var selected = $(this).find("option:selected");
+                        if (selected.text() == "Custom Value (developer)") {
+                            widget.customValueDialog(selected);
+                            return;
+                        }
+
+                        // The general case
                         widget._value = $(this).val();
                         widget._updateCode();
                     })
@@ -1068,6 +1076,13 @@ define("gp_task", ["base/js/namespace",
                     );
                 }
             }
+
+            // Add the custom value option
+            select.append(
+                $("<option></option>")
+                    .text("Custom Value (developer)")
+                    .val("")
+            );
         },
 
         /**
@@ -1087,6 +1102,66 @@ define("gp_task", ["base/js/namespace",
          */
         _updateCode: function() {
             this._runTask.updateCode(this._param.name(), this._value);
+        },
+
+        /**
+         * Prompts the user for a custom value, sets the value on the dropdown
+         *
+         * @param option - the option element in the dropdown
+         */
+        customValueDialog: function(option) {
+            var dialog = require('base/js/dialog');
+
+            // Get Current Custom Value
+            var currentValue = $(option).val();
+
+            dialog.modal({
+                notebook: Jupyter.notebook,
+                keyboard_manager: this.keyboard_manager,
+                title : "Custom Parameter Value",
+                body : $("<div></div>")
+                    .append($("<div></div>")
+                        .addClass("alert alert-warning")
+                        .append("Setting a custom value for a choice parameter is considered an " +
+                            "advanced developer feature. If you don't know what you're doing, this " +
+                            "will likely result in an error after the job is launched.")
+                    )
+                    .append($("<div></div>")
+                            .addClass("form-group")
+                            .append($("<label>")
+                                .attr("for", "gp-task-custom-value")
+                                .css("font-weight", "bold")
+                                .text("Enter Custom Value")
+                            )
+                            .append(
+                                $("<input>")
+                                    .attr("type", "text")
+                                    .attr("name", "gp-task-custom-value")
+                                    .attr("placeholder", "Enter Value")
+                                    .addClass("form-control")
+                                    .val(currentValue)
+                                    .keydown(function(event) {
+                                        event.stopPropagation();
+                                    })
+                            )
+                    ),
+                buttons : {
+                    "Cancel" : {
+                        "click": function() {
+                        }
+                    },
+                    "Set Value" : {
+                        "class" : "btn-warning",
+                        "click" : function() {
+                            var customValue = $(".modal-dialog").find("[name=gp-task-custom-value]").val();
+                            $(option).val(customValue);
+                            var widget = $(option).closest(".choice-widget").data("widget");
+                            widget.value(customValue);
+                            widget._updateCode();
+                        }
+                    }
+                }
+            });
         },
 
         /**
@@ -2214,44 +2289,51 @@ define("gp_task", ["base/js/namespace",
 
                 widget.uploadAll({
                     success: function() {
-                        // Assign values from the inputs to the job input
-                        var uiParams = widget.element.find(".gp-widget-task-param");
-                        for (var i = 0; i < uiParams.length; i++) {
-                            var uiParam = $(uiParams[i]);
-                            var uiInput = uiParam.find(".gp-widget-task-param-input");
-                            var uiValue = widget._getInputValue(uiInput);
+                        widget.evaluateAllVars({
+                            success: function() {
+                                // Assign values from the inputs to the job input
+                                var uiParams = widget.element.find(".gp-widget-task-param");
+                                for (var i = 0; i < uiParams.length; i++) {
+                                    var uiParam = $(uiParams[i]);
+                                    var uiInput = uiParam.find(".gp-widget-task-param-input");
+                                    var uiValue = widget._getInputValue(uiInput);
 
-                            if (uiValue !== null) {
-                                // Wrap value in list if not already wrapped
-                                if (uiValue.constructor !== Array) {
-                                    uiValue = [uiValue];
+                                    if (uiValue !== null) {
+                                        // Wrap value in list if not already wrapped
+                                        if (uiValue.constructor !== Array) {
+                                            uiValue = [uiValue];
+                                        }
+
+                                        var objParam = jobInput.params()[i];
+                                        objParam.values(uiValue);
+                                    }
                                 }
 
-                                var objParam = jobInput.params()[i];
-                                objParam.values(uiValue);
-                            }
-                        }
+                                // Submit the job input
+                                jobInput.submit({
+                                    success: function(response, jobNumber) {
+                                        //widget.successMessage("Job successfully submitted! Job ID: " + jobNumber);
 
-                        // Submit the job input
-                        jobInput.submit({
-                            success: function(response, jobNumber) {
-                                //widget.successMessage("Job successfully submitted! Job ID: " + jobNumber);
+                                        // Collapse the task widget
+                                        widget.expandCollapse();
 
-                                // Collapse the task widget
-                                widget.expandCollapse();
+                                        // Create a new cell for the job widget
+                                        var cell = Jupyter.notebook.insert_cell_below();
 
-                                // Create a new cell for the job widget
-                                var cell = Jupyter.notebook.insert_cell_below();
+                                        // Set the code for the job widget
+                                        var code = GenePattern.notebook.buildJobCode(jobNumber);
+                                        cell.code_mirror.setValue(code);
 
-                                // Set the code for the job widget
-                                var code = GenePattern.notebook.buildJobCode(jobNumber);
-                                cell.code_mirror.setValue(code);
-
-                                // Execute cell.
-                                cell.execute();
+                                        // Execute cell.
+                                        cell.execute();
+                                    },
+                                    error: function(exception) {
+                                        widget.errorMessage("Error submitting job: " + exception.statusText);
+                                    }
+                                });
                             },
                             error: function(exception) {
-                                widget.errorMessage("Error submitting job: " + exception.statusText);
+                                widget.errorMessage("Error evaluating kernel variables in preparation of job submission: " + exception.statusText);
                             }
                         });
                     },
@@ -2260,6 +2342,68 @@ define("gp_task", ["base/js/namespace",
                     }
                 });
             });
+        },
+
+        /**
+         * Iterate through every input parameter and evaluate any kernel variables
+         * found, then make a callback
+         *
+         * @param pObj - Object containing the following params:
+         *                  success: Callback for success, expects no arguments
+         *                  error: Callback on error, expects exception
+         */
+        evaluateAllVars: function(pObj) {
+            var inputWidgets = this.element.find(".gp-widget-task-param-input");
+            var evalCallsFinished = false;
+            var evalsNeeded = 0;
+            var evalsFinished = 0;
+
+            // Iterate over each widget
+            for (var i = 0; i < inputWidgets.length; i++) {
+                var iWidget = $(inputWidgets[i]).data("widget");
+                var value = iWidget.value();
+
+                // Protect against nulls
+                if (value === null || value === undefined) value = [];
+
+                var makeCall = function(iWidget, value, valueIndex) {
+                    VariableManager.evaluateVariables(value, function(evalValue) {
+                        if (valueIndex === undefined) iWidget._value = evalValue;
+                        else iWidget._values[valueIndex] = evalValue;
+
+                        // Count this as an eval finished
+                        evalsFinished++;
+
+                        // Make the final callback once ready
+                        if (evalCallsFinished && evalsFinished === evalsNeeded) pObj.success();
+                    });
+                };
+
+                // If value is not a list, evaluate and set
+                if (!Array.isArray(value)) {
+                    // Count this as an eval needed
+                    evalsNeeded++;
+
+                    makeCall(iWidget, value);
+                }
+                // Otherwise, iterate over the list, evaluate and set
+                else {
+                    evalsNeeded += value.length;
+
+                    for (var j = 0; j < value.length; j++) {
+                        var valueIndex = j;
+                        var innerValue = value[j];
+
+                        makeCall(iWidget, innerValue, valueIndex);
+                    }
+                }
+            }
+
+            // All calls for evaluation have been made
+            evalCallsFinished = true;
+
+            // Check one last time to see if we need to make the final callback
+            if (evalCallsFinished && evalsFinished === evalsNeeded) pObj.success();
         },
 
         /**
@@ -2291,7 +2435,7 @@ define("gp_task", ["base/js/namespace",
                             widget: fileWidget
                         });
                     }
-                })
+                });
             }
 
             // Declare finalizeUploads()
@@ -2336,6 +2480,139 @@ define("gp_task", ["base/js/namespace",
             grabNextUpload();
         }
     });
+
+    /**
+     * Singleton for managing kernel variables and their evaluation
+     *
+     * @type {{cleanVariableText: VariableManager.cleanVariableText, getKernelValue: VariableManager.getKernelValue, getVariableList: VariableManager.getVariableList, replaceVariables: VariableManager.replaceVariables, evaluateList: VariableManager.evaluateList, evaluateVariables: VariableManager.evaluateVariables}}
+     */
+    var VariableManager = {
+
+        /**
+         * Remove surrounding single quotes from Python strings
+         *
+         * @param raw_text
+         * @returns {*}
+         */
+        cleanVariableText: function(raw_text) {
+            return raw_text.replace(/^\'|\'$/g, "");
+        },
+
+        /**
+         * Call the kernel and get the value of a variable,
+         * then make callback, passing in the value
+         *
+         * @param code
+         * @param callback
+         */
+        getKernelValue: function(code, callback) {
+            Jupyter.notebook.kernel.execute(
+                code,
+                {
+                    iopub: {
+                        output: function(response) {
+                            // See if there is any output
+                            if (response.content.data) {
+                                var return_text = response.content.data["text/plain"];
+                                return_text = VariableManager.cleanVariableText(return_text);
+                                callback(return_text);
+                            }
+                            else {
+                                // Return null if there was no output
+                                callback(null);
+                            }
+                        }
+                    }
+                },
+                { silent: false, store_history: false, stop_on_error: true }
+            );
+        },
+
+        /**
+         * Extract a list of kernel variables from the given string
+         *
+         * @param raw_string
+         * @returns {*}
+         */
+        getVariableList: function(raw_string) {
+            // Handle the case of there being no variables
+            if (!raw_string.includes("{{") || !raw_string.includes("}}")) return [];
+
+            return raw_string
+                .match(/{{\s*[\w\.]+\s*}}/g)
+               .map(function(x) { return x.match(/[\w\.]+/)[0]; });
+        },
+
+        /**
+         * Given a string with kernel variables and a map of variable/value pairs,
+         * replace all variable instances with their values
+         *
+         * @param raw_string
+         * @param replace_map
+         * @returns {*}
+         */
+        replaceVariables: function(raw_string, replace_map) {
+            function interpolate(str) {
+                return function interpolate(o) {
+                    return str.replace(/{{([^{}]*)}}/g, function (a, b) {
+                        var r = o[b.trim()];
+                        return typeof r === 'string' || typeof r === 'number' ? r : a;
+                    });
+                }
+            }
+
+            var terped = interpolate(raw_string)(replace_map);
+            return terped;
+        },
+
+        /**
+         * Given a list of variable names, look up the value of each and then make
+         * a callback once the values of all are known
+         *
+         * @param var_list
+         * @param final_callback
+         */
+        evaluateList: function(var_list, final_callback) {
+            // Initialize the callback counter
+            var callbacks_needed = var_list.length;
+            var current_callbacks = 0;
+
+            // Declare and populate map with undefined values
+            var return_map = {};
+            var_list.forEach(function(e) {
+                return_map[e] = undefined;
+                VariableManager.getKernelValue(e, function(value) {
+                    return_map[e] = value; // Assign the evaluated value
+                    current_callbacks++;   // Increment the callback counter
+
+                    // Once ready, make the final callback
+                    if (current_callbacks === callbacks_needed) {
+                        final_callback(return_map);
+                    }
+                });
+            });
+
+            // Check one last time for the final callback
+            if (current_callbacks === callbacks_needed) {
+                final_callback(return_map);
+            }
+        },
+
+        /**
+         * Evaluate a string and replace all kernel variables with their values,
+         * then make a callback.
+         *
+         * @param raw_string
+         * @param callback
+         */
+        evaluateVariables: function(raw_string, callback) {
+            var var_list = VariableManager.getVariableList(raw_string);
+            VariableManager.evaluateList(var_list, function(value_map) {
+                var final_string = VariableManager.replaceVariables(raw_string, value_map);
+                callback(final_string);
+            });
+        }
+    };
 
     var TaskWidgetView = widgets.DOMWidgetView.extend({
         render: function () {
