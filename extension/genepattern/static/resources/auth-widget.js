@@ -260,9 +260,12 @@ define("gp_auth", ["base/js/namespace",
             });
 
             // If a custom URL is specified in the code, add to server dropdown
-            var customURL = widget._getCodeServerURL();
-            if (customURL !== null && widget._isURLCustom(customURL)) {
-                widget._setCustomURL(customURL);
+            var serverURL = widget._getCodeServerURL();
+            if (serverURL !== null && widget._isURLCustom(serverURL)) {
+                widget._setCustomURL(serverURL);
+            }
+            else {
+                serverSelect.find("option[value='" + serverURL + "']").attr("selected", "selected")
             }
 
             // Call dialog if Custom Server selected
