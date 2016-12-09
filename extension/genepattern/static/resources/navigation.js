@@ -754,7 +754,7 @@ GenePattern.notebook.buildMenu = function(widget, element, name, href, kind, ind
             );
 
         // Attach "Send to DataFrame" if GCT
-        if (kind.indexOf("gct") !== -1) {
+        if (kind.indexOf("gct") !== -1 || name.endsWith(".odf")) {
             popover.find(".gp-widget-job-send-code").after(
                 $("<a></a>")
                     .addClass("list-group-item gp-widget-job-send-dataframe")
@@ -813,7 +813,7 @@ GenePattern.notebook.buildMenu = function(widget, element, name, href, kind, ind
             // Attach the click method to "send to dataframe"
             if (sendDataFrameButton) {
                 sendDataFrameButton.click(function() {
-                    widget.dataFrameCell(widget.options.job, name);
+                    widget.dataFrameCell(widget.options.job, name, fixedKind);
                     $(".popover").popover("hide");
                 });
             }

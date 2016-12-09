@@ -1032,16 +1032,21 @@ define("gp_job", ["base/js/namespace",
          * @param fileName
          */
         codeCell: function(job, fileName) {
+            var var_name = fileName.toLowerCase().replace(/\./g, '_') + "_" + job.jobNumber();
             var code = "# More documentation can be obtained at the GenePattern website, or by calling help(job" + job.jobNumber() + ").\n" +
-                       "job" + job.jobNumber() + ".get_file(\"" + fileName + "\")";
+                       var_name + " = " + "job" + job.jobNumber() + ".get_file(\"" + fileName + "\")\n" +
+                       var_name;
             var cell = Jupyter.notebook.insert_cell_below();
             cell.code_mirror.setValue(code);
         },
 
-        dataFrameCell: function(job, fileName) {
+        dataFrameCell: function(job, fileName, kind) {
+            var var_name = fileName.toLowerCase().replace(/\./g, '_') + "_" + job.jobNumber();
+            var kind_import = kind === "gct" ? "gct" : "odf";
             var code = "# The code below will only run if pandas is installed: http://pandas.pydata.org\n" +
-                       "from gct import GCT\n" +
-                       "GCT(job" + job.jobNumber() + ".get_file(\"" + fileName + "\"))";
+                       "from " + kind_import + " import " + kind_import.toUpperCase() + "\n" +
+                       var_name + " = " + kind_import.toUpperCase() + "(job" + job.jobNumber() + ".get_file(\"" + fileName + "\"))\n" +
+                       var_name;
             var cell = Jupyter.notebook.insert_cell_below();
             cell.code_mirror.setValue(code);
         },
