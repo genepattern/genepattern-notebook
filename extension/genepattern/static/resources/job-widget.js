@@ -1044,7 +1044,7 @@ define("gp_job", ["base/js/namespace",
             var var_name = fileName.toLowerCase().replace(/\./g, '_') + "_" + job.jobNumber();
             var kind_import = kind === "gct" ? "gct" : "odf";
             var code = "# The code below will only run if pandas is installed: http://pandas.pydata.org\n" +
-                       "from " + kind_import + " import " + kind_import.toUpperCase() + "\n" +
+                       "from gp." + kind_import + " import " + kind_import.toUpperCase() + "\n" +
                        var_name + " = " + kind_import.toUpperCase() + "(job" + job.jobNumber() + ".get_file(\"" + fileName + "\"))\n" +
                        var_name;
             var cell = Jupyter.notebook.insert_cell_below();
