@@ -57,7 +57,7 @@ setup(name='genepattern-notebook',
           'Framework :: IPython',
       ],
       install_requires=[
-          'genepattern-python>=1.2.1',
+          'genepattern-python>=1.2.2',
           'jupyter',
           'notebook>=4.2.0',
           'ipywidgets>=5.0.0',
