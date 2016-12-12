@@ -453,7 +453,13 @@ define("gp_call", ["base/js/namespace",
         _buildHeader: function() {
             var widget = this;
 
-            var description = widget.options.description.split('\n')[0];
+            // Trim lengthy docstrings
+            var lines = widget.options.description.split('\n');
+            if (lines.length > 10) {
+                lines = lines.slice(0,10);
+                lines.push("...");
+            }
+            var description = lines.join("\n");
 
             widget.element.find(".gp-widget-task-subheader").show();
             widget.element.find(".gp-widget-task-footer").show();
