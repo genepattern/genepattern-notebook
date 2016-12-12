@@ -18,7 +18,7 @@ __license__ = 'BSD-style'
 from gp import GPResource
 import gp
 import sys
-
+import inspect
 import IPython
 from IPython.core.magic import Magics, magics_class, line_magic
 
@@ -27,7 +27,7 @@ ipy_major_version = IPython.version_info[0]
 if ipy_major_version < 4:
     sys.exit("GenePattern Notebook requires Jupyter 4.2 or greater")
 elif ipy_major_version >= 4:
-    from traitlets import Unicode, Integer
+    from traitlets import Unicode, Integer, List
     from ipywidgets import widgets
 
 
@@ -125,6 +125,40 @@ class GPTaskWidget(GPResource, widgets.DOMWidget):
             return True
         else:
             return False
+
+
+class GPCallWidget(GPResource, widgets.DOMWidget):
+    _view_name = Unicode('CallWidgetView').tag(sync=True)
+    _view_module = Unicode('gp_call').tag(sync=True)
+
+    # Declare the Traitlet values for the widget
+    name = Unicode("", sync=True)
+    description = Unicode("", sync=True)
+    params = List(sync=True)
+    function_or_method = None
+
+    def __init__(self, function_or_method, **kwargs):
+        super(GPCallWidget, self).__init__(function_or_method.__name__)
+        widgets.DOMWidget.__init__(self, **kwargs)
+
+        # Read call signature
+        sig = inspect.signature(function_or_method)
+
+        # Read params, values and annotations from the signature
+        params = []
+        for p in sig.parameters:
+            param = sig.parameters[p]
+            required = param.default != inspect.Signature.empty
+            default = param.default if param.default != inspect.Signature.empty else ""
+            annotation = param.annotation if param.annotation != inspect.Signature.empty else ""
+            p_list = [param.name, required, default, annotation]
+            params.append(p_list)
+
+        # Set the Traitlet values for the call
+        self.name = function_or_method.__name__
+        self.description = inspect.getdoc(function_or_method)
+        self.params = params
+        self.function_or_method = function_or_method
 
 
 def load_ipython_extension(ipython):

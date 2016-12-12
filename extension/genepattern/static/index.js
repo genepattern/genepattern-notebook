@@ -19,7 +19,8 @@ define([
     "nbextensions/genepattern/resources/navigation",
     "nbextensions/genepattern/resources/auth-widget",
     "nbextensions/genepattern/resources/job-widget",
-    "nbextensions/genepattern/resources/task-widget"], function(Jupyter, events) {
+    "nbextensions/genepattern/resources/task-widget",
+    "nbextensions/genepattern/resources/call-widget"], function(Jupyter, events) {
 
     function load_ipython_extension() {
         var STATIC_PATH = Jupyter.notebook.base_url + "nbextensions/genepattern/resources/";
