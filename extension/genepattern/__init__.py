@@ -154,9 +154,14 @@ class GPCallWidget(GPResource, widgets.DOMWidget):
             p_list = [param.name, required, default, annotation]
             params.append(p_list)
 
+        # Read docstring and protect against None
+        docstring = inspect.getdoc(function_or_method)
+        if docstring is None:
+            docstring = ""
+
         # Set the Traitlet values for the call
         self.name = function_or_method.__name__
-        self.description = inspect.getdoc(function_or_method)
+        self.description = docstring
         self.params = params
         self.function_or_method = function_or_method
 
