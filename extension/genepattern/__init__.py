@@ -160,7 +160,7 @@ class GPCallWidget(GPResource, widgets.DOMWidget):
             docstring = ""
 
         # Set the Traitlet values for the call
-        self.name = function_or_method.__name__
+        self.name = function_or_method.__qualname__
         self.description = docstring
         self.params = params
         self.function_or_method = function_or_method
