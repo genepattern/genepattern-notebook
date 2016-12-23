@@ -1004,8 +1004,6 @@ GenePattern.notebook.init.notebook_init_wrapper = function () {
 GenePattern.notebook.init.buildCode = function(server, username, password) {
     return '# !AUTOEXEC\n\
 \n\
-%reload_ext genepattern\n\
-\n\
 # Don\'t have the GenePattern Notebook? It can be installed from PIP: \n\
 # pip install genepattern-notebook \n\
 import gp\n\
