@@ -39,5 +39,5 @@
 > anaconda upload /Users/tabor/anaconda/conda-bld/osx-64/genepattern-notebook-XXX-py35_0.tar.bz2 -u genepattern
 6. Converting this package to builds for other operating systems can be done as shown below. You will need to upload each 
 built version using a separate upload command.
-> conda convert --platform all /Users/tabor/anaconda/conda-bld/osx-64/genepattern-notebook-XXX-py35_0.tar.bz2 -o outputdir/
+> conda convert --platform all /Users/tabor/anaconda/conda-bld/osx-64/genepattern-notebook-XXX-py35_0.tar.bz2 -o conda-bld/
 7. Log into the [Anaconda website](https://anaconda.org/) to make sure everything is good.
