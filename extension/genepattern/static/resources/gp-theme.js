@@ -61,21 +61,21 @@ require(["jquery"], function() {
                 var cells = Jupyter.notebook.get_cells();
                 $.each(cells, function(i, cell) {
                     var code = cell.get_text();
-                    if (Jupyter.notebook.get_cells()[0].get_text().indexOf("%reload_ext genepattern") > -1) {
+                    if (Jupyter.notebook.get_cells()[0].get_text().indexOf("GPAuthWidget") > -1) {
                         authWidgetFound = true;
                     }
                 });
             }
 
             // Add a new auth widget
-            if (!authWidgetFound) {
-                var cell = Jupyter.notebook.insert_cell_above("code", 0);
-                var code = "%reload_ext genepattern";
-                cell.code_mirror.setValue(code);
-                setTimeout(function () {
-                    Jupyter.notebook.get_cell(0).execute();
-                }, 1000);
-            }
+            // if (!authWidgetFound) {
+            //     var cell = Jupyter.notebook.insert_cell_above("code", 0);
+            //     var code = "%reload_ext genepattern";
+            //     cell.code_mirror.setValue(code);
+            //     setTimeout(function () {
+            //         Jupyter.notebook.get_cell(0).execute();
+            //     }, 1000);
+            // }
         }, 1);
     });
 
