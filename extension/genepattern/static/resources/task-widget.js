@@ -171,6 +171,13 @@ define("gp_task", ["base/js/namespace",
                             )
                     )
             );
+            this.element.append(
+                $("<div></div>")
+                    .addClass("file-widget-warning alert alert-warning")
+                    .append("File name may not be an acceptable format. This input expects ")
+                    .append(this._kindsListString() + ".")
+                    .hide()
+            );
 
             // Initialize the drag & drop functionality
             if (this.options.allowJobUploads) {
@@ -211,6 +218,12 @@ define("gp_task", ["base/js/namespace",
                 var display = this._singleDisplay(value);
                 GenePattern.notebook.updateSliderData(display, value);
             }
+        },
+
+        _kindsListString: function() {
+            var kinds = this._param.kinds();
+            if (!kinds) return "anything";
+            else return kinds.join(", ");
         },
 
         /**
@@ -374,6 +387,9 @@ define("gp_task", ["base/js/namespace",
                 });
                 this.element.find(".file-widget-listing").show();
 
+                // Display type warning, if necessary
+                this._setTypeWarning(files);
+
                 // Hide upload stuff if at max
                 var maxVals = this._param.maxValues();
                 var currentVals = this._values ? this._values.length : 0;
@@ -385,7 +401,75 @@ define("gp_task", ["base/js/namespace",
                 this.element.find(".file-widget-upload").show();
                 this.element.find(".file-widget-listing").hide();
                 this.element.find(".file-widget-listing").empty();
+                this._hideTypeWarning();
             }
+        },
+
+        /**
+         * Displays or hides the file type warning message, as appropriate
+         *
+         * @param files
+         * @private
+         */
+        _setTypeWarning: function(files) {
+            // Transform File objects to strings
+            var displays = this._valuesToDisplay(files);
+
+            if (this._needTypeWarning(displays)) { this._displayTypeWarning(); }
+            else { this._hideTypeWarning(); }
+        },
+
+        /**
+         * Determines if the file type doesn't match the expected input type
+         *
+         * @param files
+         * @private
+         */
+        _needTypeWarning: function(files) {
+            var foundWarning = false;
+            var accepts = this._param.kinds();
+
+            // Special case for empty kind lists
+            if (!accepts) return false;
+
+            for (var i in files) {
+                var file = files[i];
+                var match = false;
+
+                for (var j in accepts) {
+                    var kind = accepts[j];
+                    if (file.endsWith(kind)) {
+                        match = true;
+                    }
+
+                    // Special case for ODF files
+                    if (file.toLowerCase().endsWith("odf") && kind.length > 5) {
+                        match = true;
+                    }
+                }
+
+                if (!match) foundWarning = true;
+            }
+
+            return foundWarning;
+        },
+
+        /**
+         * Displays a warning message that the file type doesn't match the expected input type
+         *
+         * @private
+         */
+        _displayTypeWarning: function() {
+            this.element.find(".file-widget-warning").show();
+        },
+
+        /**
+         * Hides the warning message that the file type doesn't match the expected input type
+         *
+         * @private
+         */
+        _hideTypeWarning: function() {
+            this.element.find(".file-widget-warning").hide();
         },
 
         /**
@@ -412,6 +496,7 @@ define("gp_task", ["base/js/namespace",
                             widget._removeValue(file);
                             widget.element.find(".file-widget-value[name='" + file + "']").remove();
                             widget.element.find(".file-widget-upload").show();
+                            widget._setTypeWarning(widget._values);
                             widget._updateCode();
                         })
                 )
