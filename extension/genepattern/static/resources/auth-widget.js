@@ -289,6 +289,65 @@ define("gp_auth", ["base/js/namespace",
             };
             setTimeout(hideCode, 1);
 
+            // Try reading GenePattern cookie and prompt, if cookie present and not authenticated
+            var genepatternCookie = widget._getCookie("GenePattern");
+            if (genepatternCookie && !GenePattern.authenticated) {
+                var username = widget._usernameFromCookie(genepatternCookie);
+                var password = widget._passwordFromCookie(genepatternCookie);
+
+                if (username !== null && password !== null) {
+                    var toCover = widget.element.find(".widget-view");
+                    var autoLogin = $("<div></div>")
+                        .addClass("widget-auto-login")
+                        .append(
+                            $("<div></div>")
+                                .addClass("panel panel-default")
+                                .append(
+                                    $("<div></div>")
+                                        .addClass("panel-heading")
+                                        .append("Log into GenePattern Server")
+                                )
+                                .append(
+                                    $("<div></div>")
+                                        .addClass("panel-body")
+                                        .append("You have already authenticated with the GenePattern Public Server. Would you like to automatically sign in now?")
+                                        .append(
+                                            $("<div></div>")
+                                                .addClass("widget-auto-login-buttons")
+                                                .append(
+                                                    $("<button>")
+                                                        .addClass("btn btn-primary")
+                                                        .append("Login as " + username)
+                                                        .click(function () {
+                                                            var serverInput = toCover.find("[name=server]");
+                                                            var usernameInput = toCover.find("[name=username]");
+                                                            var passwordInput = toCover.find("[name=password]");
+                                                            var loginButton = toCover.find(".gp-auth-button");
+
+                                                            serverInput.val("https://genepattern.broadinstitute.org/gp");
+                                                            usernameInput.val(username);
+                                                            passwordInput.val(password);
+                                                            loginButton.click();
+                                                        })
+                                                )
+                                                .append(" ")
+                                                .append(
+                                                    $("<button>")
+                                                        .addClass("btn btn-default")
+                                                        .append("Cancel")
+                                                        .click(function () {
+                                                            autoLogin.hide();
+                                                        })
+                                                )
+                                        )
+                                )
+                        );
+
+                    toCover.append(autoLogin);
+                }
+
+            }
+
             // Hide the login form if already authenticated
             if (GenePattern.authenticated) {
                 setTimeout(function() {
@@ -343,6 +402,66 @@ define("gp_auth", ["base/js/namespace",
          */
         _setOption: function(key, value) {
             this._super(key, value);
+        },
+
+        /**
+         * Given the GenePattern cookie, returns the password
+         * Return null if the password cannot be extracted
+         *
+         * @param cookie
+         * @returns {string|null}
+         * @private
+         */
+        _passwordFromCookie: function(cookie) {
+            // Handle the null case
+            if (!cookie) return null;
+
+            // Parse the cookie
+            var parts = cookie.split("|");
+            if (parts.length > 1) {
+                return atob(decodeURIComponent(parts[1]));
+            }
+
+            // Cookie not in the expected format
+            else return null;
+        },
+
+        /**
+         * Given the GenePattern cookie, returns the username
+         * Return null if the username cannot be extracted
+         *
+         * @param cookie
+         * @returns {string|null}
+         * @private
+         */
+        _usernameFromCookie: function(cookie) {
+            // Handle the null case
+            if (!cookie) return null;
+
+            // Parse the cookie
+            var parts = cookie.split("|");
+            if (parts.length > 1) return parts[0];
+
+            // Cookie not in the expected format
+            else return null;
+        },
+
+        /**
+         * Retrieve a cookie by name
+         *
+         * @param name
+         * @returns {string|null}
+         * @private
+         */
+        _getCookie: function(name) {
+            var nameEQ = name + "=";
+            var ca = document.cookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
         },
 
         /**

@@ -65,6 +65,28 @@
     max-width: 100%;
 }
 
+.widget-auto-login {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255,255,255,0.8);
+}
+
+.widget-auto-login .panel {
+    width: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+}
+
+.widget-auto-login-buttons {
+    text-align: center;
+    margin-top: 10px;
+}
+
 .gp-widget-loading, .gp-widget-logged-in {
     position: absolute;
     text-align: center;
