@@ -229,9 +229,10 @@ define("gp_auth", ["base/js/namespace",
                                             widget._displayLoading();
 
                                             widget.buildCode(server, username, password);
-                                            widget.authenticate(server, username, password, function() {
+                                            widget.authenticate(server, username, password, true, function() {
                                                 widget.executeCell();
                                                 widget.buildCode(server, "", "");
+                                                widget._tokenCountdown(server, username, password);
                                             });
                                         })
                                 )
@@ -323,8 +324,9 @@ define("gp_auth", ["base/js/namespace",
                                                             var usernameInput = toCover.find("[name=username]");
                                                             var passwordInput = toCover.find("[name=password]");
                                                             var loginButton = toCover.find(".gp-auth-button");
+                                                            var defaultServer = GENEPATTERN_SERVERS[0][1];
 
-                                                            serverInput.val("https://genepattern.broadinstitute.org/gp");
+                                                            serverInput.val(defaultServer);
                                                             usernameInput.val(username);
                                                             passwordInput.val(password);
                                                             loginButton.click();
@@ -402,6 +404,24 @@ define("gp_auth", ["base/js/namespace",
          */
         _setOption: function(key, value) {
             this._super(key, value);
+        },
+
+        /**
+         * Set day's timer for next token refresh.
+         * Reauthenticate and save the token each day.
+         *
+         * @param server
+         * @param username
+         * @param password
+         * @private
+         */
+        _tokenCountdown: function(server, username, password) {
+            var widget = this;
+            setTimeout(function() {
+                widget.authenticate(server, username, password, false, function() {
+                    widget._tokenCountdown(server, username, password);
+                });
+            }, 1000 * 60 * 60 * 24 - 60);
         },
 
         /**
@@ -766,14 +786,15 @@ define("gp_auth", ["base/js/namespace",
         },
 
         /**
-         * Call the authentication endpoint, then call afterAuthenticate();
+         * Call the authentication endpoint, then call afterAuthenticate() if set
          *
          * @param server
          * @param username
          * @param password
+         * @param callAfterAuthenticate
          * @param done
          */
-        authenticate: function(server, username, password, done) {
+        authenticate: function(server, username, password, callAfterAuthenticate, done) {
             var widget = this;
             $.ajax({
                 type: "POST",
@@ -790,7 +811,8 @@ define("gp_auth", ["base/js/namespace",
                         headers: {"Authorization": "Bearer " + token}
                     });
 
-                    widget.afterAuthenticate(server, username, password, token, done);
+                    if (callAfterAuthenticate) widget.afterAuthenticate(server, username, password, token, done);
+                    else done();
                 },
                 error: function() {
                     widget.buildCode(server, "", "");
