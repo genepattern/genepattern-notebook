@@ -1372,6 +1372,7 @@ define("gp_task", ["base/js/namespace",
                                                 $("<li></li>")
                                                     .append(
                                                         $("<a></a>")
+                                                            .addClass("gp-widget-task-doc")
                                                             .attr("title", "Documentation")
                                                             .attr("href", "#")
                                                             .append("Documentation")
