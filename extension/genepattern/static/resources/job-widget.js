@@ -48,7 +48,7 @@ define("gp_job", ["base/js/namespace",
             var widget = this;
 
             // Ensure the job number is defined
-            if (typeof this.options.jobNumber !== 'number' && !this.options.json) {
+            if ((isNaN(this.options.jobNumber) || this.options.jobNumber === null) && !this.options.json) {
                 throw "The job number is not correctly defined, cannot create job results widget";
             }
 
@@ -68,41 +68,6 @@ define("gp_job", ["base/js/namespace",
                                     .addClass("gp-widget-job-buttons")
                                     .append(
                                         $("<button></button>")
-                                            .addClass("btn btn-default btn-sm gp-widget-job-share")
-                                            .css("padding", "2px 7px")
-                                            .attr("title", "Share Job")
-                                            .attr("data-toggle", "tooltip")
-                                            .attr("data-placement", "bottom")
-                                            .attr("disabled", "disabled")
-                                            .append(
-                                                $("<span></span>")
-                                                    .addClass("fa fa-share")
-                                            )
-                                            .tooltip()
-                                            .click(function() {
-                                                widget.toggleShareJob();
-                                            })
-                                    )
-                                    .append(" ")
-                                    .append(
-                                        $("<button></button>")
-                                            .addClass("btn btn-default btn-sm gp-widget-job-reload")
-                                            .css("padding", "2px 7px")
-                                            .attr("title", "Reload Task Form")
-                                            .attr("data-toggle", "tooltip")
-                                            .attr("data-placement", "bottom")
-                                            .append(
-                                                $("<span></span>")
-                                                    .addClass("fa fa-refresh")
-                                            )
-                                            .tooltip()
-                                            .click(function() {
-                                                widget.reloadJob();
-                                            })
-                                    )
-                                    .append(" ")
-                                    .append(
-                                        $("<button></button>")
                                             .addClass("btn btn-default btn-sm widget-slide-indicator")
                                             .css("padding", "2px 7px")
                                             .attr("title", "Expand or Collapse")
@@ -119,20 +84,66 @@ define("gp_job", ["base/js/namespace",
                                     )
                                     .append(" ")
                                     .append(
-                                        $("<button></button>")
-                                            .addClass("btn btn-default btn-sm gp-widget-job-codetoggle")
-                                            .css("padding", "2px 7px")
-                                            .attr("title", "Toggle Code View")
-                                            .attr("data-toggle", "tooltip")
-                                            .attr("data-placement", "bottom")
+                                        $("<div></div>")
+                                            .addClass("btn-group")
                                             .append(
-                                                $("<span></span>")
-                                                    .addClass("fa fa-terminal")
+                                                $("<button></button>")
+                                                    .addClass("btn btn-default btn-sm")
+                                                    .css("padding", "2px 7px")
+                                                    .attr("type", "button")
+                                                    .attr("data-toggle", "dropdown")
+                                                    .attr("aria-haspopup", "true")
+                                                    .attr("aria-expanded", "false")
+                                                    .append(
+                                                        $("<span></span>")
+                                                            .addClass("fa fa-cog")
+                                                    )
+                                                    .append(" ")
+                                                    .append(
+                                                        $("<span></span>")
+                                                            .addClass("caret")
+                                                    )
                                             )
-                                            .tooltip()
-                                            .click(function() {
-                                                widget.toggleCode();
-                                            })
+                                            .append(
+                                                $("<ul></ul>")
+                                                    .addClass("dropdown-menu gear-menu")
+                                                    .append(
+                                                        $("<li></li>")
+                                                            .append(
+                                                                $("<a></a>")
+                                                                    .attr("title", "Share Job")
+                                                                    .attr("href", "#")
+                                                                    .append("Share Job")
+                                                                    .click(function() {
+                                                                        widget.buildSharingPanel();
+                                                                    })
+                                                            )
+                                                    )
+                                                    .append(
+                                                        $("<li></li>")
+                                                            .append(
+                                                                $("<a></a>")
+                                                                    .attr("title", "Reload Task Form")
+                                                                    .attr("href", "#")
+                                                                    .append("Reload Task Form")
+                                                                    .click(function() {
+                                                                        widget.reloadJob();
+                                                                    })
+                                                            )
+                                                    )
+                                                    .append(
+                                                        $("<li></li>")
+                                                            .append(
+                                                                $("<a></a>")
+                                                                    .attr("title", "Toggle Code View")
+                                                                    .attr("href", "#")
+                                                                    .append("Toggle Code View")
+                                                                    .click(function() {
+                                                                        widget.toggleCode();
+                                                                    })
+                                                            )
+                                                    )
+                                            )
                                     )
                             )
                     )
@@ -228,7 +239,7 @@ define("gp_job", ["base/js/namespace",
          */
         _destroy: function() {
             this._updateSlider("destroy");
-            this.element.removeClass("gp-widget-job-widget");
+            this.element.removeClass("gp-widget gp-widget-job panel panel-default");
             this.element.empty();
         },
 
@@ -319,9 +330,10 @@ define("gp_job", ["base/js/namespace",
          *
          * @param job
          */
-        buildSharingPanel: function(job) {
+        buildSharingPanel: function() {
             var widget = this;
-            var optionsPane = this.element.find(".gp-widget-job-share-options");
+            var job = this.options.job;
+            var optionsPane = $("<div></div>");
             var permissions = job.permissions();
 
             // Make sure that the permissions exist, if not return an error
@@ -335,11 +347,6 @@ define("gp_job", ["base/js/namespace",
             // Build alert box
             optionsPane.append(
                 $("<div></div>").addClass("gp-widget-job-share-alert")
-            );
-
-            // Build the header
-            optionsPane.append(
-                $("<h4></h4>").text("Job Sharing")
             );
 
             // Build the permissions table
@@ -426,13 +433,20 @@ define("gp_job", ["base/js/namespace",
             });
             optionsPane.append(table);
 
-            // Attach button group
-            optionsPane
-                .append(
-                    $("<button></button>")
-                        .addClass("btn btn-success")
-                        .text("Save")
-                        .click(function() {
+            var dialog = require('base/js/dialog');
+            dialog.modal({
+                notebook: Jupyter.notebook,
+                keyboard_manager: this.keyboard_manager,
+                title : "Job Sharing",
+                body : optionsPane,
+                buttons : {
+                    "Cancel" : {
+                        "click": function() {
+                        }
+                    },
+                    "Save" : {
+                        "class" : "btn-primary",
+                        "click" : function() {
                             // Bundle up permissions to save
                             var bundle = widget._bundlePermissions();
 
@@ -445,7 +459,7 @@ define("gp_job", ["base/js/namespace",
                                         .removeClass("alert-danger")
                                         .addClass("alert alert-success")
                                         .text("Permissions saved!");
-                                    widget.toggleShareJob();
+                                    widget.options.job.permissions().groups = bundle;
                                 },
                                 // On fail
                                 function() {
@@ -456,18 +470,10 @@ define("gp_job", ["base/js/namespace",
                                         .text("Error saving permissions.")
                                         .show("shake", {}, 500);
                                 });
-                        })
-                )
-                .append(" ")
-                .append(
-                    $("<button></button>")
-                        .addClass("btn btn-default")
-                        .text("Cancel")
-                        .click(function() {
-                            // Hide sharing panel
-                            widget.toggleShareJob();
-                        })
-                )
+                        }
+                    }
+                }
+            });
         },
 
         /**
@@ -489,7 +495,7 @@ define("gp_job", ["base/js/namespace",
          * @private
          */
         _bundlePermissions: function() {
-            var rawGroups = this.element.find(".gp-widget-job-share-table").find("tr");
+            var rawGroups = $(".gp-widget-job-share-table").find("tr");
             var toReturn = [];
             $.each(rawGroups, function(i, e) {
                 var name = $(e).attr("name");
@@ -513,32 +519,6 @@ define("gp_job", ["base/js/namespace",
             });
 
             return toReturn;
-        },
-
-        /**
-         * Prompt for sharing the job
-         */
-        toggleShareJob: function() {
-            var sharePanel = this.element.find(".gp-widget-job-share-options");
-
-            if (sharePanel.is(":visible")) {
-                // Hide sharing panel
-                sharePanel.slideUp();
-
-                // Display other parts of the panel
-                this.element.find(".gp-widget-job-submitted").slideDown();
-                this.element.find(".gp-widget-job-outputs-list").slideDown();
-                this.element.find(".gp-widget-job-visualize").slideDown();
-            }
-            else {
-                // Display sharing panel
-                sharePanel.slideDown();
-
-                // Hide other parts of the panel
-                this.element.find(".gp-widget-job-submitted").slideUp();
-                this.element.find(".gp-widget-job-outputs-list").slideUp();
-                this.element.find(".gp-widget-job-visualize").slideUp();
-            }
         },
 
         /**
@@ -834,12 +814,6 @@ define("gp_job", ["base/js/namespace",
                 }
             });
 
-            // If sharing panel does not exist, build the sharing pane
-            var sharingFound = this.element.find(".gp-widget-job-share-table:first").length > 0;
-            if (!sharingFound) {
-                this.buildSharingPanel(job);
-            }
-
             // Build the visualizer display, if necessary
             var launchUrl = job.launchUrl();
             if (launchUrl !== undefined && launchUrl !== null) {
@@ -920,16 +894,18 @@ define("gp_job", ["base/js/namespace",
                 );
 
                 // Add the pop out button
-                var statusDiv = this.element.find(".gp-widget-job-status");
-                statusDiv.hide();
-                statusDiv.before(
-                    $("<button></button>")
-                        .addClass("btn btn-default btn-sm widget-float-right")
-                        .css("margin-right", 5)
-                        .append("Pop out")
-                        .click(function() {
-                            window.open(urlWithToken);
-                        })
+                var gearMenu = this.element.find(".gear-menu");
+                gearMenu.prepend(
+                    $("<li></li>")
+                        .append(
+                            $("<a></a>")
+                                .attr("title", "Pop Out Visualizer")
+                                .attr("href", "#")
+                                .append("Pop Out Visualizer")
+                                .click(function() {
+                                    window.open(urlWithToken);
+                                })
+                        )
                 );
             }
         },

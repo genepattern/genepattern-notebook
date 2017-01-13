@@ -1329,24 +1329,6 @@ define("gp_task", ["base/js/namespace",
                             )
                             .append(
                                 $("<button></button>")
-                                    .addClass("btn btn-default btn-sm gp-widget-task-doc")
-                                    .css("padding", "2px 7px")
-                                    .attr("title", "View Documentation")
-                                    .attr("data-toggle", "tooltip")
-                                    .attr("data-placement", "bottom")
-                                    .append(
-                                        $("<span></span>")
-                                            .addClass("fa fa-question")
-                                    )
-                                    .tooltip()
-                                    .click(function(event) {
-                                        var url = $(event.target).attr("data-href");
-                                        window.open(url,'_blank');
-                                    })
-                            )
-                            .append(" ")
-                            .append(
-                                $("<button></button>")
                                     .addClass("btn btn-default btn-sm widget-slide-indicator")
                                     .css("padding", "2px 7px")
                                     .attr("title", "Expand or Collapse")
@@ -1363,20 +1345,55 @@ define("gp_task", ["base/js/namespace",
                             )
                             .append(" ")
                             .append(
-                                $("<button></button>")
-                                    .addClass("btn btn-default btn-sm")
-                                    .css("padding", "2px 7px")
-                                    .attr("title", "Toggle Code View")
-                                    .attr("data-toggle", "tooltip")
-                                    .attr("data-placement", "bottom")
+                                $("<div></div>")
+                                    .addClass("btn-group")
                                     .append(
-                                        $("<span></span>")
-                                            .addClass("fa fa-terminal")
+                                        $("<button></button>")
+                                            .addClass("btn btn-default btn-sm")
+                                            .css("padding", "2px 7px")
+                                            .attr("type", "button")
+                                            .attr("data-toggle", "dropdown")
+                                            .attr("aria-haspopup", "true")
+                                            .attr("aria-expanded", "false")
+                                            .append(
+                                                $("<span></span>")
+                                                    .addClass("fa fa-cog")
+                                            )
+                                            .append(" ")
+                                            .append(
+                                                $("<span></span>")
+                                                    .addClass("caret")
+                                            )
                                     )
-                                    .tooltip()
-                                    .click(function() {
-                                        widget.toggleCode();
-                                    })
+                                    .append(
+                                        $("<ul></ul>")
+                                            .addClass("dropdown-menu gear-menu")
+                                            .append(
+                                                $("<li></li>")
+                                                    .append(
+                                                        $("<a></a>")
+                                                            .attr("title", "Documentation")
+                                                            .attr("href", "#")
+                                                            .append("Documentation")
+                                                            .click(function() {
+                                                                var url = $(event.target).attr("data-href");
+                                                                window.open(url,'_blank');
+                                                            })
+                                                    )
+                                            )
+                                            .append(
+                                                $("<li></li>")
+                                                    .append(
+                                                        $("<a></a>")
+                                                            .attr("title", "Toggle Code View")
+                                                            .attr("href", "#")
+                                                            .append("Toggle Code View")
+                                                            .click(function() {
+                                                                widget.toggleCode();
+                                                            })
+                                                    )
+                                            )
+                                    )
                             )
                     )
                     .append(
@@ -1947,19 +1964,28 @@ define("gp_task", ["base/js/namespace",
             var code = this.options.cell.code_mirror.getValue();
             var lines = code.split("\n");
             var jobSpecName = null;
+            var taskName = null;
             var insertAfter = null;
 
-            // Get the job_spec name
+            // Get the job_spec name and _task name
             for (var i = 0; i < lines.length; i++) {
                 var line = lines[i];
+                var parts = null;
 
                 // Obtain the variable name of the job_spec
                 if (line.indexOf("_job_spec = ") !== -1) {
-                    var parts = line.split(" ");
+                    parts = line.split(" ");
                     jobSpecName = parts[0];
                     insertAfter = i;
-                    break;
+                    continue;
                 }
+
+                // Obtain the variable name of the task
+                // TODO: Finish
+                // if (line.indexOf("_task = ") !== -1) {
+                //     parts = line.split(" ");
+                //     taskName = parts[0];
+                // }
             }
 
             // If job_spec name is still null, return
@@ -1975,6 +2001,10 @@ define("gp_task", ["base/js/namespace",
                 var newLine = jobSpecName + '.set_parameter("' + param.name() + '", "' + this._escapeQuotes(param.defaultValue()) + '")';
                 newLines.unshift(newLine);
             }
+
+            // Insert job_number placeholder
+            // TODO: Finish
+            // newLines.unshift(taskName + ".job_number = None");
 
             // Insert the generated code
             $.each(newLines, function(i, line) {
@@ -2411,6 +2441,19 @@ define("gp_task", ["base/js/namespace",
 
                                         // Execute cell.
                                         cell.execute();
+
+                                        // Get the output div of the cell and display it
+                                        // TODO: Finish
+                                        // var outputDiv = widget.element.closest(".cell").find(".output").show();
+                                        //
+                                        // // Remove any existing job widget there
+                                        // if (outputDiv.hasClass("gp-widget-job")) {
+                                        //     outputDiv.data("widget").destroy();
+                                        // }
+                                        //
+                                        // // Construct the job widget in the output div
+                                        // outputDiv.jobResults({jobNumber: jobNumber});
+
                                     },
                                     error: function(exception) {
                                         widget.errorMessage("Error submitting job: " + exception.statusText);

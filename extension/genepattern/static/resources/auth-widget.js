@@ -81,20 +81,42 @@ define("gp_auth", ["base/js/namespace",
                                 )
                                 .append(" ")
                                 .append(
-                                    $("<button></button>")
-                                        .addClass("btn btn-default btn-sm")
-                                        .css("padding", "2px 7px")
-                                        .attr("title", "Toggle Code View")
-                                        .attr("data-toggle", "tooltip")
-                                        .attr("data-placement", "bottom")
+                                    $("<div></div>")
+                                        .addClass("btn-group")
                                         .append(
-                                            $("<span></span>")
-                                                .addClass("fa fa-terminal")
+                                            $("<button></button>")
+                                                .addClass("btn btn-default btn-sm")
+                                                .css("padding", "2px 7px")
+                                                .attr("type", "button")
+                                                .attr("data-toggle", "dropdown")
+                                                .attr("aria-haspopup", "true")
+                                                .attr("aria-expanded", "false")
+                                                .append(
+                                                    $("<span></span>")
+                                                        .addClass("fa fa-cog")
+                                                )
+                                                .append(" ")
+                                                .append(
+                                                    $("<span></span>")
+                                                        .addClass("caret")
+                                                )
                                         )
-                                        .tooltip()
-                                        .click(function() {
-                                            widget.toggleCode();
-                                        })
+                                        .append(
+                                            $("<ul></ul>")
+                                                .addClass("dropdown-menu")
+                                                .append(
+                                                    $("<li></li>")
+                                                        .append(
+                                                            $("<a></a>")
+                                                                .attr("title", "Toggle Code View")
+                                                                .attr("href", "#")
+                                                                .append("Toggle Code View")
+                                                                .click(function() {
+                                                                    widget.toggleCode();
+                                                                })
+                                                        )
+                                                )
+                                        )
                                 )
                         )
                         .append(
