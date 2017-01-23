@@ -429,8 +429,9 @@ define("gp_auth", ["base/js/namespace",
         },
 
         /**
-         * Set day's timer for next token refresh.
-         * Reauthenticate and save the token each day.
+         * Set timer for next token refresh.
+         * Call upon successful login.
+         * Check every minute to see if the token is going to expire.
          *
          * @param server
          * @param username
@@ -439,11 +440,21 @@ define("gp_auth", ["base/js/namespace",
          */
         _tokenCountdown: function(server, username, password) {
             var widget = this;
-            setTimeout(function() {
-                widget.authenticate(server, username, password, false, function() {
-                    widget._tokenCountdown(server, username, password);
-                });
-            }, 1000 * 60 * 60 * 24 - 60);
+
+            // Set time of successful login
+            var tokenExpiration = new Date();
+            tokenExpiration.setDate(tokenExpiration.getDate() + 1);
+
+            // Wake up every minute and check to see if the token is going to expire
+            setInterval(function() {
+                // Refresh token five minutes before the old one would expire
+                if (new Date().valueOf() >= tokenExpiration.valueOf() - 1000 * 60 * 5) {
+                    widget.authenticate(server, username, password, false, function(token) {
+                        tokenExpiration = new Date();
+                        tokenExpiration.setDate(tokenExpiration.getDate() + 1);
+                    });
+                }
+            }, 1000 * 60);
         },
 
         /**
@@ -832,9 +843,10 @@ define("gp_auth", ["base/js/namespace",
                     $.ajaxSetup({
                         headers: {"Authorization": "Bearer " + token}
                     });
+                    GenePattern.token = token;
 
                     if (callAfterAuthenticate) widget.afterAuthenticate(server, username, password, token, done);
-                    else done();
+                    else done(token);
                 },
                 error: function() {
                     widget.buildCode(server, "", "");
@@ -891,7 +903,7 @@ define("gp_auth", ["base/js/namespace",
                     GenePattern.kinds(kindMap);
 
                     // If a function to execute when done has been passed in, execute it
-                    if (done) { done(); }
+                    if (done) { done(token); }
                 },
                 error: function() {
                     widget.errorMessage("Error loading server info");
