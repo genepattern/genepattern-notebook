@@ -15,6 +15,7 @@
 define("gp_task", ["base/js/namespace",
                    "nbextensions/jupyter-js-widgets/extension",
                    "nbextensions/genepattern/index",
+                   "nbextensions/genepattern/resources/job-widget",
                    "jqueryui"], function (Jupyter, widgets) {
 
     /**
@@ -1965,7 +1966,6 @@ define("gp_task", ["base/js/namespace",
             var code = this.options.cell.code_mirror.getValue();
             var lines = code.split("\n");
             var jobSpecName = null;
-            var taskName = null;
             var insertAfter = null;
 
             // Get the job_spec name and _task name
@@ -1980,13 +1980,6 @@ define("gp_task", ["base/js/namespace",
                     insertAfter = i;
                     continue;
                 }
-
-                // Obtain the variable name of the task
-                // TODO: Finish
-                // if (line.indexOf("_task = ") !== -1) {
-                //     parts = line.split(" ");
-                //     taskName = parts[0];
-                // }
             }
 
             // If job_spec name is still null, return
@@ -2002,10 +1995,6 @@ define("gp_task", ["base/js/namespace",
                 var newLine = jobSpecName + '.set_parameter("' + param.name() + '", "' + this._escapeQuotes(param.defaultValue()) + '")';
                 newLines.unshift(newLine);
             }
-
-            // Insert job_number placeholder
-            // TODO: Finish
-            // newLines.unshift(taskName + ".job_number = None");
 
             // Insert the generated code
             $.each(newLines, function(i, line) {
@@ -2443,18 +2432,10 @@ define("gp_task", ["base/js/namespace",
                                         // Execute cell.
                                         cell.execute();
 
-                                        // Get the output div of the cell and display it
-                                        // TODO: Finish
-                                        // var outputDiv = widget.element.closest(".cell").find(".output").show();
-                                        //
-                                        // // Remove any existing job widget there
-                                        // if (outputDiv.hasClass("gp-widget-job")) {
-                                        //     outputDiv.data("widget").destroy();
-                                        // }
-                                        //
-                                        // // Construct the job widget in the output div
-                                        // outputDiv.jobResults({jobNumber: jobNumber});
-
+                                        // Scroll to the top of the task cell
+                                        $('#site').animate({
+                                            scrollTop: $(Jupyter.notebook.get_selected_cell().element).position().top - 10
+                                        }, 500);
                                     },
                                     error: function(exception) {
                                         widget.errorMessage("Error submitting job: " + exception.statusText);
