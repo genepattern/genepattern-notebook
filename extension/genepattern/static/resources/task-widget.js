@@ -2436,6 +2436,7 @@ define("gp_task", ["base/js/namespace",
                                         $('#site').animate({
                                             scrollTop: $(Jupyter.notebook.get_selected_cell().element).position().top - 10
                                         }, 500);
+                                        Jupyter.notebook.select_next();
                                     },
                                     error: function(exception) {
                                         widget.errorMessage("Error submitting job: " + exception.statusText);
