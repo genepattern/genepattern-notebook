@@ -490,6 +490,35 @@ GenePattern.notebook.updateSliderData = function(url, value) {
     }
 };
 
+GenePattern.notebook.detectKernelDisconnect = function() {
+    var disconnectCurrentlyDetected = false;
+
+    // Run check every minute
+    setInterval(function() {
+        var disconnected = Jupyter.notebook.kernel._reconnect_attempt === Jupyter.notebook.kernel.reconnect_limit;
+
+        // If we've just become disconnected, display modal dialog
+        if (disconnected && !disconnectCurrentlyDetected) {
+            var dialog = require('base/js/dialog');
+            dialog.modal({
+                notebook: Jupyter.notebook,
+                keyboard_manager: this.keyboard_manager,
+                title : "Kernel Disconnected",
+                body : "The notebook is having difficulties connecting to the server. Perhaps your session has timed out? Please refresh the page to reconnect.",
+                buttons : {
+                    "OK" : {
+                        "class" : "btn-default",
+                        "click" : function() {}
+                    }
+                }
+            });
+        }
+
+        // Update connection status
+        disconnectCurrentlyDetected = disconnected;
+    }, 60 * 1000);
+};
+
 GenePattern.notebook.toGenePatternCell = function(formerType) {
     var dialog = require('base/js/dialog');
     var cell = Jupyter.notebook.get_selected_cell();
@@ -959,6 +988,9 @@ GenePattern.notebook.init.notebook_init_wrapper = function () {
                     }
                 }
             );
+
+            // Start kernel disconnect detection
+            GenePattern.notebook.detectKernelDisconnect();
 
             // Set event for hiding popovers & slider when user clicks away
             $(document).on("click", function (e) {
