@@ -175,7 +175,7 @@ define("gp_task", ["base/js/namespace",
             this.element.append(
                 $("<div></div>")
                     .addClass("file-widget-warning alert alert-warning")
-                    .append("File name may not be an acceptable format. This input expects ")
+                    .append("File may not be an acceptable format. This input expects ")
                     .append(this._kindsListString() + ".")
                     .hide()
             );
