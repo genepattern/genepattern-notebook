@@ -123,11 +123,23 @@ define("gp_job", ["base/js/namespace",
                                                         $("<li></li>")
                                                             .append(
                                                                 $("<a></a>")
-                                                                    .attr("title", "Reload Task Form")
+                                                                    .attr("title", "Duplicate Analysis")
                                                                     .attr("href", "#")
-                                                                    .append("Reload Task Form")
+                                                                    .append("Duplicate Analysis")
                                                                     .click(function() {
                                                                         widget.reloadJob();
+                                                                    })
+                                                            )
+                                                    )
+                                                    .append(
+                                                        $("<li></li>")
+                                                            .append(
+                                                                $("<a></a>")
+                                                                    .attr("title", "Duplicate Job")
+                                                                    .attr("href", "#")
+                                                                    .append("Duplicate Job")
+                                                                    .click(function() {
+                                                                        widget.cloneJob();
                                                                     })
                                                             )
                                                     )
@@ -560,6 +572,26 @@ define("gp_job", ["base/js/namespace",
             newCode += "\nGPTaskWidget(" + taskVar + ")";
 
             return newCode;
+        },
+
+        /**
+         * Makes a duplicate of the job widget
+         */
+        cloneJob: function() {
+            // Get the cell to clone
+            var cell = this.element.closest(".cell").data("cell");
+
+            // Get the job widget code
+            var code = cell.code_mirror.getValue();
+
+            // Create a new cell for the cloned job widget
+            var clone = Jupyter.notebook.insert_cell_below();
+
+            // Set the code for the job widget
+            clone.code_mirror.setValue(code);
+
+            // Execute cell
+            clone.execute();
         },
 
         /**
