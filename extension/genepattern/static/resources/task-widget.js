@@ -1638,6 +1638,49 @@ define("gp_task", ["base/js/namespace",
         },
 
         /**
+         * Returns the associated job widget for output
+         *
+         * This selects the next JobWidget with a matching task, located in
+         * the notebook after this task widget, but before the next task widget.
+         *
+         * If no such widget can be found, returns null.
+         */
+        getJobWidget: function() {
+            var all_cells = Jupyter.notebook.get_cells();
+            var this_cell = this.element.closest(".cell").data("cell");
+            var this_cell_found = false;
+            var output_cell = null;
+
+            // Iterate over all cells
+            for (var i in all_cells) {
+                var cell = all_cells[i];
+
+                // Break loop if the next task cell is found
+                var is_task_cell = cell.element.find(".gp-widget-task").length > 0;
+                if (this_cell_found && is_task_cell) break;
+
+                // Locate the current task cell
+                if (cell.cell_id === this_cell.cell_id) {
+                    this_cell_found = true;
+                    continue;
+                }
+
+                // Locate the next matching job cell
+                var is_job_cell = cell.element.find(".gp-widget-job").length > 0;
+                if (this_cell_found && is_job_cell) {
+                    var task_lsid = this.options.task.lsid();
+                    var job_lsid = cell.element.find(".gp-widget-job").data("widget").options.job.task().lsid();
+                    if (job_lsid === task_lsid) {
+                        output_cell = cell;
+                        break;
+                    }
+                }
+            }
+
+            return output_cell;
+        },
+
+        /**
          * Expand or collapse the task widget
          *
          *     expand - optional parameter used to force an expand or collapse,
@@ -2422,8 +2465,11 @@ define("gp_task", ["base/js/namespace",
                                         // Collapse the task widget
                                         widget.expandCollapse();
 
-                                        // Create a new cell for the job widget
-                                        var cell = Jupyter.notebook.insert_cell_below();
+                                        // Find the associated job widget
+                                        var cell = widget.getJobWidget();
+
+                                        // Create a new cell for the job widget, if necessay
+                                        if (!cell) cell = Jupyter.notebook.insert_cell_below();
 
                                         // Set the code for the job widget
                                         var code = GenePattern.notebook.buildJobCode(jobNumber);
@@ -2436,7 +2482,7 @@ define("gp_task", ["base/js/namespace",
                                         $('#site').animate({
                                             scrollTop: $(Jupyter.notebook.get_selected_cell().element).position().top - 10
                                         }, 500);
-                                        Jupyter.notebook.select_next();
+                                        Jupyter.notebook.select(Jupyter.notebook.find_cell_index(cell));
                                     },
                                     error: function(exception) {
                                         widget.errorMessage("Error submitting job: " + exception.statusText);
