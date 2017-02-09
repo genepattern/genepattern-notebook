@@ -135,18 +135,6 @@ define("gp_job", ["base/js/namespace",
                                                         $("<li></li>")
                                                             .append(
                                                                 $("<a></a>")
-                                                                    .attr("title", "Duplicate Job")
-                                                                    .attr("href", "#")
-                                                                    .append("Duplicate Job")
-                                                                    .click(function() {
-                                                                        widget.cloneJob();
-                                                                    })
-                                                            )
-                                                    )
-                                                    .append(
-                                                        $("<li></li>")
-                                                            .append(
-                                                                $("<a></a>")
                                                                     .attr("title", "Toggle Code View")
                                                                     .attr("href", "#")
                                                                     .append("Toggle Code View")
