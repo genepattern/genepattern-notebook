@@ -989,6 +989,9 @@ GenePattern.notebook.init.notebook_init_wrapper = function () {
                 }
             );
 
+            // Add GenePattern help link
+            $("#kernel-help-links").before($("<li><a href='http://genepattern.org/genepattern-notebooks' target='_blank'>GenePattern Help <i class='fa fa-external-link menu-icon pull-right'></i></a></li>"));
+
             // Start kernel disconnect detection
             GenePattern.notebook.detectKernelDisconnect();
 
