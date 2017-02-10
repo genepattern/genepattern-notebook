@@ -586,40 +586,23 @@ define("gp_job", ["base/js/namespace",
          * Reloads the job in a Task widget
          */
         reloadJob: function() {
-            var dialog = require('base/js/dialog');
             var job = this.options.job;
             var widget = this;
-            //var cell = this.element.closest(".cell").data("cell");
 
-            dialog.modal({
-                notebook: Jupyter.notebook,
-                keyboard_manager: this.keyboard_manager,
-                title : "Reload Job?",
-                body : "Are you sure you want to reload the job? This will leave the current " +
-                       "job widget in place and insert a copy of its task widget below.",
-                buttons : {
-                    "Cancel" : {},
-                    Reload : {
-                        "class" : "btn-danger",
-                        "click" : function() {
-                            job.code("Python").done(function(code) {
-                                code = widget._stripUnwantedCode(code);
-                                var cell = Jupyter.notebook.insert_cell_below();
+            job.code("Python").done(function(code) {
+                code = widget._stripUnwantedCode(code);
+                var cell = Jupyter.notebook.insert_cell_below();
 
-                                // Put the code in the cell
-                                cell.code_mirror.setValue(code);
+                // Put the code in the cell
+                cell.code_mirror.setValue(code);
 
-                                // Execute the cell
-                                cell.execute();
+                // Execute the cell
+                cell.execute();
 
-                                // Scroll to the new cell
-                                $('#site').animate({
-                                    scrollTop: $(cell.element).position().top
-                                }, 500);
-                            });
-                        }
-                    }
-                }
+                // Scroll to the new cell
+                $('#site').animate({
+                    scrollTop: $(cell.element).position().top
+                }, 500);
             });
         },
 
