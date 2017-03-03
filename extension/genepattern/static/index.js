@@ -20,7 +20,7 @@ define([
     "nbextensions/genepattern/resources/auth-widget",
     "nbextensions/genepattern/resources/job-widget",
     "nbextensions/genepattern/resources/task-widget",
-    "nbextensions/genepattern/resources/call-widget"], function(Jupyter, events) {
+    "nbextensions/genepattern/resources/call-widget"], function(Jupyter, events, $, gp, GPNotebook) {
 
     function load_ipython_extension() {
         var STATIC_PATH = Jupyter.notebook.base_url + "nbextensions/genepattern/resources/";
@@ -43,7 +43,7 @@ define([
 
         // Wait for the kernel to be ready and then initialize the widgets
         var interval = setInterval(function() {
-            GenePattern.notebook.init.wait_for_kernel(interval);
+            GPNotebook.init.wait_for_kernel(interval);
         }, 500);
     }
 

@@ -11,8 +11,6 @@
  * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not
  * responsible for its use, misuse, or functionality.
  */
-var GenePattern = GenePattern || {};
-GenePattern.notebook = GenePattern.notebook || {};
 
 // Add shim to support Jupyter 4.x
 var Jupyter = Jupyter || IPython || {};
@@ -25,7 +23,7 @@ var STATIC_PATH = location.origin + Jupyter.contents.base_url + "nbextensions/ge
  *
  * @returns {*|jQuery}
  */
-GenePattern.notebook.loadingScreen = function() {
+var loadingScreen = function() {
     return $("<div></div>")
         .addClass("loading-screen")
         .append(
@@ -45,7 +43,7 @@ require(["jquery"], function() {
     );
 
     // Add the loading screen
-    $("body").append(GenePattern.notebook.loadingScreen());
+    $("body").append(loadingScreen());
 
     // Change the logo
     $("#ipython_notebook").find("img").attr("src", STATIC_PATH + "GP_logo_on_black.png");

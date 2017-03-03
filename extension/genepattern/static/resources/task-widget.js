@@ -14,9 +14,10 @@
 
 define("gp_task", ["base/js/namespace",
                    "nbextensions/jupyter-js-widgets/extension",
+                   "nbextensions/genepattern/resources/navigation",
                    "nbextensions/genepattern/index",
                    "nbextensions/genepattern/resources/job-widget",
-                   "jqueryui"], function (Jupyter, widgets) {
+                   "jqueryui"], function (Jupyter, widgets, GPNotebook) {
 
     /**
      * Widget for file input into a GenePattern Notebook.
@@ -2439,7 +2440,7 @@ define("gp_task", ["base/js/namespace",
                                         if (!cell) cell = Jupyter.notebook.insert_cell_below();
 
                                         // Set the code for the job widget
-                                        var code = GenePattern.notebook.buildJobCode(jobNumber);
+                                        var code = GPNotebook.slider.buildJobCode(jobNumber);
                                         cell.code_mirror.setValue(code);
 
                                         // Execute cell.

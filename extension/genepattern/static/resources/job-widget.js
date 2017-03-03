@@ -14,8 +14,9 @@
 
 define("gp_job", ["base/js/namespace",
                   "nbextensions/jupyter-js-widgets/extension",
+                  "nbextensions/genepattern/resources/navigation",
                   "nbextensions/genepattern/index",
-                  "jqueryui"], function (Jupyter, widgets) {
+                  "jqueryui"], function (Jupyter, widgets, GPNotebook) {
 
     /**
      * Widget for viewing the job results of a launched job.
@@ -968,7 +969,7 @@ define("gp_job", ["base/js/namespace",
                         });
 
                     // Build and attach the file menu
-                    GenePattern.notebook.buildMenu(widget, link, output["link"]["name"], output["link"]["href"], output["kind"], indexString, fullMenu);
+                    GPNotebook.slider.buildMenu(widget, link, output["link"]["name"], output["link"]["href"], output["kind"], indexString, fullMenu);
 
                     link.appendTo(wrapper);
                     wrapper.appendTo(outputsList);

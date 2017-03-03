@@ -14,9 +14,10 @@
 
 define("gp_call", ["base/js/namespace",
                        "nbextensions/jupyter-js-widgets/extension",
+                       "nbextensions/genepattern/resources/navigation",
                        "nbextensions/genepattern/index",
                        "nbextensions/genepattern/resources/task-widget",
-                       "jqueryui"], function (Jupyter, widgets, gpindex, task_widget) {
+                       "jqueryui"], function (Jupyter, widgets, GPNotebook, gpindex, task_widget) {
 
 
     /**

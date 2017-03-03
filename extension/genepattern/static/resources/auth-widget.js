@@ -28,8 +28,9 @@ var GENEPATTERN_SERVERS = [
 define("gp_auth", ["base/js/namespace",
                    "nbextensions/jupyter-js-widgets/extension",
                    "nbtools",
+                   "nbextensions/genepattern/resources/navigation",
                    "nbextensions/genepattern/index",
-                   "jqueryui"], function (Jupyter, widgets, NBToolManager) {
+                   "jqueryui"], function (Jupyter, widgets, NBToolManager, GPNotebook) {
 
     $.widget("gp.auth", {
         options: {
@@ -801,7 +802,7 @@ define("gp_auth", ["base/js/namespace",
         },
 
         buildCode: function(server, username, password) {
-            var code = GenePattern.notebook.init.buildCode(server, username, password);
+            var code = GPNotebook.init.buildCode(server, username, password);
             var cell = this.options.cell;
 
             if (cell.cell_type === 'markdown') {
@@ -889,7 +890,7 @@ define("gp_auth", ["base/js/namespace",
                     widget.element.find(".widget-server-label").text(server);
 
                     // Enable authenticated nav elsewhere in notebook
-                    GenePattern.notebook.authenticate(data);
+                    GPNotebook.slider.authenticate(data);
 
                     // Populate the GenePattern._tasks list
                     if (data['all_modules']) {
@@ -900,7 +901,7 @@ define("gp_auth", ["base/js/namespace",
 
                     // Populate the GenePattern._kinds map
                     var kindMap = GenePattern.linkKinds(data['kindToModules']);
-                    GenePattern.notebook.removeKindVisualizers(kindMap);
+                    GPNotebook.slider.removeKindVisualizers(kindMap);
                     GenePattern.kinds(kindMap);
 
                     // If a function to execute when done has been passed in, execute it
@@ -1028,13 +1029,13 @@ define("gp_auth", ["base/js/namespace",
         help : 'toggle dev servers',
         help_index : 'ee',
         handler : function () {
-            GenePattern.notebook.toggleDev();
+            GPNotebook.slider.toggleDev();
             return false;
         }}
     );
 
     // Method to enable dev servers from the auth widget
-    GenePattern.notebook.toggleDev = function() {
+    GPNotebook.slider.toggleDev = function() {
         function addOptions() {
             $(".gp-widget-auth-form").find("[name=server]").each(function(i, select) {
                 $(select)
@@ -1091,7 +1092,7 @@ define("gp_auth", ["base/js/namespace",
 
             // Check to see if this auth widget was manually created, if so replace with full code
             if (cell.code_mirror.getValue().indexOf("# !AUTOEXEC") === -1) {
-                var code = GenePattern.notebook.init.buildCode(GENEPATTERN_SERVERS[0][1], "", "");
+                var code = GPNotebook.init.buildCode(GENEPATTERN_SERVERS[0][1], "", "");
 
                 // Only set the code if this is, in fact, a code cell
                 if (cell.cell_type === 'markdown') {
@@ -1147,7 +1148,7 @@ define("gp_auth", ["base/js/namespace",
         },
         render: function(cell) {
             console.log("GPTool Rendered");
-            GenePattern.notebook.toGenePatternCell();
+            GPNotebook.slider.toGenePatternCell();
             return true;
         }
     });
