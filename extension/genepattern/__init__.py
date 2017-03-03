@@ -10,7 +10,7 @@ responsible for its use, misuse, or functionality.
 """
 
 __author__ = 'Thorin Tabor'
-__copyright__ = 'Copyright 2015-2016, Broad Institute'
+__copyright__ = 'Copyright 2015-2017, Broad Institute'
 __version__ = '0.6.0'
 __status__ = 'Beta'
 __license__ = 'BSD-style'
@@ -76,7 +76,7 @@ class GPAuthWidget(GPResource, widgets.DOMWidget):
         self.errors = widgets.CallbackDispatcher(accepted_nargs=[0, 1])
         self.on_msg(self._handle_custom_msg)
 
-    def _handle_custom_msg(self, content):
+    def _handle_custom_msg(self, content, **kwargs):
         if 'event' in content and content['event'] == 'error':
             self.errors()
             self.errors(self)

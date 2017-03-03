@@ -195,30 +195,8 @@ define("gp_task", ["base/js/namespace",
          * @private
          */
         _destroy: function() {
-            var that = this;
-            $.each(this._values, function(i, e) {
-                that._updateSlider("destroy", e);
-            });
-
             this.element.removeClass("file-widget");
             this.element.empty();
-        },
-
-        /**
-         * Update the left-hand slider with data information
-         *
-         * @private
-         */
-        _updateSlider: function(method, value) {
-            if (method.toLowerCase() == "destroy") {
-                var display = this._singleDisplay(value);
-                GenePattern.notebook.removeSliderData(display);
-            }
-            // Else assume "update"
-            else {
-                var display = this._singleDisplay(value);
-                GenePattern.notebook.updateSliderData(display, value);
-            }
         },
 
         _kindsListString: function() {
@@ -493,7 +471,6 @@ define("gp_task", ["base/js/namespace",
                                 .addClass("fa fa-times")
                         )
                         .click(function() {
-                            widget._updateSlider("destroy", file);
                             widget._removeValue(file);
                             widget.element.find(".file-widget-value[name='" + file + "']").remove();
                             widget.element.find(".file-widget-upload").show();
@@ -805,11 +782,6 @@ define("gp_task", ["base/js/namespace",
                 this._displays = this._valuesToDisplay(val);
                 this._fileBox(null);
                 this._fileBox(this._displays);
-
-                var that = this;
-                $.each(this._values, function(i, e) {
-                    that._updateSlider("update", e);
-                });
             }
             // Do getter
             else {
@@ -844,11 +816,6 @@ define("gp_task", ["base/js/namespace",
             this._values = this._values.concat(val);
             this._displays = this._displays.concat(displayList);
             this._fileBox(displayList);
-
-            var that = this;
-            $.each(this._values, function(i, e) {
-                that._updateSlider("update", e);
-            });
         },
 
         /**

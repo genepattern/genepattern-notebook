@@ -9,8 +9,10 @@ def _post_install():
     log.set_verbosity(log.DEBUG)
 
     try:
-        # Enable the required nbextension for ipywidgets
+        # Enable the required nbextensions for ipywidgets and nbtools
         subprocess.call(["jupyter", "nbextension", "enable", "--py", "widgetsnbextension"])
+        subprocess.call(["jupyter", "nbextension", "install", "--py", "nbtools"])
+        subprocess.call(["jupyter", "nbextension", "enable", "--py", "nbtools"])
 
         # Enable the GenePattern Notebook extension
         subprocess.call(["jupyter", "nbextension", "install", "--py", "genepattern"])

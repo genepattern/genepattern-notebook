@@ -27,8 +27,9 @@ var GENEPATTERN_SERVERS = [
 
 define("gp_auth", ["base/js/namespace",
                    "nbextensions/jupyter-js-widgets/extension",
+                   "nbtools",
                    "nbextensions/genepattern/index",
-                   "jqueryui"], function (Jupyter, widgets) {
+                   "jqueryui"], function (Jupyter, widgets, NBToolManager) {
 
     $.widget("gp.auth", {
         options: {
@@ -1124,7 +1125,35 @@ define("gp_auth", ["base/js/namespace",
         }
     });
 
+    var AuthWidgetTool = new NBToolManager.NBTool({
+        origin: "Tools",
+        id: "authentication",
+        name: "GenePattern Login",
+        // tags: ["GenePattern", "Authentication"],
+        description: "Sign into a GenePattern Server",
+        load: function() { return true; },
+        prepare: function() {
+            var cell = Jupyter.notebook.get_selected_cell();
+            var is_empty = cell.get_text().trim() == "";
+
+            // If this cell is not empty, insert a new cell and use that
+            if (!is_empty) {
+                cell = Jupyter.notebook.insert_cell_below();
+                Jupyter.notebook.select_next();
+            }
+
+            // Otherwise just use this cell
+            return cell;
+        },
+        render: function(cell) {
+            console.log("GPTool Rendered");
+            GenePattern.notebook.toGenePatternCell();
+            return true;
+        }
+    });
+
     return {
-        AuthWidgetView: AuthWidgetView
+        AuthWidgetView: AuthWidgetView,
+        AuthWidgetTool: AuthWidgetTool
     }
 });

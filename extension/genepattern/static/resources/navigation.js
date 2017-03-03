@@ -4,12 +4,6 @@
  * @author Thorin Tabor
  * @requires - jQuery
  *
- * Copyright 2015 The Broad Institute, Inc.
- *
- * SOFTWARE COPYRIGHT NOTICE
- * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
- * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not
- * responsible for its use, misuse, or functionality.
  */
 var GenePattern = GenePattern || {};
 GenePattern.notebook = GenePattern.notebook || {};
@@ -29,6 +23,10 @@ GenePattern.notebook.sliderTab = function() {
             .attr("title", "GenePattern Options")
             .css("display", auth_view)
             .click(function() {
+                // See if the tools cache needs updated
+                GenePattern.notebook.updateTools();
+
+                // Show the slider
                 $("#slider").show("slide");
             });
 };
@@ -133,27 +131,9 @@ GenePattern.notebook.slider = function() {
                                 .append(
                                     $("<a></a>")
                                         .attr("data-toggle", "tab")
-                                        .attr("href", "#slider-modules")
-                                        .text("Modules")
-                                )
-                        )
-                        .append(
-                            $("<li></li>")
-                                .append(
-                                    $("<a></a>")
-                                        .attr("data-toggle", "tab")
-                                        .attr("href", "#slider-data")
-                                        .text("Data")
-                                        .hide()
-                                )
-                        )
-                        .append(
-                            $("<li></li>")
-                                .append(
-                                    $("<a></a>")
-                                        .attr("data-toggle", "tab")
-                                        .attr("href", "#slider-jobs")
-                                        .text("Jobs")
+                                        .attr("href", "#slider-Tools")
+                                        .attr("name", "Tools")
+                                        .text("Tools")
                                 )
                         )
                 )
@@ -162,22 +142,135 @@ GenePattern.notebook.slider = function() {
                         .addClass("tab-content")
                         .append(
                             $("<div></div>")
-                                .attr("id", "slider-modules")
+                                .attr("id", "slider-Tools")
                                 .addClass("tab-pane active")
-                        )
-                        .append(
-                            $("<div></div>")
-                                .attr("id", "slider-data")
-                                .addClass("tab-pane")
-                                .hide()
-                        )
-                        .append(
-                            $("<div></div>")
-                                .attr("id", "slider-jobs")
-                                .addClass("tab-pane")
                         )
                 )
         );
+};
+
+GenePattern.notebook.getDomain = function(url) {
+    var a = document.createElement('a');
+    a.href = url;
+    return a.hostname;
+};
+
+GenePattern.notebook.domEncode = function(str) {
+    return str.replace(/^[^a-z]+|[^\w:.-]+/gi, "");
+};
+
+GenePattern.notebook.getSliderTab = function(origin) {
+    var tab_id = "slider-" + GenePattern.notebook.domEncode(origin);
+    return $("#" + tab_id);
+};
+
+GenePattern.notebook.sliderTabExists = function(origin) {
+    return GenePattern.notebook.getSliderTab(origin).length > 0;
+};
+
+GenePattern.notebook.addSliderTab = function(origin) {
+    // Check to see if the tab already exists
+    var tab_id = "slider-" + GenePattern.notebook.domEncode(origin);
+    if (GenePattern.notebook.sliderTabExists(origin)) {
+        console.log("WARNING: Attempting to add slider tab that already exists");
+        return;
+    }
+
+    // Add the tab
+    var slider_tabs = $("#slider-tabs");
+    var tabs = slider_tabs.find(".nav-tabs");
+    var new_tab = $("<li></li>").append(
+        $("<a></a>")
+            .attr("data-toggle", "tab")
+            .attr("href", "#" + tab_id)
+            .attr("name", origin)
+            .text(origin)
+    );
+    tabs.append(new_tab);
+
+    // Add the content pane
+    var contents = slider_tabs.find(".tab-content");
+    contents.append(
+        $("<div></div>")
+            .attr("id", tab_id)
+            .addClass("tab-pane")
+    );
+};
+
+GenePattern.notebook.removeSliderTab = function(origin) {
+    // Check to see if the tab exists
+    var tab_id = "slider-" + GenePattern.notebook.domEncode(origin);
+    if (!GenePattern.notebook.sliderTabExists(origin)) {
+        console.log("WARNING: Attempting to remove slider tab that doesn't exists");
+        return;
+    }
+
+    // Remove the tab
+    var slider_tabs = $("#slider-tabs");
+    slider_tabs.find(".nav-tabs").find("[name=" + origin + "]").parent().remove();
+
+    // Remove the content pane
+    slider_tabs.find("#" + tab_id).remove();
+};
+
+GenePattern.notebook.registerModule = function(module) {
+    // Prepare the origin
+    var origin = null;
+    var gp_url = GenePattern.server();
+    if (gp_url === "https://genepattern.broadinstitute.org/gp") origin = "GenePattern Public";
+    else if (gp_url === "https://gp.indiana.edu/gp") origin = "GenePattern Indiana";
+    else if (gp_url === "https://gpbroad.broadinstitute.org/gp") origin = "GenePattern Broad";
+    else origin = GenePattern.notebook.getDomain(gp_url);
+
+    // Prepare tags
+    var tags = module['categories'];
+    $.each(module['tags'], function(i, e) {
+        tags.push(e['tag'])
+    });
+    tags.sort();
+
+    var ModuleTool = new NBToolManager.NBTool({
+        origin: origin,
+        id: module['lsid'],
+        name: module['name'],
+        version: "v" + module['version'],
+        tags: tags,
+        description: module['description'],
+        load: function() { return true; },
+        prepare: function() {
+            var cell = Jupyter.notebook.get_selected_cell();
+            var is_empty = cell.get_text().trim() == "";
+
+            // If this cell is not empty, insert a new cell and use that
+            if (!is_empty) {
+                cell = Jupyter.notebook.insert_cell_below();
+                Jupyter.notebook.select_next();
+            }
+
+            // Otherwise just use this cell
+            return cell;
+        },
+        render: function(cell) {
+            console.log("Module Tool Rendered");
+            var code = GenePattern.notebook.buildModuleCode(module);
+            cell.set_text(code);
+            setTimeout(function() {
+                cell.execute();
+            }, 10);
+
+            return true;
+        }
+    });
+
+    NBToolManager.instance().register(ModuleTool);
+};
+
+GenePattern.notebook.registerAllModules = function(modules) {
+    modules.forEach(function(module) {
+        // Only add module if it is not a Java visualizer
+        if (module['categories'].indexOf("Visualizer") !== -1) return;
+        GenePattern.notebook.registerModule(module);
+    });
 };
 
 /**
@@ -192,42 +285,9 @@ GenePattern.notebook.authenticate = function(data) {
     // Show the slider tab
     $(".sidebar-button-main").show("slide", {"direction": "left"});
 
-    // Clear and add the modules to the slider
-    var sliderModules = $("#slider-modules");
-    sliderModules.empty();
+    // Register all modules with the tool manager
     if (data['all_modules']) {
-        $.each(data['all_modules'], function(index, module) {
-            // Only add module if it is not a Java visualizer
-            if (module['categories'].indexOf("Visualizer") === -1) {
-                var tags = module['categories'];
-                $.each(module['tags'], function(i, e) {
-                    tags.push(e['tag'])
-                });
-                tags.sort();
-                var option = GenePattern.notebook.sliderOption(module['lsid'], module['name'], "v" + module['version'], module['description'], tags);
-                option.click(function() {
-                    var index = Jupyter.notebook.get_selected_index();
-                    Jupyter.notebook.insert_cell_below('code', index);
-                    Jupyter.notebook.select_next();
-                    var cell = Jupyter.notebook.get_selected_cell();
-                    var code = GenePattern.notebook.buildModuleCode(module);
-                    cell.set_text(code);
-                    setTimeout(function() {
-                        cell.execute();
-                    }, 10);
-
-                    // Close the slider
-                    $(".sidebar-button-slider").trigger("click");
-
-                    // Scroll to the new cell
-                    $('#site').animate({
-                        scrollTop: $(Jupyter.notebook.get_selected_cell().element).position().top
-                    }, 500);
-                });
-                sliderModules.append(option);
-            }
-        });
-        sliderModules.append($("<p>&nbsp;</p>"))
+        GenePattern.notebook.registerAllModules(data['all_modules']);
     }
 };
 
@@ -390,106 +450,6 @@ GenePattern.notebook.htmlEncode = function(text) {
     return text.replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
 };
 
-/**
- * Remove a slider option representing a job from the slider
- *
- * @param jobNumber
- */
-GenePattern.notebook.removeSliderJob = function(jobNumber) {
-    // Remove from jobs list
-    for (var i = 0; i < GenePattern._jobs.length; i++) {
-        var job = GenePattern._jobs[i];
-        if (job.jobNumber() === jobNumber) {
-            GenePattern._jobs.splice(i, 1);
-        }
-    }
-
-    // Update the UI
-    $("#slider-jobs").find(".slider-option[name='" + jobNumber + "']").remove();
-};
-
-/**
- * Update a slider option representing a job on the slider
- *
- * @param job
- */
-GenePattern.notebook.updateSliderJob = function(job) {
-    // If the job does not yet exist in the list, add it
-    var jobsSlider = $("#slider-jobs");
-    var existingOption = jobsSlider.find(".slider-option[name='" + job.jobNumber() + "']");
-    if (existingOption.length < 1) {
-        // Add to jobs list
-        GenePattern._jobs.push(job);
-
-        // Update the UI
-        var option = GenePattern.notebook.sliderOption(job.jobNumber(), job.jobNumber() + ". " + job.taskName(),
-            GenePattern.notebook.statusIndicator(job.status()), "Submitted: " + job.dateSubmitted(), []);
-        option.click(function() {
-            $('#site').animate({
-                scrollTop: $(".gp-widget-job[name='" + job.jobNumber() + "']").position().top
-            }, 500);
-
-            // Close the slider
-            $(".sidebar-button-slider").trigger("click");
-        });
-        jobsSlider.append(option);
-    }
-    // Otherwise update the view
-    else {
-        // Update in jobs list
-        for (var i = 0; i < GenePattern._jobs.length; i++) {
-            var jobInList = GenePattern._jobs[i];
-            if (jobInList.jobNumber() === job.jobNumber()) {
-                GenePattern._jobs.splice(i, 1, job);
-            }
-        }
-
-        // Update the UI
-        existingOption.find(".slider-option-anno").text(GenePattern.notebook.statusIndicator(job.status()));
-    }
-};
-
-/**
- * Remove a slider option representing data from the slider
- *
- * @param name
- */
-GenePattern.notebook.removeSliderData = function(name) {
-    // Update the UI
-    $("#slider-data").find(".slider-option[name='" + name + "']").remove();
-};
-
-/**
- * Update a slider option representing data on the slider
- *
- * @param url
- * @param value
- */
-GenePattern.notebook.updateSliderData = function(url, value) {
-    // If the data does not yet exist in the list, add it
-    var dataSlider = $("#slider-data");
-    var existingOption = dataSlider.find(".slider-option[name='" + url + "']");
-    if (existingOption.length < 1) {
-        // Update the UI
-        var type = GenePattern.notebook.fileLocationType(value);
-        var name = GenePattern.notebook.nameFromUrl(url);
-        var urlWithPrefix = type === "Upload" ? "Ready to Upload: " + GenePattern.notebook.htmlEncode(url) : GenePattern.notebook.htmlEncode(url);
-        var option = GenePattern.notebook.sliderOption(url, name, type, urlWithPrefix, []);
-        option.click(function() {
-            // Close the slider
-            $(".sidebar-button-slider").trigger("click");
-
-            var fileOffset = $(".file-widget-value-text:contains('" + url + "')").offset().top;
-            var notebookOffset = $("#notebook").offset().top;
-
-            $('#site').animate({
-                scrollTop: fileOffset - notebookOffset - 50
-            }, 500);
-        });
-        dataSlider.append(option);
-    }
-};
-
 GenePattern.notebook.detectKernelDisconnect = function() {
     var disconnectCurrentlyDetected = false;
 
@@ -607,7 +567,10 @@ GenePattern.notebook.toGenePatternCell = function(formerType) {
  * @param cell
  */
 GenePattern.notebook.widgetSelectDialog = function(cell) {
-    var modules = $("#slider-modules").clone();
+    // See if we need to update the tools display before building the GUI
+    GenePattern.notebook.updateTools();
+
+    var modules = $("#slider-tabs").find(".tab-pane:last").clone();
     modules.attr("id", "dialog-modules");
     modules.css("height", $(window).height() - 200);
     modules.css("overflow-y", "auto");
@@ -959,7 +922,6 @@ GenePattern.notebook.init = GenePattern.notebook.init || {};
  * Wait for kernel and then init notebook widgets
  */
 GenePattern.notebook.init.wait_for_kernel = function (id) {
-    console.log("wait_for_kernel");
     if (!GenePattern.notebook.init.done_init  && Jupyter.notebook.kernel) {
         GenePattern.notebook.init.notebook_init_wrapper();
     }
@@ -972,7 +934,6 @@ GenePattern.notebook.init.wait_for_kernel = function (id) {
  * Initialize GenePattern Notebook from the notebook page
  */
 GenePattern.notebook.init.notebook_init_wrapper = function () {
-    console.log("notebook_init_wrapper");
     if (!GenePattern.notebook.init.done_init  && Jupyter.notebook.kernel) {
         try {
             // Call the core init function
@@ -1078,30 +1039,100 @@ GenePattern.notebook.init.auto_run_widgets = function() {
     });
 };
 
+GenePattern.notebook.updateTools = function() {
+    // Get the correct list divs
+    var slider_div = $("#slider-tabs");
+    // var list_divs = slider_div.find(".tab-content").children();
+
+    // Do we need to refresh the cache?
+    var refresh = slider_div.data("cached") !== NBToolManager.instance().modified().toString();
+
+    // Refresh the cache, if necessary
+    if (refresh) {
+        // Empty the list divs
+        slider_div.find(".tab-content").children().empty();
+        // list_divs.forEach(function(div) {
+        //     div.empty();
+        // });
+
+        // Write the new cache timestamp
+        slider_div.data("cached", NBToolManager.instance().modified().toString());
+
+        // Get the updated list of tools
+        var tools = NBToolManager.instance().list();
+
+        // Add the tools to the lists
+        tools.forEach(function(tool) {
+            var option = GenePattern.notebook.sliderOption(
+                tool.id,
+                tool.name,
+                tool.version ? tool.version : "",
+                tool.description ? tool.description : "",
+                tool.tags ? tool.tags : []);
+
+            // Attach the click
+            option.click(function() {
+                // Prepare the cell
+                var cell = tool.prepare();
+
+                // Render the tool
+                tool.render(cell);
+
+                // Scroll to the cell, if applicable
+                if (cell) {
+                    $('#site').animate({
+                        scrollTop: $(cell.element).position().top
+                    }, 500);
+                }
+
+                // Close the slider
+                $(".sidebar-button-slider").trigger("click");
+            });
+
+            // Does the origin div exist?
+            var tab_exists = GenePattern.notebook.sliderTabExists(tool.origin);
+
+            // If it doesn't exist, create it
+            if (!tab_exists) GenePattern.notebook.addSliderTab(tool.origin);
+
+            // Get the slider tab and add the tool
+            GenePattern.notebook.getSliderTab(tool.origin).append(option);
+        });
+    }
+};
+
 /**
  * Initialize GenePattern Notebook core functionality
  */
 GenePattern.notebook.init.launch_init = function() {
+    // Register authentication widget with Tool Manager
+    require(["nbtools",
+             "gp_auth"],
+              function(NBToolManager, auth) {
+        NBToolManager.instance().register(auth.AuthWidgetTool);
+    });
+
     // Add the sidebar
     var body = $("body");
     body.append(GenePattern.notebook.sliderTab());
     body.append(GenePattern.notebook.slider());
 
     // Hide or show the slider tab if a GenePattern cell is highlighted
-    $([Jupyter.events]).on('select.Cell', function() {
-        var cell = Jupyter.notebook.get_selected_cell();
-        var isGPCell = cell.element.find(".gp-widget").length > 0;
-
-        // If authenticated and the selected cell is a GenePattern cell, show
-        if (GenePattern.authenticated && isGPCell) {
-            $(".sidebar-button-main").show();
-        }
-
-        // Else, hide
-        else {
-            $(".sidebar-button-main").hide();
-        }
-    });
+    $(".sidebar-button-main").show();
+    // $([Jupyter.events]).on('select.Cell', function() {
+    //     var cell = Jupyter.notebook.get_selected_cell();
+    //     var isGPCell = cell.element.find(".gp-widget").length > 0;
+    //
+    //     // If authenticated and the selected cell is a GenePattern cell, show
+    //     if (GenePattern.authenticated && isGPCell) {
+    //         $(".sidebar-button-main").show();
+    //     }
+    //
+    //     // Else, hide
+    //     else {
+    //         $(".sidebar-button-main").hide();
+    //     }
+    // });
 
     // Initialize tooltips
     $(function () {

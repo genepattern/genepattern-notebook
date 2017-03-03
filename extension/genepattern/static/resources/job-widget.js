@@ -238,7 +238,6 @@ define("gp_job", ["base/js/namespace",
          * @private
          */
         _destroy: function() {
-            this._updateSlider("destroy");
             this.element.removeClass("gp-widget gp-widget-job panel panel-default");
             this.element.empty();
         },
@@ -685,25 +684,6 @@ define("gp_job", ["base/js/namespace",
         },
 
         /**
-         * Update the left-hand slider with job information
-         *
-         * @private
-         */
-        _updateSlider: function(method) {
-            if (method.toLowerCase() == "destroy") {
-                // Remove only if this is the last instance of the job in the notebook
-                var JobInstanceNum = $(".gp-widget-job[name='" + this.options.jobNumber + "']").length;
-                if (JobInstanceNum === 1) {
-                    GenePattern.notebook.removeSliderJob(this.options.jobNumber);
-                }
-            }
-            // Else assume "update"
-            else {
-                GenePattern.notebook.updateSliderJob(this.options.job);
-            }
-        },
-
-        /**
          * Show the message about authentication
          *
          * @private
@@ -742,9 +722,6 @@ define("gp_job", ["base/js/namespace",
 
                         // Update the widget
                         widget._displayJob(job);
-
-                        // Update the slider
-                        widget._updateSlider("update");
 
                         // Enable the code button
                         widget.element.find(".gp-widget-job-reload").removeAttr("disabled");
