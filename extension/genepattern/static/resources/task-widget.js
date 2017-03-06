@@ -2761,6 +2761,9 @@ define("gp_task", ["base/js/namespace",
                 });
             }
 
+            // Hide the close button
+            cell.element.find(".close").hide();
+
             // Hide the code by default
             var element = this.$el;
             var hideCode = function() {

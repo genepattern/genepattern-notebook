@@ -917,6 +917,8 @@ define("gp_call", ["base/js/namespace",
 
     var CallWidgetView = widgets.DOMWidgetView.extend({
         render: function () {
+            var cell = this.options.cell;
+
             // Render the view.
             if (!this.el) this.setElement($('<div></div>'));
 
@@ -931,6 +933,9 @@ define("gp_call", ["base/js/namespace",
                 params: params,
                 cell: this.options.cell
             });
+
+            // Hide the close button
+            cell.element.find(".close").hide();
 
             // Hide the code by default
             var element = this.$el;
