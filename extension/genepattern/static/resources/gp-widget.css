@@ -17,6 +17,7 @@
     width: 100%;
     max-width: 100%;
     border-color: rgba(10, 45, 105, 0.80);
+    overflow: visible !important;
 }
 
 .gp-widget .panel-heading {
