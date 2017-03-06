@@ -1108,7 +1108,8 @@ define("gp_auth", ["base/js/namespace",
             }
 
             // Render the view.
-            this.setElement($('<div></div>'));
+            if (!this.el) this.setElement($('<div></div>'));
+
             $(this.$el).auth({
                 cell: cell
             });

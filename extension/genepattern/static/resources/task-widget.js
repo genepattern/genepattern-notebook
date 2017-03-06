@@ -2742,7 +2742,8 @@ define("gp_task", ["base/js/namespace",
     var TaskWidgetView = widgets.DOMWidgetView.extend({
         render: function () {
             // Render the view.
-            this.setElement($('<div></div>'));
+            if (!this.el) this.setElement($('<div></div>'));
+
             var lsid = this.model.get('lsid');
             var name = this.model.get('name');
 

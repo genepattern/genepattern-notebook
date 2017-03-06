@@ -1033,7 +1033,8 @@ define("gp_job", ["base/js/namespace",
     var JobWidgetView = widgets.DOMWidgetView.extend({
         render: function () {
             // Render the view.
-            this.setElement($('<div></div>'));
+            if (!this.el) this.setElement($('<div></div>'));
+
             var jobNumber = this.model.get('job_number');
             $(this.$el).jobResults({
                 jobNumber: jobNumber

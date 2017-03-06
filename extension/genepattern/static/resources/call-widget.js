@@ -918,7 +918,8 @@ define("gp_call", ["base/js/namespace",
     var CallWidgetView = widgets.DOMWidgetView.extend({
         render: function () {
             // Render the view.
-            this.setElement($('<div></div>'));
+            if (!this.el) this.setElement($('<div></div>'));
+
             var name = this.model.get('name');
             var description = this.model.get('description');
             var params = this.model.get('params');
