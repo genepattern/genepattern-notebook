@@ -551,6 +551,11 @@ define("gp_job", ["base/js/namespace",
                     taskVar = line.split(" ")[0];
                 }
 
+                // Replace gpserver variable with session
+                if (line.indexOf("gpserver") !== -1) {
+                    line = line.replace("gpserver", "genepattern.sessions['" + GenePattern.server() + "']")
+                }
+
                 // Append the code if it's not a skipped line
                 if (!skip) {
                     newCode += line.trim() + "\n"
@@ -558,7 +563,7 @@ define("gp_job", ["base/js/namespace",
             }
 
             // Append the widget view
-            newCode += "\nGPTaskWidget(" + taskVar + ")";
+            newCode += "\ngenepattern.GPTaskWidget(" + taskVar + ")";
 
             // Add the metadata
             GPNotebook.slider.makeGPCell(cell, "task");
@@ -1036,10 +1041,17 @@ define("gp_job", ["base/js/namespace",
         render: function () {
             var cell = this.options.cell;
 
+            // Get the job number
+            var jobNumber = this.model.get('job_number');
+
+            // Check to see if this is a legacy job widget, if so replace with full code
+            if (!('genepattern' in cell.metadata) && GenePattern.authenticated) {
+                GPNotebook.slider.buildJobCode(cell, GenePattern.server(), jobNumber);
+            }
+
             // Render the view.
             if (!this.el) this.setElement($('<div></div>'));
 
-            var jobNumber = this.model.get('job_number');
             $(this.$el).jobResults({
                 jobNumber: jobNumber
             });

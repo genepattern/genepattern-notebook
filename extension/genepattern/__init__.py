@@ -11,24 +11,38 @@ responsible for its use, misuse, or functionality.
 
 __author__ = 'Thorin Tabor'
 __copyright__ = 'Copyright 2015-2017, Broad Institute'
-__version__ = '0.6.0'
+__version__ = '0.6.1'
 __status__ = 'Beta'
 __license__ = 'BSD-style'
 
-from gp import GPResource
 import gp
-import sys
 import inspect
-import IPython
 from IPython.core.magic import Magics, magics_class, line_magic
+from traitlets import Unicode, Integer, List
+from ipywidgets import widgets
 
-# Determine IPython version and do version-specific imports
-ipy_major_version = IPython.version_info[0]
-if ipy_major_version < 4:
-    sys.exit("GenePattern Notebook requires Jupyter 4.2 or greater")
-elif ipy_major_version >= 4:
-    from traitlets import Unicode, Integer, List
-    from ipywidgets import widgets
+
+
+"""
+Keep a dictionary of all currently registered GenePattern server sessions
+Keys are the relevant server URLs
+"""
+sessions = {}
+
+
+def register_session(server, username, password):
+    """
+    Register a new GenePattern server session for the provided
+    server, username and password. Return the session.
+    :param server:
+    :param username:
+    :param password:
+    :return:
+    """
+    session = gp.GPServer(server, username, password)
+    if username != "" and username is not None:
+        sessions[server] = session
+    return session
 
 
 @magics_class
@@ -58,7 +72,7 @@ class GenePatternMagic(Magics):
         return task
 
 
-class GPAuthWidget(GPResource, widgets.DOMWidget):
+class GPAuthWidget(gp.GPResource, widgets.DOMWidget):
     """
     A running or completed job on a GenePattern server.
 
@@ -82,7 +96,7 @@ class GPAuthWidget(GPResource, widgets.DOMWidget):
             self.errors(self)
 
 
-class GPJobWidget(GPResource, widgets.DOMWidget):
+class GPJobWidget(gp.GPResource, widgets.DOMWidget):
     """
     A running or completed job on a Gene Pattern server.
 
@@ -99,7 +113,7 @@ class GPJobWidget(GPResource, widgets.DOMWidget):
         self.job_number = job.job_number
 
 
-class GPTaskWidget(GPResource, widgets.DOMWidget):
+class GPTaskWidget(gp.GPResource, widgets.DOMWidget):
     """
     A running or completed job on a Gene Pattern server.
 
@@ -127,7 +141,7 @@ class GPTaskWidget(GPResource, widgets.DOMWidget):
             return False
 
 
-class GPCallWidget(GPResource, widgets.DOMWidget):
+class GPCallWidget(gp.GPResource, widgets.DOMWidget):
     _view_name = Unicode('CallWidgetView').tag(sync=True)
     _view_module = Unicode('gp_call').tag(sync=True)
 

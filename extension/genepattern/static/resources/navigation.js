@@ -49,13 +49,14 @@ define(["base/js/namespace",
      * @param tags - List of tags
      * @returns {*|jQuery}
      */
-    slider.sliderOption = function(id, name, anno, desc, tags) {
+    slider.sliderOption = function(id, name, origin, anno, desc, tags) {
         var tagString = tags.join(", ");
         return $("<div></div>")
             .addClass("well well-sm slider-option")
             .attr("name", id)
             .attr("data-id", id)
             .attr("data-name", name)
+            .attr("data-origin", origin)
             .append(
                 $("<h4></h4>")
                     .addClass("slider-option-name")
@@ -259,7 +260,7 @@ define(["base/js/namespace",
                 return cell;
             },
             render: function(cell) {
-                slider.buildModuleCode(cell, module);
+                slider.buildModuleCode(cell, gp_url, module);
                 setTimeout(function() {
                     cell.execute();
                 }, 10);
@@ -373,16 +374,16 @@ define(["base/js/namespace",
      * @param cell
      * @param module
      */
-    slider.buildModuleCode = function(cell, module) {
+    slider.buildModuleCode = function(cell, server, module) {
         var baseName = module["name"].toLowerCase().replace(/\./g, '_');
         var taskName = baseName + "_task";
         var specName = baseName + "_job_spec";
         var baseLsid = slider.stripVersion(module["lsid"]);
 
         // Build the code
-        var code = taskName + " = gp.GPTask(gpserver, '" + baseLsid + "')\n" +
+        var code = taskName + " = gp.GPTask(genepattern.sessions['" + server + "'], '" + baseLsid + "')\n" +
                    specName + " = " + taskName + ".make_job_spec()\n" +
-                   "GPTaskWidget(" + taskName + ")";
+                   "genepattern.GPTaskWidget(" + taskName + ")";
 
         // Add the metadata
         slider.makeGPCell(cell, "task");
@@ -397,10 +398,10 @@ define(["base/js/namespace",
      * @param cell
      * @param jobNumber
      */
-    slider.buildJobCode = function(cell, jobNumber) {
-        var code = "job" + jobNumber + " = gp.GPJob(gpserver, " + jobNumber + ")\n" +
+    slider.buildJobCode = function(cell, server, jobNumber) {
+        var code = "job" + jobNumber + " = gp.GPJob(genepattern.sessions['" + server + "'], " + jobNumber + ")\n" +
                    "job" + jobNumber + ".job_number = " + jobNumber + "\n" +
-                   "GPJobWidget(job" + jobNumber + ")";
+                   "genepattern.GPJobWidget(job" + jobNumber + ")";
 
         // Add the metadata
         slider.makeGPCell(cell, "job");
@@ -625,7 +626,8 @@ define(["base/js/namespace",
             $(element).click(function() {
                 var lsid = $(element).attr("data-id");
                 var name = $(element).attr("data-name");
-                slider.buildModuleCode(cell, {"lsid":lsid, "name": name});
+                var server = $(element).attr("data-origin");
+                slider.buildModuleCode(cell, server, {"lsid":lsid, "name": name});
                 setTimeout(function() {
                     cell.execute();
                 }, 10);
@@ -790,6 +792,7 @@ define(["base/js/namespace",
                     sendToNewTask.append(
                         $("<option></option>")
                             .attr("data-lsid", module.lsid())
+                            .attr("data-server", GenePattern.server())
                             .text(module.name())
                     )
                 });
@@ -829,10 +832,11 @@ define(["base/js/namespace",
                 newTaskDropdown.change(function(event) {
                     var option = $(event.target).find(":selected");
                     var lsid = option.attr("data-lsid");
+                    var server = option.attr("data-server");
                     if (lsid === undefined || lsid === null) return;
                     var name = option.text();
                     var cell = Jupyter.notebook.insert_cell_at_bottom();
-                    slider.buildModuleCode(cell, {"lsid":lsid, "name": name});
+                    slider.buildModuleCode(cell, server, {"lsid":lsid, "name": name});
 
                     // Execute the cell
                     setTimeout(function() {
@@ -1013,29 +1017,12 @@ define(["base/js/namespace",
      * @param password
      */
     init.buildCode = function(cell, server, username, password) {
-        var code = '# Don\'t have the GenePattern Notebook? It can be installed from PIP: \n\
-# pip install genepattern-notebook \n\
-import gp\n\
-\n\
-# The following widgets are components of the GenePattern Notebook extension.\n\
-try:\n\
-    from genepattern import GPAuthWidget, GPJobWidget, GPTaskWidget\n\
-except:\n\
-    def GPAuthWidget(input):\n\
-        print("GP Widget Library not installed. Please visit http://genepattern.org")\n\
-    def GPJobWidget(input):\n\
-        print("GP Widget Library not installed. Please visit http://genepattern.org")\n\
-    def GPTaskWidget(input):\n\
-        print("GP Widget Library not installed. Please visit http://genepattern.org")\n\
-\n\
-# The gpserver object holds your authentication credentials and is used to\n\
-# make calls to the GenePattern server through the GenePattern Python library.\n\
-# Your actual username and password have been removed from the code shown\n\
-# below for security reasons.\n\
-gpserver = gp.GPServer("' + server + '", "' + username + '", "' + password + '")\n\
-\n\
-# Return the authentication widget to view it\n\
-GPAuthWidget(gpserver)';
+        var code = '# Requires GenePattern Notebook: pip install genepattern-notebook\n' +
+                   'import gp\n' +
+                   'import genepattern\n' +
+                   '\n' +
+                   '# Username and password removed for security reasons.\n' +
+                   'genepattern.GPAuthWidget(genepattern.register_session("' + server + '", "' + username + '", "' + password + '"))';
 
         if (cell.cell_type === 'markdown') {
             console.log("ERROR: Attempting to turn markdown cell into widget in authWidget.buildCode()")
@@ -1096,6 +1083,7 @@ GPAuthWidget(gpserver)';
                 var option = slider.sliderOption(
                     tool.id,
                     tool.name,
+                    tool.origin,
                     tool.version ? tool.version : "",
                     tool.description ? tool.description : "",
                     tool.tags ? tool.tags : []);

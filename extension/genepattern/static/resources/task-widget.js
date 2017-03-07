@@ -2440,7 +2440,7 @@ define("gp_task", ["base/js/namespace",
                                         if (!cell) cell = Jupyter.notebook.insert_cell_below();
 
                                         // Set the code for the job widget
-                                        GPNotebook.slider.buildJobCode(cell, jobNumber);
+                                        GPNotebook.slider.buildJobCode(cell, GenePattern.server(), jobNumber);
 
                                         // Execute cell.
                                         cell.execute();
@@ -2741,12 +2741,29 @@ define("gp_task", ["base/js/namespace",
     var TaskWidgetView = widgets.DOMWidgetView.extend({
         render: function () {
             var cell = this.options.cell;
-
-            // Render the view.
-            if (!this.el) this.setElement($('<div></div>'));
+            var code = null;
 
             var lsid = this.model.get('lsid');
             var name = this.model.get('name');
+
+            // Check to see if this is a legacy task widget, if so update the code
+            if (!('genepattern' in cell.metadata) && !GenePattern.authenticated) {
+                code = cell.get_text().replace("gpserver", "None");
+                cell.set_text(code);
+            }
+            else if (!('genepattern' in cell.metadata) && GenePattern.authenticated) {
+                code = cell.get_text().replace("gp.GPTask(None", "gp.GPTask(genepattern.sessions['" + GenePattern.server() + "']");
+                code = code.replace("# !AUTOEXEC\n\n", "");
+
+                // Add the metadata
+                GPNotebook.slider.makeGPCell(cell, "task");
+
+                // Add the code to the cell
+                cell.set_text(code);
+            }
+
+            // Render the view.
+            if (!this.el) this.setElement($('<div></div>'));
 
             // Determine which identifier is used
             if (lsid) {
