@@ -11,28 +11,33 @@
  * responsible for its use, misuse, or functionality.
  */
 
-/**
- * Declaration of top gp library namespace
- *
- * @required - jQuery 1.5+ library
- */
-var GenePattern = GenePattern || {};
-GenePattern._server = null;
-GenePattern._tasks = [];
-GenePattern._jobs = [];
-GenePattern._kinds = [];
-GenePattern.authenticated = false;
-GenePattern.initialized = false;
-GenePattern.password = null;
-GenePattern.username = null;
+define(["jquery", "jqueryui"], function ($) {
 
-require(["jquery"], function() {
+    /**
+     * Declaration of top gp library namespace
+     *
+     * @required - jQuery 1.5+ library
+     */
+    var GenePattern = GenePattern || {};
+    GenePattern._server = null;
+    GenePattern._tasks = [];
+    GenePattern._jobs = [];
+    GenePattern._kinds = [];
+    GenePattern.authenticated = false;
+    GenePattern.initialized = false;
+    GenePattern.password = null;
+    GenePattern.username = null;
+
+    // TODO: Remove older style global references
+    window.GenePattern = GenePattern;
+
+
     /**
      * Easily determine if the URL to the GenePattern server has been set or not.
      *
      * @returns {boolean} - true if the server has been set, else false
      */
-    GenePattern.isServerSet = function() {
+    GenePattern.isServerSet = function () {
         return GenePattern._server ? true : false;
     };
 
@@ -43,7 +48,7 @@ require(["jquery"], function() {
      *
      * @returns {string|null}
      */
-    GenePattern.server = function(serverUrl) {
+    GenePattern.server = function (serverUrl) {
         if (serverUrl === undefined) {
             return GenePattern._server;
         }
@@ -59,7 +64,7 @@ require(["jquery"], function() {
      * @param kindMap
      * @returns {Array|*}
      */
-    GenePattern.kinds = function(kindMap) {
+    GenePattern.kinds = function (kindMap) {
         if (kindMap === undefined) {
             return GenePattern._kinds;
         }
@@ -76,10 +81,10 @@ require(["jquery"], function() {
      * @param kindMap
      * @returns {Array|*}
      */
-    GenePattern.linkKinds = function(kindMap) {
+    GenePattern.linkKinds = function (kindMap) {
         var returnMap = {};
 
-        $.each(kindMap, function(key, taskArray) {
+        $.each(kindMap, function (key, taskArray) {
             var returnArray = [];
 
             for (var i = 0; i < taskArray.length; i++) {
@@ -119,14 +124,14 @@ require(["jquery"], function() {
      * @returns {jQuery.Deferred} - Returns a jQuery Deferred object for event chaining.
      *      See http://api.jquery.com/jquery.deferred/ for details.
      */
-    GenePattern.tasks = function(pObj) {
+    GenePattern.tasks = function (pObj) {
         var forceRefresh = pObj && ((typeof pObj.force === 'boolean' && pObj.force) ||
-                (typeof pObj.force === 'string' && pObj.force.toLowerCase() === 'true'));
+            (typeof pObj.force === 'string' && pObj.force.toLowerCase() === 'true'));
         var useCache = GenePattern._tasks && !forceRefresh;
 
         if (useCache) {
             return new $.Deferred()
-                .done(function() {
+                .done(function () {
                     if (pObj && pObj.success) {
                         pObj.success("cached", GenePattern._tasks);
                     }
@@ -138,14 +143,14 @@ require(["jquery"], function() {
             var includeHidden = pObj && pObj.hidden && pObj.hidden.toLowerCase() === 'true' ? '?includeHidden=true' : '';
 
             return $.ajax({
-                    url: GenePattern.server() + REST_ENDPOINT + includeHidden,
-                    type: 'GET',
-                    dataType: 'json',
-                    xhrFields: {
-                        withCredentials: true
-                    }
-                })
-                .done(function(response) {
+                url: GenePattern.server() + REST_ENDPOINT + includeHidden,
+                type: 'GET',
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true
+                }
+            })
+                .done(function (response) {
                     // Create the new _tasks list and iterate over returned JSON list, creating Task objects
                     GenePattern._tasks = [];
                     var modules = response['all_modules'];
@@ -160,7 +165,7 @@ require(["jquery"], function() {
                         pObj.success(response, GenePattern._tasks);
                     }
                 })
-                .fail(function(exception) {
+                .fail(function (exception) {
                     if (pObj && pObj.error) {
                         pObj.error(exception);
                     }
@@ -179,14 +184,14 @@ require(["jquery"], function() {
      *
      * @returns {GenePattern.Task|null} - The Task object from the cache
      */
-    GenePattern.task = function(pObj) {
+    GenePattern.task = function (pObj) {
         // Ensure either lsid or name is defined
         if (!pObj) throw "GenePattern.task() parameter either null or undefined";
         if (typeof pObj === 'object' && !pObj.lsid && !pObj.name) throw "GenePattern.task() parameter does not contain lsid or name";
         if (typeof pObj !== 'string' && typeof pObj !== 'object') throw "GenePattern.task() parameter must be either object or string";
         if (GenePattern._tasks === null) throw "gp task list has not been initialized";
 
-        var identifier = typeof pObj === 'string'? pObj : null;
+        var identifier = typeof pObj === 'string' ? pObj : null;
         var isLsid = identifier.indexOf(':') > -1;
         var isBaseLsid = (identifier.split(":").length - 1) === 4;
 
@@ -218,7 +223,7 @@ require(["jquery"], function() {
      * @returns {jQuery.Deferred} - Returns a jQuery Deferred object for event chaining.
      *      See http://api.jquery.com/jquery.deferred/ for details.
      */
-    GenePattern.taskQuery = function(pObj) {
+    GenePattern.taskQuery = function (pObj) {
         // Ensure either lsid or name is defined
         if (!pObj) throw "GenePattern.taskQuery() parameter either null or undefined";
         if (typeof pObj === 'object' && !pObj.lsid && !pObj.name) throw "GenePattern.taskQuery() parameter does not contain lsid or name";
@@ -284,13 +289,13 @@ require(["jquery"], function() {
      * @returns {jQuery.Deferred} - Returns a jQuery Deferred object for event chaining.
      *      See http://api.jquery.com/jquery.deferred/ for details.
      */
-    GenePattern.jobs = function(pObj) {
+    GenePattern.jobs = function (pObj) {
         var forceRefresh = pObj && pObj.force && pObj.force.toLowerCase() === 'true';
         var useCache = GenePattern._jobs && !forceRefresh;
 
         if (useCache) {
             return new $.Deferred()
-                .done(function() {
+                .done(function () {
                     if (pObj && pObj.success) {
                         pObj.success("cached", GenePattern._jobs);
                     }
@@ -319,14 +324,14 @@ require(["jquery"], function() {
             if (includePermissions) REST_ENDPOINT += "&includePermissions=" + encodeURIComponent(includePermissions);
 
             return $.ajax({
-                    url: GenePattern.server() + REST_ENDPOINT,
-                    type: 'GET',
-                    dataType: 'json',
-                    xhrFields: {
-                        withCredentials: true
-                    }
-                })
-                .done(function(response) {
+                url: GenePattern.server() + REST_ENDPOINT,
+                type: 'GET',
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true
+                }
+            })
+                .done(function (response) {
                     // Create the new _jobs list and iterate over returned JSON list, creating Job objects
                     GenePattern._jobs = [];
                     var jobs = response['items'];
@@ -341,7 +346,7 @@ require(["jquery"], function() {
                         pObj.success(response, GenePattern._tasks);
                     }
                 })
-                .fail(function(exception) {
+                .fail(function (exception) {
                     if (pObj && pObj.error) {
                         pObj.error(exception);
                     }
@@ -364,11 +369,11 @@ require(["jquery"], function() {
      * @returns {jQuery.Deferred} - Returns a jQuery Deferred object for event chaining.
      *      See http://api.jquery.com/jquery.deferred/ for details.
      */
-    GenePattern.job = function(pObj) {
+    GenePattern.job = function (pObj) {
         var forceRefresh = pObj && ((typeof pObj.force === 'boolean' && pObj.force) ||
-                (typeof pObj.force === 'string' && pObj.force.toLowerCase() === 'true'));
+            (typeof pObj.force === 'string' && pObj.force.toLowerCase() === 'true'));
         var getPermissions = pObj && ((typeof pObj.permissions === 'boolean' && pObj.permissions) ||
-                (typeof pObj.permissions === 'string' && pObj.permissions.toLowerCase() === 'true'));
+            (typeof pObj.permissions === 'string' && pObj.permissions.toLowerCase() === 'true'));
         var jobNumber = pObj.jobNumber;
 
         // Try to find the job in the cache
@@ -377,7 +382,7 @@ require(["jquery"], function() {
                 var job = GenePattern._jobs[i];
                 if (job.jobNumber() === jobNumber) {
                     return new $.Deferred()
-                        .done(function() {
+                        .done(function () {
                             if (pObj && pObj.success) {
                                 pObj.success("Job cached", job);
                             }
@@ -392,14 +397,14 @@ require(["jquery"], function() {
         var REST_ENDPOINT = "/rest/v1/jobs/";
 
         return $.ajax({
-                url: GenePattern.server() + REST_ENDPOINT + jobNumber + permissionsParam,
-                type: 'GET',
-                dataType: 'json',
-                xhrFields: {
-                    withCredentials: true
-                }
-            })
-            .done(function(response) {
+            url: GenePattern.server() + REST_ENDPOINT + jobNumber + permissionsParam,
+            type: 'GET',
+            dataType: 'json',
+            xhrFields: {
+                withCredentials: true
+            }
+        })
+            .done(function (response) {
                 // Create the new _jobs list and iterate over returned JSON list, creating Job objects
                 var loadedJob = new GenePattern.Job(response);
 
@@ -407,7 +412,7 @@ require(["jquery"], function() {
                     pObj.success(response, loadedJob);
                 }
             })
-            .fail(function(exception) {
+            .fail(function (exception) {
                 if (pObj && pObj.error) {
                     pObj.error(exception);
                 }
@@ -425,7 +430,7 @@ require(["jquery"], function() {
      *                          Expects a response and URL to the file resource
      *                  error: Callback for an error. Expects an exception
      */
-    GenePattern.upload = function(pObj) {
+    GenePattern.upload = function (pObj) {
         // Ensure the file is specified
         if (!pObj) throw "GenePattern.upload() parameter either null or undefined";
         if (typeof pObj === 'object' && typeof pObj.file !== 'object') throw "GenePattern.upload() parameter does not contain a File object";
@@ -434,24 +439,24 @@ require(["jquery"], function() {
         var nameParam = "?name=" + pObj.file.name;
 
         return $.ajax({
-                url: GenePattern.server() + REST_ENDPOINT + nameParam,
-                type: 'POST',
-                dataType: "text",
-                processData: false,
-                data: pObj.file,
-                xhrFields: {
-                    withCredentials: true
-                },
-                headers: {
-                    "Content-Length": pObj.file.size
-                },
-                success: function(data, textStatus){
-                    if (pObj && pObj.success) {
-                        pObj.success(textStatus, data);
-                    }
+            url: GenePattern.server() + REST_ENDPOINT + nameParam,
+            type: 'POST',
+            dataType: "text",
+            processData: false,
+            data: pObj.file,
+            xhrFields: {
+                withCredentials: true
+            },
+            headers: {
+                "Content-Length": pObj.file.size
+            },
+            success: function (data, textStatus) {
+                if (pObj && pObj.success) {
+                    pObj.success(textStatus, data);
                 }
-            })
-            .fail(function(exception) {
+            }
+        })
+            .fail(function (exception) {
                 if (pObj && pObj.error) {
                     pObj.error(exception);
                 }
@@ -463,7 +468,7 @@ require(["jquery"], function() {
      * Declaration of Task class
      * @constructor
      */
-    GenePattern.Task = function(taskJson) {
+    GenePattern.Task = function (taskJson) {
         // Define class members
         this._tags = null;
         this._description = null;
@@ -481,7 +486,7 @@ require(["jquery"], function() {
          *
          * @private
          */
-        this._init_ = function() {
+        this._init_ = function () {
             if (taskJson) {
                 this._tags = taskJson.tags;
                 this._description = taskJson.description;
@@ -500,7 +505,7 @@ require(["jquery"], function() {
          * Returns a JobInput object for submitting a job for this task
          * @returns {GenePattern.JobInput}
          */
-        this.jobInput = function() {
+        this.jobInput = function () {
             return new GenePattern.JobInput(this);
         };
 
@@ -516,7 +521,7 @@ require(["jquery"], function() {
          * @returns {jQuery.Deferred} - Returns a jQuery Deferred object for event chaining.
          *      See http://api.jquery.com/jquery.deferred/ for details.
          */
-        this.params = function(pObj) {
+        this.params = function (pObj) {
             var task = this;
             var forceRefresh = pObj && ((typeof pObj.force === 'boolean' && pObj.force) ||
                 (typeof pObj.force === 'string' && pObj.force.toLowerCase() === 'true'));
@@ -524,7 +529,7 @@ require(["jquery"], function() {
 
             if (inCache) {
                 return new $.Deferred()
-                    .done(function() {
+                    .done(function () {
                         if (pObj && pObj.success) {
                             pObj.success("cached", task._params);
                         }
@@ -535,14 +540,14 @@ require(["jquery"], function() {
                 var REST_ENDPOINT = "/rest/v1/tasks/";
 
                 return $.ajax({
-                        url: GenePattern.server() + REST_ENDPOINT + encodeURIComponent(task.lsid()),
-                        type: 'GET',
-                        dataType: 'json',
-                        xhrFields: {
-                            withCredentials: true
-                        }
-                    })
-                    .done(function(response) {
+                    url: GenePattern.server() + REST_ENDPOINT + encodeURIComponent(task.lsid()),
+                    type: 'GET',
+                    dataType: 'json',
+                    xhrFields: {
+                        withCredentials: true
+                    }
+                })
+                    .done(function (response) {
                         // Add params to Task object
                         var params = response['params'];
                         if (params) {
@@ -560,7 +565,7 @@ require(["jquery"], function() {
                             pObj.success(response, task._params);
                         }
                     })
-                    .fail(function(exception) {
+                    .fail(function (exception) {
                         if (pObj && pObj.error) {
                             pObj.error(exception);
                         }
@@ -573,7 +578,7 @@ require(["jquery"], function() {
          *
          * @returns {null|Array}
          */
-        this.tags = function() {
+        this.tags = function () {
             return this._tags;
         };
 
@@ -582,7 +587,7 @@ require(["jquery"], function() {
          *
          * @returns {null|string}
          */
-        this.description = function() {
+        this.description = function () {
             return this._description;
         };
 
@@ -591,7 +596,7 @@ require(["jquery"], function() {
          *
          * @returns {null|string}
          */
-        this.name = function() {
+        this.name = function () {
             return this._name;
         };
 
@@ -600,7 +605,7 @@ require(["jquery"], function() {
          *
          * @returns {null|string}
          */
-        this.documentation = function() {
+        this.documentation = function () {
             return this._documentation;
         };
 
@@ -609,7 +614,7 @@ require(["jquery"], function() {
          *
          * @returns {null|Array}
          */
-        this.categories = function() {
+        this.categories = function () {
             return this._categories;
         };
 
@@ -618,7 +623,7 @@ require(["jquery"], function() {
          *
          * @returns {null|Array}
          */
-        this.suites = function() {
+        this.suites = function () {
             return this._suites;
         };
 
@@ -627,7 +632,7 @@ require(["jquery"], function() {
          *
          * @returns {null|number}
          */
-        this.version = function() {
+        this.version = function () {
             return this._version;
         };
 
@@ -636,7 +641,7 @@ require(["jquery"], function() {
          *
          * @returns {null|string}
          */
-        this.lsid = function() {
+        this.lsid = function () {
             return this._lsid;
         };
 
@@ -645,7 +650,7 @@ require(["jquery"], function() {
          *
          * @returns {null|string}
          */
-        this.eula = function() {
+        this.eula = function () {
             return this._eula;
         };
 
@@ -658,7 +663,7 @@ require(["jquery"], function() {
          * @param success - function to execute upon success
          * @param error - function to execute upon error
          */
-        this.acceptEula = function(success, error) {
+        this.acceptEula = function (success, error) {
             var eula = this.eula();
 
             // Execute error if no eula object
@@ -695,7 +700,7 @@ require(["jquery"], function() {
      * Declaration of Job class
      * @constructor
      */
-    GenePattern.Job = function(jobJson) {
+    GenePattern.Job = function (jobJson) {
         this._task = null;
         this._taskName = null;
         this._taskLsid = null;
@@ -715,7 +720,7 @@ require(["jquery"], function() {
          *
          * @private
          */
-        this._init_ = function() {
+        this._init_ = function () {
             if (jobJson) {
                 this._taskName = jobJson.taskName;
                 this._taskLsid = jobJson.taskLsid;
@@ -744,19 +749,19 @@ require(["jquery"], function() {
          * @returns {jQuery.Deferred} - Returns a jQuery Deferred object for event chaining.
          *      See http://api.jquery.com/jquery.deferred/ for details.
          */
-        this.update = function(pObj) {
+        this.update = function (pObj) {
             var REST_ENDPOINT = "/rest/v1/jobs/" + this.jobNumber() + "/status.json";
             var job = this;
 
             return $.ajax({
-                    url: GenePattern.server() + REST_ENDPOINT,
-                    type: 'GET',
-                    dataType: 'json',
-                    xhrFields: {
-                        withCredentials: true
-                    }
-                })
-                .done(function(response) {
+                url: GenePattern.server() + REST_ENDPOINT,
+                type: 'GET',
+                dataType: 'json',
+                xhrFields: {
+                    withCredentials: true
+                }
+            })
+                .done(function (response) {
                     // Add params to Job object
                     var status = response;
                     if (status) {
@@ -767,7 +772,7 @@ require(["jquery"], function() {
                         pObj.success(response, status);
                     }
                 })
-                .fail(function(exception) {
+                .fail(function (exception) {
                     if (pObj && pObj.error) {
                         pObj.error(exception);
                     }
@@ -784,12 +789,16 @@ require(["jquery"], function() {
          * @returns {jQuery.Deferred} - Returns a jQuery Deferred object for event chaining.
          *      See http://api.jquery.com/jquery.deferred/ for details.
          */
-        this.code = function(pObj) {
+        this.code = function (pObj) {
             // Validate language
             var language = null;
 
-            if (typeof pObj === "string") { language = pObj; }
-            else { language = pObj.language; }
+            if (typeof pObj === "string") {
+                language = pObj;
+            }
+            else {
+                language = pObj.language;
+            }
 
             if (language !== "Python" && language !== "R" && language !== "Java" && language !== "MATLAB") {
                 console.log("Unknown language, defaulting to Python: " + language);
@@ -798,14 +807,14 @@ require(["jquery"], function() {
             var REST_ENDPOINT = "/rest/v1/jobs/" + this.jobNumber() + "/code?language=" + language;
 
             return $.ajax({
-                    url: GenePattern.server() + REST_ENDPOINT,
-                    type: 'GET',
-                    dataType: 'text',
-                    xhrFields: {
-                        withCredentials: true
-                    }
-                })
-                .fail(function(exception) {
+                url: GenePattern.server() + REST_ENDPOINT,
+                type: 'GET',
+                dataType: 'text',
+                xhrFields: {
+                    withCredentials: true
+                }
+            })
+                .fail(function (exception) {
                     if (pObj && pObj.error) {
                         pObj.error(exception);
                     }
@@ -817,7 +826,7 @@ require(["jquery"], function() {
          *
          * @returns {null|GenePattern.Task}
          */
-        this.task = function() {
+        this.task = function () {
             return this._task;
         };
 
@@ -825,7 +834,7 @@ require(["jquery"], function() {
          * Returns the name of the job's associated task
          * @returns {string}
          */
-        this.taskName = function() {
+        this.taskName = function () {
             return this._taskName;
         };
 
@@ -834,7 +843,7 @@ require(["jquery"], function() {
          *
          * @returns {string}
          */
-        this.taskLsid = function() {
+        this.taskLsid = function () {
             return this._taskLsid;
         };
 
@@ -843,7 +852,7 @@ require(["jquery"], function() {
          *
          * @returns {string}
          */
-        this.userId = function() {
+        this.userId = function () {
             return this._userId;
         };
 
@@ -852,7 +861,7 @@ require(["jquery"], function() {
          *
          * @returns {string}
          */
-        this.launchUrl = function() {
+        this.launchUrl = function () {
             return this._launchUrl;
         };
 
@@ -862,7 +871,7 @@ require(["jquery"], function() {
          *
          * @returns {Array}
          */
-        this.children = function() {
+        this.children = function () {
             // Lazily initialize Job._children
             if (this._children === null) {
                 var childList = [];
@@ -870,7 +879,7 @@ require(["jquery"], function() {
                 // If the job has children
                 if (jobJson['children'] !== undefined) {
                     var rawChildren = jobJson['children']['items'];
-                    rawChildren.forEach(function(child) {
+                    rawChildren.forEach(function (child) {
                         var childJob = new GenePattern.Job(child);
                         childList.push(childJob);
                     });
@@ -888,7 +897,7 @@ require(["jquery"], function() {
          *
          * @returns {string}
          */
-        this.permissions = function() {
+        this.permissions = function () {
             return this._permissions;
         };
 
@@ -903,20 +912,20 @@ require(["jquery"], function() {
          *
          * @returns {*}
          */
-        this.savePermissions = function(pObj) {
+        this.savePermissions = function (pObj) {
             var REST_ENDPOINT = "/rest/v1/jobs/" + this.jobNumber() + "/permissions";
 
             return $.ajax({
-                    url: GenePattern.server() + REST_ENDPOINT,
-                    type: 'PUT',
-                    data: JSON.stringify(pObj['bundle']),
-                    dataType: 'json',
-                    contentType: "application/json",
-                    xhrFields: {
-                        withCredentials: true
-                    }
-                })
-                .done(function(response) {
+                url: GenePattern.server() + REST_ENDPOINT,
+                type: 'PUT',
+                data: JSON.stringify(pObj['bundle']),
+                dataType: 'json',
+                contentType: "application/json",
+                xhrFields: {
+                    withCredentials: true
+                }
+            })
+                .done(function (response) {
                     // Create Job object from JSON response
                     var jobNumber = response['jobId'];
 
@@ -924,7 +933,7 @@ require(["jquery"], function() {
                         pObj.success(response, jobNumber);
                     }
                 })
-                .fail(function(exception) {
+                .fail(function (exception) {
                     if (pObj && pObj.error) {
                         pObj.error(exception);
                     }
@@ -936,7 +945,7 @@ require(["jquery"], function() {
          *
          * @returns {number}
          */
-        this.jobNumber = function() {
+        this.jobNumber = function () {
             return this._jobNumber;
         };
 
@@ -945,7 +954,7 @@ require(["jquery"], function() {
          *
          * @returns {null|object}
          */
-        this.permissions = function() {
+        this.permissions = function () {
             return this._permissions;
         };
 
@@ -954,7 +963,7 @@ require(["jquery"], function() {
          *
          * @returns {null|object}
          */
-        this.status = function() {
+        this.status = function () {
             return this._status;
         };
 
@@ -963,7 +972,7 @@ require(["jquery"], function() {
          *
          * @returns {null|string|Date}
          */
-        this.dateSubmitted = function() {
+        this.dateSubmitted = function () {
             return this._dateSubmitted;
         };
 
@@ -972,7 +981,7 @@ require(["jquery"], function() {
          *
          * @returns {Array}
          */
-        this.logFiles = function() {
+        this.logFiles = function () {
             return this._logFiles;
         };
 
@@ -981,7 +990,7 @@ require(["jquery"], function() {
          *
          * @returns {Array}
          */
-        this.outputFiles = function() {
+        this.outputFiles = function () {
             return this._outputFiles;
         };
 
@@ -990,7 +999,7 @@ require(["jquery"], function() {
          *
          * @returns {null|number}
          */
-        this.numOutputFiles = function() {
+        this.numOutputFiles = function () {
             return this._numOutputFiles;
         };
     };
@@ -1001,7 +1010,7 @@ require(["jquery"], function() {
      *
      * @constructor
      */
-    GenePattern.JobInput = function(task) {
+    GenePattern.JobInput = function (task) {
         // Define class members
         this._lsid = null;
         this._params = null;
@@ -1014,7 +1023,7 @@ require(["jquery"], function() {
          *
          * @private
          */
-        this._init_ = function() {
+        this._init_ = function () {
             if (task) {
                 this._lsid = task.lsid();
                 this._params = [];
@@ -1031,7 +1040,7 @@ require(["jquery"], function() {
          *
          * @returns {string}
          */
-        this.lsid = function() {
+        this.lsid = function () {
             return this._lsid;
         };
 
@@ -1040,7 +1049,7 @@ require(["jquery"], function() {
          *
          * @returns {Array}
          */
-        this.params = function() {
+        this.params = function () {
             return this._params;
         };
 
@@ -1051,7 +1060,7 @@ require(["jquery"], function() {
          * @param name - The name of the parameter
          * @returns {GenePattern.Param|null} - The matching Param object
          */
-        this.param = function(name) {
+        this.param = function (name) {
             for (var i = 0; i < this._params.length; i++) {
                 var param = this._params[i];
                 if (param.name() == name) return param;
@@ -1065,7 +1074,7 @@ require(["jquery"], function() {
          *
          * @private
          */
-        this._submitJson_ = function() {
+        this._submitJson_ = function () {
             var lsid = this.lsid();
             var params = [];
             for (var i = 0; i < this.params().length; i++) {
@@ -1095,20 +1104,20 @@ require(["jquery"], function() {
          * @returns {jQuery.Deferred} - Returns a jQuery Deferred object for event chaining.
          *      See http://api.jquery.com/jquery.deferred/ for details.
          */
-        this.submit = function(pObj) {
+        this.submit = function (pObj) {
             var REST_ENDPOINT = "/rest/v1/jobs/";
 
             return $.ajax({
-                    url: GenePattern.server() + REST_ENDPOINT,
-                    type: 'POST',
-                    data: JSON.stringify(this._submitJson_()),
-                    dataType: 'json',
-                    contentType: "application/json",
-                    xhrFields: {
-                        withCredentials: true
-                    }
-                })
-                .done(function(response) {
+                url: GenePattern.server() + REST_ENDPOINT,
+                type: 'POST',
+                data: JSON.stringify(this._submitJson_()),
+                dataType: 'json',
+                contentType: "application/json",
+                xhrFields: {
+                    withCredentials: true
+                }
+            })
+                .done(function (response) {
                     // Create Job object from JSON response
                     var jobNumber = response['jobId'];
 
@@ -1116,7 +1125,7 @@ require(["jquery"], function() {
                         pObj.success(response, jobNumber);
                     }
                 })
-                .fail(function(exception) {
+                .fail(function (exception) {
                     if (pObj && pObj.error) {
                         pObj.error(exception);
                     }
@@ -1128,7 +1137,7 @@ require(["jquery"], function() {
      * Declaration of Param class
      * @constructor
      */
-    GenePattern.Param = function(paramJson) {
+    GenePattern.Param = function (paramJson) {
         // Define class members
         this._name = null;
         this._description = null;
@@ -1148,7 +1157,7 @@ require(["jquery"], function() {
          *
          * @private
          */
-        this._init_ = function() {
+        this._init_ = function () {
             if (paramJson) {
                 if (paramJson) {
                     this._name = Object.keys(paramJson)[0];
@@ -1174,7 +1183,7 @@ require(["jquery"], function() {
          * @returns {Array}
          * @private
          */
-        this._parseKinds = function(kindString) {
+        this._parseKinds = function (kindString) {
             return kindString.split(";");
         };
 
@@ -1185,7 +1194,7 @@ require(["jquery"], function() {
          * @returns {*}
          * @private
          */
-        this._parseChoices = function(choiceInfo) {
+        this._parseChoices = function (choiceInfo) {
             if (choiceInfo['choices']) {
                 var choices = {};
                 for (var i = 0; i < choiceInfo['choices'].length; i++) {
@@ -1205,7 +1214,7 @@ require(["jquery"], function() {
          *
          * @returns {GenePattern.Param}
          */
-        this.clone = function() {
+        this.clone = function () {
             var param = new GenePattern.Param();
             param.name(this.name());
             param.values(this.values());
@@ -1223,7 +1232,7 @@ require(["jquery"], function() {
          * @param [value=optional] - The set value of the parameter
          * @returns {null|Array}
          */
-        this.values = function(value) {
+        this.values = function (value) {
             if (value !== undefined) {
                 this._values = value;
             }
@@ -1238,7 +1247,7 @@ require(["jquery"], function() {
          * @param [batchParam=optional] - Is this parameter a batch?
          * @returns {null|boolean}
          */
-        this.batchParam = function(batchParam) {
+        this.batchParam = function (batchParam) {
             if (batchParam !== undefined) {
                 this._batchParam = batchParam;
             }
@@ -1253,7 +1262,7 @@ require(["jquery"], function() {
          * @param [groupId=optional] - the group ID of the parameter
          * @returns {null|string}
          */
-        this.groupId = function(groupId) {
+        this.groupId = function (groupId) {
             if (groupId !== undefined) {
                 this._groupId = groupId;
             }
@@ -1268,7 +1277,7 @@ require(["jquery"], function() {
          * @param [name=optional] - The name of the parameter
          * @returns {string}
          */
-        this.name = function(name) {
+        this.name = function (name) {
             if (name !== undefined) {
                 this._name = name;
             }
@@ -1283,7 +1292,7 @@ require(["jquery"], function() {
          * @param [description=optional] - The description of the parameter
          * @returns {string}
          */
-        this.description = function(description) {
+        this.description = function (description) {
             if (description !== undefined) {
                 this._description = description;
             }
@@ -1299,7 +1308,7 @@ require(["jquery"], function() {
          *              Assumes a object of key : value pairings.
          * @returns {string}
          */
-        this.choices = function(choices) {
+        this.choices = function (choices) {
             if (choices !== undefined) {
                 this._choices = choices;
             }
@@ -1314,7 +1323,7 @@ require(["jquery"], function() {
          * @param [defaultValue=optional] - The default value for the parameter
          * @returns {string}
          */
-        this.defaultValue = function(defaultValue) {
+        this.defaultValue = function (defaultValue) {
             if (defaultValue !== undefined) {
                 this._defaultValue = defaultValue;
             }
@@ -1329,7 +1338,7 @@ require(["jquery"], function() {
          * @param [optional=optional] - Is this parameter optional?
          * @returns {boolean}
          */
-        this.optional = function(optional) {
+        this.optional = function (optional) {
             if (optional !== undefined) {
                 this._optional = optional;
             }
@@ -1344,7 +1353,7 @@ require(["jquery"], function() {
          * @param [prefixWhenSpecified=optional] - What is the prefix?
          * @returns {string}
          */
-        this.prefixWhenSpecified = function(prefixWhenSpecified) {
+        this.prefixWhenSpecified = function (prefixWhenSpecified) {
             if (prefixWhenSpecified !== undefined) {
                 this._prefixWhenSpecified = prefixWhenSpecified;
             }
@@ -1359,7 +1368,7 @@ require(["jquery"], function() {
          * @param [type=optional] - The type of this parameter
          * @returns {string}
          */
-        this.type = function(type) {
+        this.type = function (type) {
             if (type !== undefined) {
                 this._type = type;
             }
@@ -1374,7 +1383,7 @@ require(["jquery"], function() {
          * @param kinds
          * @returns {Array|null}
          */
-        this.kinds = function(kinds) {
+        this.kinds = function (kinds) {
             if (kinds !== undefined) {
                 this._kinds = kinds;
             }
@@ -1396,7 +1405,7 @@ require(["jquery"], function() {
          *                              0+ - Optional value, unlimited files
          * @returns {string}
          */
-        this.numValues = function(numVal) {
+        this.numValues = function (numVal) {
             if (numVal !== undefined) {
                 this._numValues = numVal;
             }
@@ -1412,7 +1421,7 @@ require(["jquery"], function() {
          *
          * @returns {number}
          */
-        this.maxValues = function() {
+        this.maxValues = function () {
             var numVal = this.numValues();
 
             // If not defined, assume 1
@@ -1435,7 +1444,7 @@ require(["jquery"], function() {
                 if (isNaN(actualNum)) throw "numValues is not a number: " + numVal;
                 else return actualNum;
             }
-            catch(err) {
+            catch (err) {
                 // Log error, assume 1
                 console.log(err);
                 return 1;
@@ -1445,4 +1454,8 @@ require(["jquery"], function() {
         // Init the object
         this._init_();
     };
+
+    return {
+        GenePattern: GenePattern
+    }
 });
