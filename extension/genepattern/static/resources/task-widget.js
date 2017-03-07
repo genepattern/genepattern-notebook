@@ -2440,8 +2440,7 @@ define("gp_task", ["base/js/namespace",
                                         if (!cell) cell = Jupyter.notebook.insert_cell_below();
 
                                         // Set the code for the job widget
-                                        var code = GPNotebook.slider.buildJobCode(jobNumber);
-                                        cell.code_mirror.setValue(code);
+                                        GPNotebook.slider.buildJobCode(cell, jobNumber);
 
                                         // Execute cell.
                                         cell.execute();
@@ -2741,6 +2740,8 @@ define("gp_task", ["base/js/namespace",
 
     var TaskWidgetView = widgets.DOMWidgetView.extend({
         render: function () {
+            var cell = this.options.cell;
+
             // Render the view.
             if (!this.el) this.setElement($('<div></div>'));
 
@@ -2762,7 +2763,7 @@ define("gp_task", ["base/js/namespace",
             }
 
             // Hide the close button
-            cell.element.find(".close").hide();
+            cell.element.find(".prompt").hide();
 
             // Hide the code by default
             var element = this.$el;

@@ -802,18 +802,8 @@ define("gp_auth", ["base/js/namespace",
         },
 
         buildCode: function(server, username, password) {
-            var code = GPNotebook.init.buildCode(server, username, password);
             var cell = this.options.cell;
-
-            if (cell.cell_type === 'markdown') {
-                console.log("ERROR: Attempting to turn markdown cell into widget in authWidget.buildCode()")
-            }
-            else if (cell.cell_type == 'code') {
-                cell.code_mirror.setValue(code);
-            }
-            else {
-                console.log("ERROR: Unknown cell type sent to authWidget.buildCode()");
-            }
+            GPNotebook.init.buildCode(cell, server, username, password);
         },
 
         executeCell: function() {
@@ -1091,20 +1081,8 @@ define("gp_auth", ["base/js/namespace",
             var cell = this.options.cell;
 
             // Check to see if this auth widget was manually created, if so replace with full code
-            if (cell.code_mirror.getValue().indexOf("# !AUTOEXEC") === -1) {
-                var code = GPNotebook.init.buildCode(GENEPATTERN_SERVERS[0][1], "", "");
-
-                // Only set the code if this is, in fact, a code cell
-                if (cell.cell_type === 'markdown') {
-                    console.log("ERROR: Attempting to turn markdown cell into widget in AuthWidgetView.render()")
-                }
-                else if (cell.cell_type == 'code') {
-                    cell.code_mirror.setValue(code);
-                    cell.execute();
-                }
-                else {
-                    console.log("ERROR: Unknown cell type sent to AuthWidgetView.render()");
-                }
+            if ('genepattern' in cell.metadata) {
+                GPNotebook.init.buildCode(cell, GENEPATTERN_SERVERS[0][1], "", "");
             }
 
             // Render the view.
@@ -1115,7 +1093,7 @@ define("gp_auth", ["base/js/namespace",
             });
 
             // Hide the close button
-            cell.element.find(".close").hide();
+            cell.element.find(".prompt").hide();
 
             // Hide the code by default
             var element = this.$el;

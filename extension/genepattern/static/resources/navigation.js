@@ -259,9 +259,7 @@ define(["base/js/namespace",
                 return cell;
             },
             render: function(cell) {
-                console.log("Module Tool Rendered");
-                var code = slider.buildModuleCode(module);
-                cell.set_text(code);
+                slider.buildModuleCode(cell, module);
                 setTimeout(function() {
                     cell.execute();
                 }, 10);
@@ -370,32 +368,45 @@ define(["base/js/namespace",
 
     /**
      * Build the basic code for displaying a module widget
+     * Add that code to a cell and set the metadata
      *
+     * @param cell
      * @param module
      */
-    slider.buildModuleCode = function(module) {
+    slider.buildModuleCode = function(cell, module) {
         var baseName = module["name"].toLowerCase().replace(/\./g, '_');
         var taskName = baseName + "_task";
         var specName = baseName + "_job_spec";
         var baseLsid = slider.stripVersion(module["lsid"]);
 
-        return "# !AUTOEXEC\n\n" +
-                taskName + " = gp.GPTask(gpserver, '" + baseLsid + "')\n" +
-                specName + " = " + taskName + ".make_job_spec()\n" +
-                "GPTaskWidget(" + taskName + ")";
+        // Build the code
+        var code = taskName + " = gp.GPTask(gpserver, '" + baseLsid + "')\n" +
+                   specName + " = " + taskName + ".make_job_spec()\n" +
+                   "GPTaskWidget(" + taskName + ")";
+
+        // Add the metadata
+        slider.makeGPCell(cell, "task");
+
+        // Add the code to the cell
+        cell.set_text(code);
     };
 
     /**
      * Build the basic code for displaying a job widget
      *
+     * @param cell
      * @param jobNumber
-     * @returns {string}
      */
-    slider.buildJobCode = function(jobNumber) {
-        return "# !AUTOEXEC\n\n" +
-                "job" + jobNumber + " = gp.GPJob(gpserver, " + jobNumber + ")\n" +
-                "job" + jobNumber + ".job_number = " + jobNumber + "\n" +
-                "GPJobWidget(job" + jobNumber + ")";
+    slider.buildJobCode = function(cell, jobNumber) {
+        var code = "job" + jobNumber + " = gp.GPJob(gpserver, " + jobNumber + ")\n" +
+                   "job" + jobNumber + ".job_number = " + jobNumber + "\n" +
+                   "GPJobWidget(job" + jobNumber + ")";
+
+        // Add the metadata
+        slider.makeGPCell(cell, "job");
+
+        // Add the code to the cell
+        cell.set_text(code);
     };
 
     /**
@@ -500,10 +511,7 @@ define(["base/js/namespace",
             }
             else {
                 // Get the auth widget code
-                var code = init.buildCode("https://genepattern.broadinstitute.org/gp", "", "");
-
-                // Put the code in the cell
-                cell.code_mirror.setValue(code);
+                init.buildCode(cell, "https://genepattern.broadinstitute.org/gp", "", "");
 
                 function isWidgetPresent() { return cell.element.find(".gp-widget").length > 0; }
                 function isRunning() { return cell.element.hasClass("running") }
@@ -617,8 +625,7 @@ define(["base/js/namespace",
             $(element).click(function() {
                 var lsid = $(element).attr("data-id");
                 var name = $(element).attr("data-name");
-                var code = slider.buildModuleCode({"lsid":lsid, "name": name});
-                cell.set_text(code);
+                slider.buildModuleCode(cell, {"lsid":lsid, "name": name});
                 setTimeout(function() {
                     cell.execute();
                 }, 10);
@@ -825,8 +832,7 @@ define(["base/js/namespace",
                     if (lsid === undefined || lsid === null) return;
                     var name = option.text();
                     var cell = Jupyter.notebook.insert_cell_at_bottom();
-                    var code = slider.buildModuleCode({"lsid":lsid, "name": name});
-                    cell.set_text(code);
+                    slider.buildModuleCode(cell, {"lsid":lsid, "name": name});
 
                     // Execute the cell
                     setTimeout(function() {
@@ -1001,14 +1007,13 @@ define(["base/js/namespace",
     /**
      * Build the Python code used to authenticate GenePattern
      *
+     * @param cell
      * @param server
      * @param username
      * @param password
      */
-    init.buildCode = function(server, username, password) {
-        return '# !AUTOEXEC\n\
-\n\
-# Don\'t have the GenePattern Notebook? It can be installed from PIP: \n\
+    init.buildCode = function(cell, server, username, password) {
+        var code = '# Don\'t have the GenePattern Notebook? It can be installed from PIP: \n\
 # pip install genepattern-notebook \n\
 import gp\n\
 \n\
@@ -1031,17 +1036,34 @@ gpserver = gp.GPServer("' + server + '", "' + username + '", "' + password + '")
 \n\
 # Return the authentication widget to view it\n\
 GPAuthWidget(gpserver)';
+
+        if (cell.cell_type === 'markdown') {
+            console.log("ERROR: Attempting to turn markdown cell into widget in authWidget.buildCode()")
+        }
+        else if (cell.cell_type == 'code') {
+            slider.makeGPCell(cell, "auth");
+            cell.code_mirror.setValue(code);
+        }
+        else {
+            console.log("ERROR: Unknown cell type sent to authWidget.buildCode()");
+        }
     };
 
     /**
      * Automatically run all GenePattern widgets
      */
     init.auto_run_widgets = function() {
-        console.log("auto_run_widgets");
         require(["nbextensions/jupyter-js-widgets/extension"], function() {
-            $.each($(".cell"), function(index, val) {
-                if ($(val).html().indexOf("# !AUTOEXEC") > -1) {
-                    Jupyter.notebook.get_cell(index).execute();
+            var all_cells = Jupyter.notebook.get_cells();
+            all_cells.forEach(function(cell) {
+                if ('genepattern' in cell.metadata) {
+                    cell.execute();
+                    return;
+                }
+
+                // Legacy support for # !AUTOEXEC
+                if (cell.get_text().indexOf("# !AUTOEXEC") > -1) {
+                    cell.execute();
                 }
             });
         });
@@ -1188,6 +1210,22 @@ GPAuthWidget(gpserver)';
         setTimeout(function () {
             $(".loading-screen").hide("fade");
         }, 100);
+    };
+
+    slider.makeGPCell = function (cell, type) {
+        // Check for valid input
+        if (typeof cell !== 'object') {
+            console.log('ERROR applying metadata to cell');
+            return;
+        }
+
+        // Add GenePattern metadata if it is missing
+        if (!('genepattern' in cell.metadata)) {
+            cell.metadata.genepattern = {};
+        }
+
+        // Set the GenePattern cell type
+        cell.metadata.genepattern.type = type;
     };
 
     return {

@@ -3,7 +3,7 @@
  */
 
 .widget-area .prompt, .output_stderr {
-    /*display: none;*/
+    display: none;
 }
 
 .widget-float-right {

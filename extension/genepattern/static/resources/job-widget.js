@@ -524,12 +524,13 @@ define("gp_job", ["base/js/namespace",
         /**
          * Remove unwanted code from reload, such as import statements and run_job
          *
+         * @param cell
          * @param code
          * @private
          */
-        _stripUnwantedCode: function(code) {
+        _stripUnwantedCode: function(cell, code) {
             var lines = code.split("\n");
-            var newCode = "# !AUTOEXEC\n\n";
+            var newCode = "";
             var taskVar = null;
 
             // Iterate over each line
@@ -559,7 +560,11 @@ define("gp_job", ["base/js/namespace",
             // Append the widget view
             newCode += "\nGPTaskWidget(" + taskVar + ")";
 
-            return newCode;
+            // Add the metadata
+            GPNotebook.slider.makeGPCell(cell, "task");
+
+            // Put the code in the cell
+            cell.code_mirror.setValue(newCode);
         },
 
         /**
@@ -590,11 +595,8 @@ define("gp_job", ["base/js/namespace",
             var widget = this;
 
             job.code("Python").done(function(code) {
-                code = widget._stripUnwantedCode(code);
                 var cell = Jupyter.notebook.insert_cell_below();
-
-                // Put the code in the cell
-                cell.code_mirror.setValue(code);
+                widget._stripUnwantedCode(cell, code);
 
                 // Execute the cell
                 cell.execute();
@@ -1032,6 +1034,8 @@ define("gp_job", ["base/js/namespace",
 
     var JobWidgetView = widgets.DOMWidgetView.extend({
         render: function () {
+            var cell = this.options.cell;
+
             // Render the view.
             if (!this.el) this.setElement($('<div></div>'));
 
@@ -1041,7 +1045,7 @@ define("gp_job", ["base/js/namespace",
             });
 
             // Hide the close button
-            cell.element.find(".close").hide();
+            cell.element.find(".prompt").hide();
 
             // Hide the code by default
             var element = this.$el;
