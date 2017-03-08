@@ -610,7 +610,7 @@ define("gp_auth", ["base/js/namespace",
             var lines = code.split("\n");
             var serverLine = null;
             lines.forEach(function(line) {
-                if (line.indexOf("gp.GPServer") >= 0) {
+                if (line.indexOf("genepattern.register_session") >= 0) {
                     serverLine = line;
                 }
             });
@@ -1081,7 +1081,7 @@ define("gp_auth", ["base/js/namespace",
             var cell = this.options.cell;
 
             // Check to see if this auth widget was manually created, if so replace with full code
-            if ('genepattern' in cell.metadata) {
+            if (!('genepattern' in cell.metadata)) {
                 GPNotebook.init.buildCode(cell, GENEPATTERN_SERVERS[0][1], "", "");
             }
 
