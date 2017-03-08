@@ -260,7 +260,7 @@ define(["base/js/namespace",
                 return cell;
             },
             render: function(cell) {
-                slider.buildModuleCode(cell, gp_url, module);
+                slider.buildModuleCode(cell, 0, module);
                 setTimeout(function() {
                     cell.execute();
                 }, 10);
@@ -372,16 +372,17 @@ define(["base/js/namespace",
      * Add that code to a cell and set the metadata
      *
      * @param cell
+     * @param session
      * @param module
      */
-    slider.buildModuleCode = function(cell, server, module) {
+    slider.buildModuleCode = function(cell, session, module) {
         var baseName = module["name"].toLowerCase().replace(/\./g, '_');
         var taskName = baseName + "_task";
         var specName = baseName + "_job_spec";
         var baseLsid = slider.stripVersion(module["lsid"]);
 
         // Build the code
-        var code = taskName + " = gp.GPTask(genepattern.sessions['" + server + "'], '" + baseLsid + "')\n" +
+        var code = taskName + " = gp.GPTask(genepattern.get_session(" + session + "), '" + baseLsid + "')\n" +
                    specName + " = " + taskName + ".make_job_spec()\n" +
                    "genepattern.GPTaskWidget(" + taskName + ")";
 
@@ -396,10 +397,11 @@ define(["base/js/namespace",
      * Build the basic code for displaying a job widget
      *
      * @param cell
+     * @param session
      * @param jobNumber
      */
-    slider.buildJobCode = function(cell, server, jobNumber) {
-        var code = "job" + jobNumber + " = gp.GPJob(genepattern.sessions['" + server + "'], " + jobNumber + ")\n" +
+    slider.buildJobCode = function(cell, session, jobNumber) {
+        var code = "job" + jobNumber + " = gp.GPJob(genepattern.get_session(" + session + "), " + jobNumber + ")\n" +
                    "job" + jobNumber + ".job_number = " + jobNumber + "\n" +
                    "genepattern.GPJobWidget(job" + jobNumber + ")";
 
@@ -627,7 +629,7 @@ define(["base/js/namespace",
                 var lsid = $(element).attr("data-id");
                 var name = $(element).attr("data-name");
                 var server = $(element).attr("data-origin");
-                slider.buildModuleCode(cell, server, {"lsid":lsid, "name": name});
+                slider.buildModuleCode(cell, 0, {"lsid":lsid, "name": name});
                 setTimeout(function() {
                     cell.execute();
                 }, 10);
@@ -836,7 +838,7 @@ define(["base/js/namespace",
                     if (lsid === undefined || lsid === null) return;
                     var name = option.text();
                     var cell = Jupyter.notebook.insert_cell_at_bottom();
-                    slider.buildModuleCode(cell, server, {"lsid":lsid, "name": name});
+                    slider.buildModuleCode(cell, 0, {"lsid":lsid, "name": name});
 
                     // Execute the cell
                     setTimeout(function() {

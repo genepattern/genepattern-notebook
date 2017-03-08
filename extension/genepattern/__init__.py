@@ -22,12 +22,11 @@ from traitlets import Unicode, Integer, List
 from ipywidgets import widgets
 
 
-
 """
 Keep a dictionary of all currently registered GenePattern server sessions
 Keys are the relevant server URLs
 """
-sessions = {}
+sessions = []
 
 
 def register_session(server, username, password):
@@ -39,10 +38,63 @@ def register_session(server, username, password):
     :param password:
     :return:
     """
+
+    # Create the session
     session = gp.GPServer(server, username, password)
-    if username != "" and username is not None:
-        sessions[server] = session
+
+    # Validate username if not empty
+    valid_username = username != "" and username is not None
+
+    # Validate that the server is not already registered
+    index = get_session_index(server)
+    new_server = index == -1
+
+    # Add the new session to the list
+    if valid_username and new_server:
+        sessions.append(session)
+
+    # Replace old session is one exists
+    if valid_username and not new_server:
+        sessions[index] = session
+
     return session
+
+
+def get_session(server):
+    """
+    Returns a registered GPServer object with a matching GenePattern server url or index
+    Returns None if no matching result was found
+    :param server:
+    :return:
+    """
+
+    # Handle indexes
+    if isinstance(server, int):
+        if server >= len(sessions):
+            return None
+        else:
+            return sessions[server]
+
+    # Handle server URLs
+    index = get_session_index(server)
+    if index == -1:
+        return None
+    else:
+        return sessions[index]
+
+
+def get_session_index(server_url):
+    """
+    Returns a registered GPServer object with a matching GenePattern server url
+    Returns -1 if no matching result was found
+    :param server_url:
+    :return:
+    """
+    for i in range(len(sessions)):
+        session = sessions[i]
+        if session.url == server_url:
+            return i
+    return -1
 
 
 @magics_class

@@ -553,7 +553,7 @@ define("gp_job", ["base/js/namespace",
 
                 // Replace gpserver variable with session
                 if (line.indexOf("gpserver") !== -1) {
-                    line = line.replace("gpserver", "genepattern.sessions['" + GenePattern.server() + "']")
+                    line = line.replace("gpserver", "genepattern.get_session(" + 0 + ")")
                 }
 
                 // Append the code if it's not a skipped line
@@ -1046,7 +1046,7 @@ define("gp_job", ["base/js/namespace",
 
             // Check to see if this is a legacy job widget, if so replace with full code
             if (!('genepattern' in cell.metadata) && GenePattern.authenticated) {
-                GPNotebook.slider.buildJobCode(cell, GenePattern.server(), jobNumber);
+                GPNotebook.slider.buildJobCode(cell, 0, jobNumber);
             }
 
             // Render the view.

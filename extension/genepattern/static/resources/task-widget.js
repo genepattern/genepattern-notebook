@@ -2440,7 +2440,7 @@ define("gp_task", ["base/js/namespace",
                                         if (!cell) cell = Jupyter.notebook.insert_cell_below();
 
                                         // Set the code for the job widget
-                                        GPNotebook.slider.buildJobCode(cell, GenePattern.server(), jobNumber);
+                                        GPNotebook.slider.buildJobCode(cell, 0, jobNumber);
 
                                         // Execute cell.
                                         cell.execute();
@@ -2752,7 +2752,7 @@ define("gp_task", ["base/js/namespace",
                 cell.set_text(code);
             }
             else if (!('genepattern' in cell.metadata) && GenePattern.authenticated) {
-                code = cell.get_text().replace("gp.GPTask(None", "gp.GPTask(genepattern.sessions['" + GenePattern.server() + "']");
+                code = cell.get_text().replace("gp.GPTask(None", "gp.GPTask(genepattern.get_session(" + 0 + ")");
                 code = code.replace("# !AUTOEXEC\n\n", "");
 
                 // Add the metadata
