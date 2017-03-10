@@ -402,7 +402,6 @@ define(["base/js/namespace",
      */
     slider.buildJobCode = function(cell, session, jobNumber) {
         var code = "job" + jobNumber + " = gp.GPJob(genepattern.get_session(" + session + "), " + jobNumber + ")\n" +
-                   "job" + jobNumber + ".job_number = " + jobNumber + "\n" +
                    "genepattern.GPJobWidget(job" + jobNumber + ")";
 
         // Add the metadata
