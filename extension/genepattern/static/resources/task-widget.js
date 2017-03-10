@@ -540,7 +540,7 @@ define("gp_task", ["base/js/namespace",
             // Try removing the matching URL
             $.each(this._values, function(i, e) {
                 var parser = document.createElement('a');
-                parser.href = GenePattern.server();
+                parser.href = widget.options.runTask.options.session.server();
 
                 var display = widget._singleDisplay(e);
                 var foundHost = display.indexOf(parser.host) === 7 || display.indexOf(parser.host) === 8;
@@ -684,7 +684,7 @@ define("gp_task", ["base/js/namespace",
 
             // Value is a File object
             if (typeof file === 'object' && file) {
-                GenePattern.upload({
+                widget.options.runTask.options.session.upload({
                     file: file,
                     success: function(response, url) {
                         // Mark the file as uploaded
@@ -1262,6 +1262,8 @@ define("gp_task", ["base/js/namespace",
             lsid: null,
             name: null,
             task: null,
+            session: null,
+            session_index: null,
             cell: null
         },
 
@@ -1277,6 +1279,12 @@ define("gp_task", ["base/js/namespace",
 
             // Add data pointer
             this.element.data("widget", this);
+
+            // Attach the session, if necessary and possible
+            if (!this.options.session && this.options.cell) {
+                this.options.session_index = this._session_index_from_code();
+                this.options.session = this._session_from_index(this.options.session_index);
+            }
 
             // By default assume the module is installed
             this._installed = true;
@@ -1494,7 +1502,7 @@ define("gp_task", ["base/js/namespace",
             );
 
             // Check to see if the user is authenticated yet
-            if (GenePattern.authenticated) {
+            if (widget.options.session && widget.options.session.authenticated) {
                 // Make call to build the header & form
                 this.getTask(function(task) {
                     if (task !== null) {
@@ -1582,7 +1590,7 @@ define("gp_task", ["base/js/namespace",
 
             // Otherwise check the general GenePattern cache
             var identifier = this._getIdentifier();
-            task = GenePattern.task(identifier);
+            task = this.options.session.task(identifier);
             if (task !== null) {
                 this.options.task = task; // Associate this task with the widget
                 done(task);
@@ -1591,7 +1599,7 @@ define("gp_task", ["base/js/namespace",
 
             // Otherwise call back to the server
             var widget = this;
-            GenePattern.taskQuery({
+            this.options.session.taskQuery({
                 lsid: identifier,
                 success: function(newTask) {
                     widget.options.task = newTask; // Associate this task with the widget
@@ -1685,6 +1693,22 @@ define("gp_task", ["base/js/namespace",
             }
         },
 
+        _session_index_from_code: function() {
+            var code = this.options.cell.get_text();
+            var index = 0;
+            try {
+                index = Number.parseInt(code.split("genepattern.get_session(")[1].split(")")[0]);
+            }
+            catch (e) {
+                console.log("Cannot extract GenePattern session index, defaulting to 0");
+            }
+            return index;
+        },
+
+        _session_from_index: function(index) {
+            return GPNotebook.session_manager.get_session(index);
+        },
+
         /**
          * Display module not installed message
          *
@@ -1726,8 +1750,11 @@ define("gp_task", ["base/js/namespace",
         _pollForAuth: function() {
             var widget = this;
             setTimeout(function() {
+                // Try to grab the session again
+                widget.options.session = widget._session_from_index(widget.options.session_index);
+
                 // Check to see if the user is authenticated yet
-                if (GenePattern.authenticated) {
+                if (widget.options.session && widget.options.session.authenticated) {
                     // If authenticated, execute cell again
                     var cellElement = widget.element.closest(".cell");
                     if (cellElement.length > 0) {
@@ -1796,7 +1823,7 @@ define("gp_task", ["base/js/namespace",
 
                 widget.element.find(".gp-widget-task-name").empty().text(" " + task.name());
                 widget.element.find(".gp-widget-task-version").empty().text("Version " + task.version());
-                widget.element.find(".gp-widget-task-doc").attr("data-href", GenePattern.server() + task.documentation().substring(3));
+                widget.element.find(".gp-widget-task-doc").attr("data-href", widget.options.session.server() + task.documentation().substring(3));
                 widget.element.find(".gp-widget-task-desc").empty().text(task.description());
 
                 // Display error if Java visualizer
@@ -2133,13 +2160,13 @@ define("gp_task", ["base/js/namespace",
                 }
 
                 // Only show the EULA if there is one to display
-                var task = GenePattern.task(widget.options.lsid);
+                var task = widget.options.session.task(widget.options.lsid);
                 if (task && task.eula() && task.eula().pendingEulas && task.eula().pendingEulas.length > 0) {
                     eula.slideDown();
                 }
 
                 // Only show these bits if authenticated and installed
-                if (GenePattern.authenticated && this._installed) {
+                if (widget.options.session && widget.options.session.authenticated && this._installed) {
                     headers.slideDown();
                 }
 
@@ -2388,7 +2415,7 @@ define("gp_task", ["base/js/namespace",
 
             // No match was found
             if (!matched) {
-                var task = GenePattern.task(this.options.lsid);
+                var task = this.options.session.task(this.options.lsid);
                 console.log("ERROR: No kind match found for " + url + " of kind " + kind + " in " + task.name());
             }
         },
@@ -2747,11 +2774,11 @@ define("gp_task", ["base/js/namespace",
             var name = this.model.get('name');
 
             // Check to see if this is a legacy task widget, if so update the code
-            if (!('genepattern' in cell.metadata) && !GenePattern.authenticated) {
+            if (!('genepattern' in cell.metadata)) {
                 code = cell.get_text().replace("gpserver", "None");
                 cell.set_text(code);
             }
-            else if (!('genepattern' in cell.metadata) && GenePattern.authenticated) {
+            else if (!('genepattern' in cell.metadata)) {
                 code = cell.get_text().replace("gp.GPTask(None", "gp.GPTask(genepattern.get_session(" + 0 + ")");
                 code = code.replace("# !AUTOEXEC\n\n", "");
 

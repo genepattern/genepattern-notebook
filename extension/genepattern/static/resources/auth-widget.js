@@ -29,14 +29,19 @@ define("gp_auth", ["base/js/namespace",
                    "nbextensions/jupyter-js-widgets/extension",
                    "nbtools",
                    "nbextensions/genepattern/resources/navigation",
+                   "nbextensions/genepattern/resources/gp",
                    "nbextensions/genepattern/index",
-                   "jqueryui"], function (Jupyter, widgets, NBToolManager, GPNotebook) {
+                   "jqueryui"], function (Jupyter, widgets, NBToolManager, GPNotebook, gp) {
 
     $.widget("gp.auth", {
         options: {
+            // List of GenePattern servers to appear in the menu
             servers: GENEPATTERN_SERVERS,
 
-            // Reference to the IPython cell
+            // GenePattern session
+            session: null,
+
+            // Reference to the Jupyter cell
             cell: null
         },
 
@@ -210,7 +215,6 @@ define("gp_auth", ["base/js/namespace",
                                                 .attr("type", "text")
                                                 .attr("placeholder", "Username")
                                                 .attr("required", "required")
-                                                .val(widget.getUserLabel(""))
                                                 .keyup(function (e) {
                                                     if (e.keyCode == 13) {
                                                         widget._enterPressed();
@@ -232,7 +236,7 @@ define("gp_auth", ["base/js/namespace",
                                                 .attr("name", "password")
                                                 .attr("type", "password")
                                                 .attr("placeholder", "Password")
-                                                .val(widget.getPasswordLabel(""))
+                                                .val("")
                                                 .keyup(function (e) {
                                                     if (e.keyCode == 13) {
                                                         widget._enterPressed();
@@ -314,69 +318,16 @@ define("gp_auth", ["base/js/namespace",
             };
             setTimeout(hideCode, 1);
 
-            // Try reading GenePattern cookie and prompt, if cookie present and not authenticated
-            var genepatternCookie = widget._getCookie("GenePattern");
-            if (genepatternCookie && !GenePattern.authenticated) {
-                var username = widget._usernameFromCookie(genepatternCookie);
-                var password = widget._passwordFromCookie(genepatternCookie);
+            // Make calls that need run after the element has been inserted into the DOM
+            setTimeout(function() {
 
-                if (username !== null && password !== null) {
-                    var toCover = widget.element.find(".widget-view");
-                    var autoLogin = $("<div></div>")
-                        .addClass("widget-auto-login")
-                        .append(
-                            $("<div></div>")
-                                .addClass("panel panel-default")
-                                .append(
-                                    $("<div></div>")
-                                        .addClass("panel-heading")
-                                        .append("Log into GenePattern Server")
-                                )
-                                .append(
-                                    $("<div></div>")
-                                        .addClass("panel-body")
-                                        .append("You have already authenticated with the GenePattern Public Server. Would you like to automatically sign in now?")
-                                        .append(
-                                            $("<div></div>")
-                                                .addClass("widget-auto-login-buttons")
-                                                .append(
-                                                    $("<button>")
-                                                        .addClass("btn btn-primary")
-                                                        .append("Login as " + username)
-                                                        .click(function () {
-                                                            var serverInput = toCover.find("[name=server]");
-                                                            var usernameInput = toCover.find("[name=username]");
-                                                            var passwordInput = toCover.find("[name=password]");
-                                                            var loginButton = toCover.find(".gp-auth-button");
-                                                            var defaultServer = GENEPATTERN_SERVERS[0][1];
-
-                                                            serverInput.val(defaultServer);
-                                                            usernameInput.val(username);
-                                                            passwordInput.val(password);
-                                                            loginButton.click();
-                                                        })
-                                                )
-                                                .append(" ")
-                                                .append(
-                                                    $("<button>")
-                                                        .addClass("btn btn-default")
-                                                        .append("Cancel")
-                                                        .click(function () {
-                                                            autoLogin.hide();
-                                                        })
-                                                )
-                                        )
-                                )
-                        );
-
-                    toCover.append(autoLogin);
+                // Grab matching session, if one is available and session is not set
+                if (!widget.options.session) {
+                    widget.options.session = GPNotebook.session_manager.get_session(widget._getCodeServerURL());
                 }
 
-            }
-
-            // Hide the login form if already authenticated
-            if (GenePattern.authenticated) {
-                setTimeout(function() {
+                // Hide the login form if already authenticated
+                if (widget.options.session !== null && widget.options.session.authenticated) {
                     element.find(".panel-body").hide();
                     var indicator = element.find(".widget-slide-indicator").find("span");
 
@@ -388,8 +339,75 @@ define("gp_auth", ["base/js/namespace",
 
                     // Display the system message, if available
                     widget.checkSystemMessage(function() {});
-                }, 1);
-            }
+                }
+
+                // Display username and server URL in header if authenticated
+                if (widget.options.session !== null && widget.options.session.authenticated) {
+                    widget.element.find(".widget-username-label").text(widget.getUserLabel(""));
+                    widget.element.find(".widget-server-label").text(widget.getServerLabel(""));
+                }
+
+                // Try reading GenePattern cookie and prompt, if cookie present and not authenticated
+                var genepatternCookie = widget._getCookie("GenePattern");
+                if (genepatternCookie && widget.options.session === null) {
+                    var username = widget._usernameFromCookie(genepatternCookie);
+                    var password = widget._passwordFromCookie(genepatternCookie);
+
+                    if (username !== null && password !== null) {
+                        var toCover = widget.element.find(".widget-view");
+                        var autoLogin = $("<div></div>")
+                            .addClass("widget-auto-login")
+                            .append(
+                                $("<div></div>")
+                                    .addClass("panel panel-default")
+                                    .append(
+                                        $("<div></div>")
+                                            .addClass("panel-heading")
+                                            .append("Log into GenePattern Server")
+                                    )
+                                    .append(
+                                        $("<div></div>")
+                                            .addClass("panel-body")
+                                            .append("You have already authenticated with the GenePattern Public Server. Would you like to automatically sign in now?")
+                                            .append(
+                                                $("<div></div>")
+                                                    .addClass("widget-auto-login-buttons")
+                                                    .append(
+                                                        $("<button>")
+                                                            .addClass("btn btn-primary")
+                                                            .append("Login as " + username)
+                                                            .click(function () {
+                                                                var serverInput = toCover.find("[name=server]");
+                                                                var usernameInput = toCover.find("[name=username]");
+                                                                var passwordInput = toCover.find("[name=password]");
+                                                                var loginButton = toCover.find(".gp-auth-button");
+                                                                var defaultServer = GENEPATTERN_SERVERS[0][1];
+
+                                                                serverInput.val(defaultServer);
+                                                                usernameInput.val(username);
+                                                                passwordInput.val(password);
+                                                                loginButton.click();
+                                                            })
+                                                    )
+                                                    .append(" ")
+                                                    .append(
+                                                        $("<button>")
+                                                            .addClass("btn btn-default")
+                                                            .append("Cancel")
+                                                            .click(function () {
+                                                                autoLogin.hide();
+                                                            })
+                                                    )
+                                            )
+                                    )
+                            );
+
+                        toCover.append(autoLogin);
+                    }
+
+                }
+
+            }, 1);
 
             // Trigger gp.widgetRendered event on cell element
             setTimeout(function() {
@@ -835,7 +853,11 @@ define("gp_auth", ["base/js/namespace",
                     $.ajaxSetup({
                         headers: {"Authorization": "Bearer " + token}
                     });
-                    GenePattern.token = token;
+
+                    // Register the session
+                    var session = GPNotebook.session_manager.register_session(server, username, password);
+                    widget.options.session = session;
+                    session.token = token;
 
                     if (callAfterAuthenticate) widget.afterAuthenticate(server, username, password, token, done);
                     else done(token);
@@ -869,30 +891,30 @@ define("gp_auth", ["base/js/namespace",
                 },
                 success: function(data) {
                     // Set the authentication info on GenePattern object
-                    GenePattern.authenticated = true;
-                    GenePattern.server(server);
-                    GenePattern.username = username;
-                    GenePattern.password = password;
-                    GenePattern.token = token;
+                    widget.options.session.authenticated = true;
+                    widget.options.session.server(server);
+                    widget.options.session.username = username;
+                    widget.options.session.password = password;
+                    widget.options.session.token = token;
 
                     // Make authenticated UI changes to auth widget
                     widget.element.find(".widget-username-label").text(username);
                     widget.element.find(".widget-server-label").text(server);
 
                     // Enable authenticated nav elsewhere in notebook
-                    GPNotebook.slider.authenticate(data);
+                    GPNotebook.slider.authenticate(widget.options.session, data);
 
                     // Populate the GenePattern._tasks list
                     if (data['all_modules']) {
                         $.each(data['all_modules'], function(index, module) {
-                            GenePattern._tasks.push(new GenePattern.Task(module));
+                            widget.options.session._tasks.push(new widget.options.session.Task(module));
                         });
                     }
 
                     // Populate the GenePattern._kinds map
-                    var kindMap = GenePattern.linkKinds(data['kindToModules']);
+                    var kindMap = widget.options.session.linkKinds(data['kindToModules']);
                     GPNotebook.slider.removeKindVisualizers(kindMap);
-                    GenePattern.kinds(kindMap);
+                    widget.options.session.kinds(kindMap);
 
                     // If a function to execute when done has been passed in, execute it
                     if (done) { done(token); }
@@ -939,7 +961,7 @@ define("gp_auth", ["base/js/namespace",
             var widget = this;
             $.ajax({
                 type: "GET",
-                url: GenePattern.server() + "/rest/v1/config/system-message",
+                url: widget.options.session.server() + "/rest/v1/config/system-message",
                 dataType: 'html',
                 cache: false,
                 xhrFields: {
@@ -988,17 +1010,8 @@ define("gp_auth", ["base/js/namespace",
         },
 
         getUserLabel: function(alt) {
-            if (GenePattern.authenticated && GenePattern.username) {
-                return GenePattern.username;
-            }
-            else {
-                return alt
-            }
-        },
-
-        getPasswordLabel: function(alt) {
-            if (GenePattern.authenticated && GenePattern.password) {
-                return GenePattern.password;
+            if (this.options.session !== null && this.options.session.authenticated && this.options.session.username) {
+                return this.options.session.username;
             }
             else {
                 return alt
@@ -1006,8 +1019,8 @@ define("gp_auth", ["base/js/namespace",
         },
 
         getServerLabel: function(alt) {
-            if (GenePattern.authenticated && GenePattern._server) {
-                return GenePattern._server;
+            if (this.options.session !== null && this.options.session.authenticated && this.options.session.server()) {
+                return this.options.session.server();
             }
             else {
                 return alt
@@ -1130,7 +1143,7 @@ define("gp_auth", ["base/js/namespace",
         },
         render: function(cell) {
             console.log("GPTool Rendered");
-            GPNotebook.slider.toGenePatternCell();
+            GPNotebook.slider.createAuthCell(cell);
             return true;
         }
     });

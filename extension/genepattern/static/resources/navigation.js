@@ -5,7 +5,6 @@
  * @requires - jQuery
  *
  */
-var GenePattern = GenePattern || {};
 
 // Add shim to support Jupyter 3.x and 4.x
 var Jupyter = Jupyter || IPython || {};
@@ -13,11 +12,13 @@ var Jupyter = Jupyter || IPython || {};
 define(["base/js/namespace",
         "nbextensions/jupyter-js-widgets/extension",
         "nbtools",
-        "nbextensions/genepattern/index",
-        "jqueryui"], function (Jupyter, widgets, NBToolManager, auth) {
+        "nbextensions/genepattern/resources/gp"], function (Jupyter, widgets, NBToolManager, gp) {
 
     var slider = {};
     var init = {};
+    var session_manager = {
+        sessions: []
+    };
 
     /**
      * Attach the left-hand slider tab
@@ -25,11 +26,10 @@ define(["base/js/namespace",
      * @returns {*|jQuery}
      */
     slider.sliderTab = function() {
-        var auth_view = GenePattern.authenticated ? "inline-block" : "none";
         return $("<span></span>")
                 .addClass("fa fa-th sidebar-button sidebar-button-main")
                 .attr("title", "GenePattern Options")
-                .css("display", auth_view)
+                .css("display", "inline-block")
                 .click(function() {
                     // See if the tools cache needs updated
                     slider.updateTools();
@@ -222,10 +222,10 @@ define(["base/js/namespace",
         slider_tabs.find("#" + tab_id).remove();
     };
 
-    slider.registerModule = function(module) {
+    slider.registerModule = function(session, module) {
         // Prepare the origin
         var origin = null;
-        var gp_url = GenePattern.server();
+        var gp_url = session.server();
         if (gp_url === "https://genepattern.broadinstitute.org/gp") origin = "GenePattern Public";
         else if (gp_url === "https://gp.indiana.edu/gp") origin = "GenePattern Indiana";
         else if (gp_url === "https://gpbroad.broadinstitute.org/gp") origin = "GenePattern Broad";
@@ -272,20 +272,21 @@ define(["base/js/namespace",
         NBToolManager.instance().register(ModuleTool);
     };
 
-    slider.registerAllModules = function(modules) {
+    slider.registerAllModules = function(session, modules) {
         modules.forEach(function(module) {
             // Only add module if it is not a Java visualizer
             if (module['categories'].indexOf("Visualizer") !== -1) return;
-            slider.registerModule(module);
+            slider.registerModule(session, module);
         });
     };
 
     /**
      * Authenticate the notebook & change nav accordingly
      *
+     * @param GenePattern - GenePattern server session
      * @param data
      */
-    slider.authenticate = function(data) {
+    slider.authenticate = function(GenePattern, data) {
         // Show the GenePattern cell button
         $(".gp-cell-button").css("visibility", "visible");
 
@@ -294,7 +295,7 @@ define(["base/js/namespace",
 
         // Register all modules with the tool manager
         if (data['all_modules']) {
-            slider.registerAllModules(data['all_modules']);
+            slider.registerAllModules(GenePattern, data['all_modules']);
         }
     };
 
@@ -433,24 +434,6 @@ define(["base/js/namespace",
     };
 
     /**
-     * Return whether the file URL is external, internal, upload
-     *
-     * @param value
-     * @returns {string}
-     */
-    slider.fileLocationType = function(value) {
-        if (typeof value === 'object') {
-            return "Upload";
-        }
-        else if (value.indexOf(GenePattern.server()) !== -1 || value.indexOf("<GenePatternURL>") !== -1) {
-            return "Internal"
-        }
-        else {
-            return "External";
-        }
-    };
-
-    /**
      * Return the name of a file from its url
      *
      * @param url
@@ -500,6 +483,32 @@ define(["base/js/namespace",
         }, 60 * 1000);
     };
 
+    slider.createAuthCell = function(cell) {
+        // Get the auth widget code
+        init.buildCode(cell, "https://genepattern.broadinstitute.org/gp", "", "");
+
+        function isWidgetPresent() { return cell.element.find(".gp-widget").length > 0; }
+        function isRunning() { return cell.element.hasClass("running") }
+
+        var widgetPresent = isWidgetPresent();
+        var running = isRunning();
+
+        function ensure_widget() {
+            if (!widgetPresent && !running) {
+                cell.execute();
+            }
+            if (!widgetPresent) {
+                setTimeout(function() {
+                    widgetPresent = isWidgetPresent();
+                    running = isRunning();
+                    ensure_widget();
+                }, 500);
+            }
+        }
+
+        ensure_widget();
+    };
+
     slider.toGenePatternCell = function(formerType) {
         var dialog = require('base/js/dialog');
         var cell = Jupyter.notebook.get_selected_cell();
@@ -508,33 +517,11 @@ define(["base/js/namespace",
 
         // Define cell change internal function
         var cellChange = function(cell) {
-            if (GenePattern.authenticated) {
+            if (session_manager.sessions.length > 0) {
                 slider.widgetSelectDialog(cell);
             }
             else {
-                // Get the auth widget code
-                init.buildCode(cell, "https://genepattern.broadinstitute.org/gp", "", "");
-
-                function isWidgetPresent() { return cell.element.find(".gp-widget").length > 0; }
-                function isRunning() { return cell.element.hasClass("running") }
-
-                var widgetPresent = isWidgetPresent();
-                var running = isRunning();
-
-                function ensure_widget() {
-                    if (!widgetPresent && !running) {
-                        cell.execute();
-                    }
-                    if (!widgetPresent) {
-                        setTimeout(function() {
-                            widgetPresent = isWidgetPresent();
-                            running = isRunning();
-                            ensure_widget();
-                        }, 500);
-                    }
-                }
-
-                ensure_widget();
+                slider.createAuthCell(cell);
             }
         };
 
@@ -785,7 +772,7 @@ define(["base/js/namespace",
             var modules = null;
             var fixedKind = Array.isArray(kind) ? kind[0] : kind;
             var sendToNewTask = popover.find('.gp-widget-job-new-task');
-            var kindsMap = GenePattern.kinds();
+            var kindsMap = widget.options.session.kinds();
             if (kindsMap !==  null && kindsMap !== undefined) {
                 modules = kindsMap[fixedKind];
                 if (modules === null || modules === undefined) { modules = []; } // Protect against undefined & null
@@ -793,7 +780,7 @@ define(["base/js/namespace",
                     sendToNewTask.append(
                         $("<option></option>")
                             .attr("data-lsid", module.lsid())
-                            .attr("data-server", GenePattern.server())
+                            .attr("data-server", widget.options.session.server())
                             .text(module.name())
                     )
                 });
@@ -886,7 +873,7 @@ define(["base/js/namespace",
                 $.each(matchingTasks, function(i, pairing) {
                     var cellIndex = pairing[0];
                     var taskWidget = pairing[1];
-                    var task = GenePattern.task(taskWidget.options.lsid);
+                    var task = widget.options.session.task(taskWidget.options.lsid);
                     var name = task !== null ? task.name() : null;
 
                     // If task is null, extract the task name from the widget
@@ -1029,7 +1016,7 @@ define(["base/js/namespace",
             console.log("ERROR: Attempting to turn markdown cell into widget in authWidget.buildCode()")
         }
         else if (cell.cell_type == 'code') {
-            slider.makeGPCell(cell, "auth");
+            slider.makeGPCell(cell, "auth", server);
             cell.code_mirror.setValue(code);
         }
         else {
@@ -1044,6 +1031,9 @@ define(["base/js/namespace",
         require(["nbextensions/jupyter-js-widgets/extension"], function() {
             var all_cells = Jupyter.notebook.get_cells();
             all_cells.forEach(function(cell) {
+                // Skip GenePattern cells that are already rendered
+                if (cell.element.find(".gp-widget").length > 0) return;
+
                 if ('genepattern' in cell.metadata) {
                     cell.execute();
                     return;
@@ -1201,7 +1191,7 @@ define(["base/js/namespace",
         }, 100);
     };
 
-    slider.makeGPCell = function (cell, type) {
+    slider.makeGPCell = function (cell, type, server) {
         // Check for valid input
         if (typeof cell !== 'object') {
             console.log('ERROR applying metadata to cell');
@@ -1215,10 +1205,80 @@ define(["base/js/namespace",
 
         // Set the GenePattern cell type
         cell.metadata.genepattern.type = type;
+
+        // If the server has been passed in, set it too
+        if (server) {
+            cell.metadata.genepattern.server = server;
+        }
+    };
+
+    session_manager.register_session = function(server, username, password) {
+        // Create the session
+        var session = new gp.GenePattern();
+        session.server(server);
+        session.username = username;
+        session.password = password;
+
+        // Validate username if not empty
+        var valid_username = username !== "" && username !== null && username !== undefined;
+
+        // Validate that the server is not already registered
+        var index = session_manager.get_session_index(server);
+        var new_server = index === -1;
+
+        // Add the new session to the list
+        if (valid_username && new_server) {
+            session_manager.sessions.push(session);
+        }
+
+        // Replace old session is one exists
+        if (valid_username && !new_server) {
+            session_manager.sessions[index] = session;
+        }
+
+        return session;
+    };
+
+    /**
+     * Return the matching session based on providing an index number or GenePattern server URL
+     * Return null if no matching session is found.
+     *
+     * @param server
+     * @returns {*}
+     */
+    session_manager.get_session = function(server) {
+        // Handle indexes
+        if (Number.isInteger(server)) {
+            if (server >= session_manager.sessions.length) return null;
+            else return session_manager.sessions[server];
+        }
+
+        // Handle server URLs
+        var index = session_manager.get_session_index(server);
+        if (index === -1) return null;
+        else return session_manager.sessions[index];
+    };
+
+    /**
+     * Gets the index of the session matching the provided GenePattern server URL
+     * Returns -1 if a matching session was not found
+     *
+     * @param url
+     * @returns {string}
+     */
+    session_manager.get_session_index = function(url) {
+        for (var i in session_manager.sessions) {
+            var session = session_manager.sessions[i];
+            if (session.server() === url) {
+                return i;
+            }
+        }
+        return -1;
     };
 
     return {
         slider: slider,
-        init: init
+        init: init,
+        session_manager: session_manager
     }
 });

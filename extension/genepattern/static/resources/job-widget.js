@@ -37,7 +37,10 @@ define("gp_job", ["base/js/namespace",
             jobNumber: null,    // The job number
             poll: true,         // Poll to refresh running jobs
             job: null,          // Job object this represents
-            childJob: false     // If this is a child job
+            childJob: false,    // If this is a child job
+            cell: null,
+            session: null,
+            session_index: null
         },
 
         /**
@@ -55,6 +58,12 @@ define("gp_job", ["base/js/namespace",
 
             // Add data pointer
             this.element.data("widget", this);
+
+             // Attach the session, if necessary and possible
+            if (!this.options.session && this.options.cell) {
+                this.options.session_index = this._session_index_from_code();
+                this.options.session = this._session_from_index(this.options.session_index);
+            }
 
             // Add class and child elements
             this.element.addClass("panel panel-default gp-widget gp-widget-job");
@@ -215,7 +224,7 @@ define("gp_job", ["base/js/namespace",
             }
 
             // Check to see if the user is authenticated yet
-            if (GenePattern.authenticated) {
+            if (widget.options.session && widget.options.session.authenticated) {
                 // If authenticated, load job status
                 this._loadJobStatus();
             }
@@ -284,7 +293,7 @@ define("gp_job", ["base/js/namespace",
 
             // Otherwise check the general GenePattern cache
             var identifier = this.options.job.taskLsid();
-            task = GenePattern.task(identifier);
+            task = this.options.session.task(identifier);
             if (task !== null) {
                 this.options.job._task = task; // Associate this task with the widget
                 done(task);
@@ -293,7 +302,7 @@ define("gp_job", ["base/js/namespace",
 
             // Otherwise call back to the server
             var widget = this;
-            GenePattern.taskQuery({
+            this.options.session.taskQuery({
                 lsid: identifier,
                 success: function(newTask) {
                     widget.options.job._task = newTask; // Associate this task with the widget
@@ -673,8 +682,11 @@ define("gp_job", ["base/js/namespace",
         _pollForAuth: function() {
             var widget = this;
             setTimeout(function() {
+                // Try to grab the session again
+                widget.options.session = widget._session_from_index(widget.options.session_index);
+
                 // Check to see if the user is authenticated yet
-                if (GenePattern.authenticated) {
+                if (widget.options.session && widget.options.session.authenticated) {
                     // If authenticated, execute cell again
                     var cellElement = widget.element.closest(".cell");
                     if (cellElement.length > 0) {
@@ -713,14 +725,14 @@ define("gp_job", ["base/js/namespace",
             // If JSON already loaded
             if (this.options.json) {
                 var jsonObj = JSON.parse(this.options.json);
-                var job = new GenePattern.Job(jsonObj);
+                var job = new this.options.session.Job(jsonObj);
                 this._displayJob(job);
             }
             // If we need to load the JSON from the server
             else {
                 var widget = this;
 
-                GenePattern.job({
+                this.options.session.job({
                     jobNumber: this.options.jobNumber,
                     force: true,
                     permissions: true,
@@ -864,12 +876,12 @@ define("gp_job", ["base/js/namespace",
                 launchUrl = launchUrl.slice(3);
 
                 // Make into a full URL
-                launchUrl = GenePattern.server() + launchUrl;
+                launchUrl = this.options.session.server() + launchUrl;
             }
 
             // Display the visualizer if not already displayed
             if (!displayed) {
-                var urlWithToken = launchUrl + "#" + GenePattern.token;
+                var urlWithToken = launchUrl + "#" + this.options.session.token;
 
                 viewerDiv.append(
                     $("<iframe/>")
@@ -905,6 +917,7 @@ define("gp_job", ["base/js/namespace",
          * @private
          */
         _displayChildren: function(children) {
+            var widget = this;
             var childrenDiv = this.element.find(".gp-widget-job-children:first");
             childrenDiv.css("margin-top", "10px");
             childrenDiv.empty();
@@ -915,6 +928,7 @@ define("gp_job", ["base/js/namespace",
                     .addClass("gp-widget-job-child")
                     .jobResults({
                         jobNumber: child.jobNumber(),
+                        cell: widget.options.cell,
                         childJob: true
                     });
                 childrenDiv.append(childWidget);
@@ -1034,6 +1048,22 @@ define("gp_job", ["base/js/namespace",
          */
         jobNumber: function() {
             return this.options.jobNumber;
+        },
+
+        _session_index_from_code: function() {
+            var code = this.options.cell.get_text();
+            var index = 0;
+            try {
+                index = Number.parseInt(code.split("genepattern.get_session(")[1].split(")")[0]);
+            }
+            catch (e) {
+                console.log("Cannot extract GenePattern session index, defaulting to 0");
+            }
+            return index;
+        },
+
+        _session_from_index: function(index) {
+            return GPNotebook.session_manager.get_session(index);
         }
     });
 
@@ -1045,7 +1075,7 @@ define("gp_job", ["base/js/namespace",
             var jobNumber = this.model.get('job_number');
 
             // Check to see if this is a legacy job widget, if so replace with full code
-            if (!('genepattern' in cell.metadata) && GenePattern.authenticated) {
+            if (!('genepattern' in cell.metadata)) {
                 GPNotebook.slider.buildJobCode(cell, 0, jobNumber);
             }
 
@@ -1053,7 +1083,8 @@ define("gp_job", ["base/js/namespace",
             if (!this.el) this.setElement($('<div></div>'));
 
             $(this.$el).jobResults({
-                jobNumber: jobNumber
+                jobNumber: jobNumber,
+                cell: cell
             });
 
             // Hide the close button
