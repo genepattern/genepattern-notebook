@@ -1698,6 +1698,12 @@ define("gp_task", ["base/js/namespace",
         },
 
         _session_index_from_code: function() {
+            // Make sure that this is a task cell
+            if ('genepattern' in this.options.cell.metadata && this.options.cell.metadata.genepattern.type !== "task") {
+                console.log("Attempting to extract session index from non-task cell");
+                return 0;
+            }
+
             var code = this.options.cell.get_text();
             var index = 0;
             try {
@@ -2471,7 +2477,7 @@ define("gp_task", ["base/js/namespace",
                                         if (!cell) cell = Jupyter.notebook.insert_cell_below();
 
                                         // Set the code for the job widget
-                                        GPNotebook.slider.buildJobCode(cell, 0, jobNumber);
+                                        GPNotebook.slider.buildJobCode(cell, widget.options.session_index, jobNumber);
 
                                         // Execute cell.
                                         cell.execute();
@@ -2773,6 +2779,9 @@ define("gp_task", ["base/js/namespace",
         render: function () {
             var cell = this.options.cell;
             var code = null;
+
+            // Protect against double-rendering
+            if (cell.element.find(".gp-widget").length > 0) return;
 
             var lsid = this.model.get('lsid');
             var name = this.model.get('name');

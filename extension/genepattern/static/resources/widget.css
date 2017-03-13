@@ -247,12 +247,12 @@
 }
 
 .gp-widget-job-child {
-    border-color: #BBBBBB;
+    border-color: #BBBBBB !important;
 }
 
 .gp-widget-job-child .gp-widget-job-header {
-    background-color: #BBBBBB;
-    border-color: #BBBBBB;
+    background-color: #BBBBBB !important;
+    border-color: #BBBBBB !important;
 }
 
 /*

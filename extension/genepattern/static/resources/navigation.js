@@ -238,6 +238,9 @@ define(["base/js/namespace",
         });
         tags.sort();
 
+        // Prepare the session index
+        var index = session_manager.get_session_index(session.server());
+
         var ModuleTool = new NBToolManager.NBTool({
             origin: origin,
             id: module['lsid'],
@@ -260,7 +263,7 @@ define(["base/js/namespace",
                 return cell;
             },
             render: function(cell) {
-                slider.buildModuleCode(cell, 0, module);
+                slider.buildModuleCode(cell, index, module);
                 setTimeout(function() {
                     cell.execute();
                 }, 10);
@@ -835,7 +838,7 @@ define(["base/js/namespace",
                     if (lsid === undefined || lsid === null) return;
                     var name = option.text();
                     var cell = Jupyter.notebook.insert_cell_at_bottom();
-                    slider.buildModuleCode(cell, 0, {"lsid":lsid, "name": name});
+                    slider.buildModuleCode(cell, widget.options.session_index, {"lsid":lsid, "name": name});
 
                     // Execute the cell
                     setTimeout(function() {

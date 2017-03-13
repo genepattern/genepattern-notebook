@@ -50,6 +50,10 @@ define("gp_job", ["base/js/namespace",
          */
         _create: function() {
             var widget = this;
+            var cell = this.options.cell;
+
+            // Protect against double-rendering
+            if (cell.element.find(".gp-widget").length > 0) return;
 
             // Ensure the job number is defined
             if ((isNaN(this.options.jobNumber) || this.options.jobNumber === null) && !this.options.json) {
@@ -1056,6 +1060,12 @@ define("gp_job", ["base/js/namespace",
         },
 
         _session_index_from_code: function() {
+            // Make sure that this is a task cell
+            if ('genepattern' in this.options.cell.metadata && this.options.cell.metadata.genepattern.type !== "job") {
+                console.log("Attempting to extract session index from non-job cell");
+                return 0;
+            }
+
             var code = this.options.cell.get_text();
             var index = 0;
             try {
