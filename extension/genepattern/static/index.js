@@ -31,7 +31,7 @@ define([
                 $('<link rel="stylesheet" type="text/css" />')
                     .attr("rel", "stylesheet")
                     .attr("type", "text/css")
-                    .attr('href', STATIC_PATH + 'gp-navigation.css')
+                    .attr('href', STATIC_PATH + 'navigation.css')
             )
             // Import styles used by GenePattern widgets
             .append(

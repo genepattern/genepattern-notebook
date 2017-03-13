@@ -2,36 +2,6 @@
  * Styles for navigation
  */
 
-.add-cell-container {
-    text-align: right;
-    position: fixed;
-    bottom: 55px;
-    padding-right: 15px;
-    height: 0;
-}
-
-.add-cell-button {
-    color: white;
-    margin-right: 10px;
-    z-index: 5;
-    box-shadow: 2px 2px 1px #cecece;
-    height: 40px;
-    opacity: 0.5;
-    width: 40px;
-    background-color: #0a2d69;
-    display: inline-block;
-    font-size: 1.7em;
-    line-height: 1.6;
-    text-align: center;
-    border: medium none;
-    border-radius: 50%;
-}
-
-.add-cell-button:hover, .sidebar-button:hover {
-    opacity: 0.8;
-    cursor: pointer;
-}
-
 #slider {
     display: none;
     position: fixed;
