@@ -351,7 +351,9 @@ define("gp_auth", ["base/js/namespace",
 
                 // Try reading GenePattern cookie and prompt, if cookie present and not authenticated
                 var genepatternCookie = widget._getCookie("GenePattern");
-                if (genepatternCookie && widget.options.session === null) {
+                var public_server_selected = serverSelect.val() === GENEPATTERN_SERVERS[0][1];
+                var prompt_already_displayed = $(".gp-cookie-login").length > 0;
+                if (genepatternCookie && widget.options.session === null && public_server_selected && !prompt_already_displayed) {
                     var username = widget._usernameFromCookie(genepatternCookie);
                     var password = widget._passwordFromCookie(genepatternCookie);
 
@@ -361,7 +363,7 @@ define("gp_auth", ["base/js/namespace",
                             .addClass("widget-auto-login")
                             .append(
                                 $("<div></div>")
-                                    .addClass("panel panel-default")
+                                    .addClass("panel panel-default gp-cookie-login")
                                     .append(
                                         $("<div></div>")
                                             .addClass("panel-heading")
