@@ -30,6 +30,7 @@ define(["jquery", "jqueryui"], function ($) {
         gp.initialized = false;
         gp.password = null;
         gp.username = null;
+        gp.token = null;
 
         // TODO: Remove older style global references
         // window.GenePattern = GenePattern;
@@ -149,6 +150,7 @@ define(["jquery", "jqueryui"], function ($) {
                     url: gp.server() + REST_ENDPOINT + includeHidden,
                     type: 'GET',
                     dataType: 'json',
+                    headers: {"Authorization": "Bearer " + gp.token},
                     xhrFields: {
                         withCredentials: true
                     }
@@ -239,6 +241,7 @@ define(["jquery", "jqueryui"], function ($) {
                 url: gp.server() + REST_ENDPOINT + encodeURIComponent(identifier),
                 type: 'GET',
                 dataType: 'json',
+                headers: {"Authorization": "Bearer " + gp.token},
                 xhrFields: {
                     withCredentials: true
                 },
@@ -330,6 +333,7 @@ define(["jquery", "jqueryui"], function ($) {
                     url: gp.server() + REST_ENDPOINT,
                     type: 'GET',
                     dataType: 'json',
+                    headers: {"Authorization": "Bearer " + gp.token},
                     xhrFields: {
                         withCredentials: true
                     }
@@ -403,6 +407,7 @@ define(["jquery", "jqueryui"], function ($) {
                 url: gp.server() + REST_ENDPOINT + jobNumber + permissionsParam,
                 type: 'GET',
                 dataType: 'json',
+                headers: {"Authorization": "Bearer " + gp.token},
                 xhrFields: {
                     withCredentials: true
                 }
@@ -447,6 +452,7 @@ define(["jquery", "jqueryui"], function ($) {
                 dataType: "text",
                 processData: false,
                 data: pObj.file,
+                headers: {"Authorization": "Bearer " + gp.token},
                 xhrFields: {
                     withCredentials: true
                 },
@@ -546,6 +552,7 @@ define(["jquery", "jqueryui"], function ($) {
                         url: gp.server() + REST_ENDPOINT + encodeURIComponent(task.lsid()),
                         type: 'GET',
                         dataType: 'json',
+                        headers: {"Authorization": "Bearer " + gp.token},
                         xhrFields: {
                             withCredentials: true
                         }
@@ -690,6 +697,7 @@ define(["jquery", "jqueryui"], function ($) {
                     xhrFields: {
                         withCredentials: true
                     },
+                    headers: {"Authorization": "Bearer " + gp.token},
                     success: success,
                     error: error
                 });
@@ -760,6 +768,7 @@ define(["jquery", "jqueryui"], function ($) {
                     url: gp.server() + REST_ENDPOINT,
                     type: 'GET',
                     dataType: 'json',
+                    headers: {"Authorization": "Bearer " + gp.token},
                     xhrFields: {
                         withCredentials: true
                     }
@@ -813,6 +822,7 @@ define(["jquery", "jqueryui"], function ($) {
                     url: gp.server() + REST_ENDPOINT,
                     type: 'GET',
                     dataType: 'text',
+                    headers: {"Authorization": "Bearer " + gp.token},
                     xhrFields: {
                         withCredentials: true
                     }
@@ -924,6 +934,7 @@ define(["jquery", "jqueryui"], function ($) {
                     data: JSON.stringify(pObj['bundle']),
                     dataType: 'json',
                     contentType: "application/json",
+                    headers: {"Authorization": "Bearer " + gp.token},
                     xhrFields: {
                         withCredentials: true
                     }
@@ -1116,6 +1127,7 @@ define(["jquery", "jqueryui"], function ($) {
                     data: JSON.stringify(this._submitJson_()),
                     dataType: 'json',
                     contentType: "application/json",
+                    headers: {"Authorization": "Bearer " + gp.token},
                     xhrFields: {
                         withCredentials: true
                     }

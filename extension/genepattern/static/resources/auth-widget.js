@@ -858,10 +858,6 @@ define("gp_auth", ["base/js/namespace",
                 success: function(data) {
                     var token = data['access_token'];
 
-                    $.ajaxSetup({
-                        headers: {"Authorization": "Bearer " + token}
-                    });
-
                     // Register the session
                     var session = GPNotebook.session_manager.register_session(server, username, password);
                     widget.options.session = session;
@@ -894,6 +890,7 @@ define("gp_auth", ["base/js/namespace",
                 url: server + "/rest/v1/tasks/all.json",
                 dataType: 'json',
                 cache: false,
+                headers: {"Authorization": "Bearer " + token},
                 xhrFields: {
                     withCredentials: true
                 },
@@ -972,6 +969,7 @@ define("gp_auth", ["base/js/namespace",
                 url: widget.options.session.server() + "/rest/v1/config/system-message",
                 dataType: 'html',
                 cache: false,
+                headers: {"Authorization": "Bearer " + widget.options.session.token},
                 xhrFields: {
                     withCredentials: true
                 },
