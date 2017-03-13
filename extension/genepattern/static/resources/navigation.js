@@ -293,6 +293,17 @@ define(["base/js/namespace",
         // Show the slider tab
         $(".sidebar-button-main").show("slide", {"direction": "left"});
 
+        // Disable same server on all authentication widgets
+        var dropdowns = $(".gp-widget-auth").find("[name=server]");
+        dropdowns.find("option[value='" + GenePattern.server() + "']").prop("disabled", true);
+        dropdowns.each(function(i, dropdown) {
+            // If disabled server is selected, select a different one
+            if ($(dropdown).find("option:selected").attr("value") === GenePattern.server()) {
+                var enabled_list = $(dropdown).find("option:enabled");
+                if (enabled_list.length > 0) $(enabled_list[0]).prop('selected', true);
+            }
+        });
+
         // Register all modules with the tool manager
         if (data['all_modules']) {
             slider.registerAllModules(GenePattern, data['all_modules']);

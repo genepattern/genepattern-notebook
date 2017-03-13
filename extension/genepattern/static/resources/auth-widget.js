@@ -281,9 +281,11 @@ define("gp_auth", ["base/js/namespace",
             // Add servers to select
             var serverSelect = this.element.find("[name=server]");
             $.each(this.options.servers, function(i, e) {
+                var disable = GPNotebook.session_manager.get_session(e[1]) !== null;
                 serverSelect.append(
                     $("<option></option>")
                         .attr("value", e[1])
+                        .prop("disabled", disable)
                         .text(e[0])
                 );
             });
