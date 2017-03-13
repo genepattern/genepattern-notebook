@@ -1483,7 +1483,6 @@ define("gp_task", ["base/js/namespace",
                                                     widget.element.find(".gp-widget-task-eula").hide();
                                                 };
                                                 var error = function(xhr, error) {
-                                                    // widget.element.find(".gp-widget-task-eula").hide();
                                                     widget.errorMessage(error);
                                                 };
 
@@ -1500,6 +1499,11 @@ define("gp_task", ["base/js/namespace",
                             .hide()
                     )
             );
+
+            // Apply server color scheme if authenticated
+            if (widget.options.session !== null && widget.options.session.authenticated) {
+                GPNotebook.slider.applyColors(widget.element, widget.options.session.server());
+            }
 
             // Check to see if the user is authenticated yet
             if (widget.options.session && widget.options.session.authenticated) {
@@ -2775,11 +2779,7 @@ define("gp_task", ["base/js/namespace",
 
             // Check to see if this is a legacy task widget, if so update the code
             if (!('genepattern' in cell.metadata)) {
-                code = cell.get_text().replace("gpserver", "None");
-                cell.set_text(code);
-            }
-            else if (!('genepattern' in cell.metadata)) {
-                code = cell.get_text().replace("gp.GPTask(None", "gp.GPTask(genepattern.get_session(" + 0 + ")");
+                code = cell.get_text().replace("gp.GPTask(gpserver", "gp.GPTask(genepattern.get_session(" + 0 + ")");
                 code = code.replace("# !AUTOEXEC\n\n", "");
 
                 // Add the metadata

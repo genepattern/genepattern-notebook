@@ -349,11 +349,15 @@ define("gp_auth", ["base/js/namespace",
                     widget.element.find(".widget-server-label").text(widget.getServerLabel(""));
                 }
 
+                // Apply server color scheme if authenticated
+                if (widget.options.session !== null && widget.options.session.authenticated) {
+                    GPNotebook.slider.applyColors(widget.element, widget.options.session.server());
+                }
+
                 // Try reading GenePattern cookie and prompt, if cookie present and not authenticated
                 var genepatternCookie = widget._getCookie("GenePattern");
                 var public_server_selected = serverSelect.val() === GENEPATTERN_SERVERS[0][1];
-                var prompt_already_displayed = $(".gp-cookie-login").length > 0;
-                if (genepatternCookie && widget.options.session === null && public_server_selected && !prompt_already_displayed) {
+                if (genepatternCookie && widget.options.session === null && public_server_selected) {
                     var username = widget._usernameFromCookie(genepatternCookie);
                     var password = widget._passwordFromCookie(genepatternCookie);
 

@@ -1,4 +1,92 @@
 /*
+ * Styles for specific GenePattern Public Server
+ */
+
+.gp-widget.gp-server-public {
+    border-color: rgba(10, 45, 105, 0.80);
+}
+
+.gp-widget.gp-server-public .panel-heading {
+    background-color: rgba(10, 45, 105, 0.80);
+}
+
+.gp-widget.gp-server-public .btn-primary {
+    border-color: rgba(10, 45, 105, 0.80);
+    background-color: rgba(10, 45, 105, 0.80);
+}
+
+.gp-widget.gp-server-public .btn-primary:hover {
+    border-color: rgba(10, 45, 105, 1);
+    background-color: rgba(10, 45, 105, 1);
+}
+
+/*
+ * Styles for specific GenePattern Indiana Server
+ */
+
+.gp-widget.gp-server-indiana {
+    border-color: rgba(60, 10, 105, 0.80);
+}
+
+.gp-widget.gp-server-indiana .panel-heading {
+    background-color: rgba(60, 10, 105, 0.80);
+}
+
+.gp-widget.gp-server-indiana .btn-primary {
+    border-color: rgba(60, 10, 105, 0.80);
+    background-color: rgba(60, 10, 105, 0.80);
+}
+
+.gp-widget.gp-server-indiana .btn-primary:hover {
+    border-color: rgba(60, 10, 105, 1);
+    background-color: rgba(60, 10, 105, 1);
+}
+
+/*
+ * Styles for specific GenePattern Broad Server
+ */
+
+.gp-widget.gp-server-broad {
+    border-color: rgba(15, 75, 105, 0.80);
+}
+
+.gp-widget.gp-server-broad .panel-heading {
+    background-color: rgba(15, 75, 105, 0.80);
+}
+
+.gp-widget.gp-server-broad .btn-primary {
+    border-color: rgba(15, 75, 105, 0.80);
+    background-color: rgba(15, 75, 105, 0.80);
+}
+
+.gp-widget.gp-server-broad .btn-primary:hover {
+    border-color: rgba(15, 75, 105, 1);
+    background-color: rgba(15, 75, 105, 1);
+}
+
+/*
+ * Styles for specific GenePattern Custom Server
+ */
+
+.gp-widget.gp-server-custom {
+    border-color: rgba(15, 105, 75, 0.80);
+}
+
+.gp-widget.gp-server-custom .panel-heading {
+    background-color: rgba(15, 105, 75, 0.80);
+}
+
+.gp-widget.gp-server-custom .btn-primary {
+    border-color: rgba(15, 105, 75, 0.80);
+    background-color: rgba(15, 105, 75, 0.80);
+}
+
+.gp-widget.gp-server-custom .btn-primary:hover {
+    border-color: rgba(15, 105, 75, 1);
+    background-color: rgba(15, 105, 75, 1);
+}
+
+/*
  * Styles for widget display
  */
 

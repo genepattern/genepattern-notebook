@@ -38,7 +38,7 @@ define([
                 $('<link rel="stylesheet" type="text/css" />')
                     .attr("rel", "stylesheet")
                     .attr("type", "text/css")
-                    .attr('href', STATIC_PATH + 'gp-widget.css')
+                    .attr('href', STATIC_PATH + 'widget.css')
             );
 
         // Wait for the kernel to be ready and then initialize the widgets

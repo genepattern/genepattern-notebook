@@ -223,6 +223,11 @@ define("gp_job", ["base/js/namespace",
                 this.element.find(".gp-widget-logo").hide();
             }
 
+            // Apply server color scheme if authenticated
+            if (widget.options.session !== null && widget.options.session.authenticated) {
+                GPNotebook.slider.applyColors(widget.element, widget.options.session.server());
+            }
+
             // Check to see if the user is authenticated yet
             if (widget.options.session && widget.options.session.authenticated) {
                 // If authenticated, load job status
@@ -562,7 +567,7 @@ define("gp_job", ["base/js/namespace",
 
                 // Replace gpserver variable with session
                 if (line.indexOf("gpserver") !== -1) {
-                    line = line.replace("gpserver", "genepattern.get_session(" + 0 + ")")
+                    line = line.replace("gpserver", "genepattern.get_session(" + this.options.session_index + ")")
                 }
 
                 // Append the code if it's not a skipped line

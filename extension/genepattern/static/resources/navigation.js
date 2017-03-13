@@ -1139,6 +1139,7 @@ define(["base/js/namespace",
 
         // Hide or show the slider tab if a GenePattern cell is highlighted
         $(".sidebar-button-main").show();
+        // TODO: Fix
         // $([Jupyter.events]).on('select.Cell', function() {
         //     var cell = Jupyter.notebook.get_selected_cell();
         //     var isGPCell = cell.element.find(".gp-widget").length > 0;
@@ -1221,6 +1222,27 @@ define(["base/js/namespace",
         if (server) {
             cell.metadata.genepattern.server = server;
         }
+    };
+
+    slider.applyColors = function(element, url) {
+        var theme = "gp-server-custom";
+
+        // GenePattern Public
+        if (url === GENEPATTERN_SERVERS[0][1]) {
+            theme = "gp-server-public";
+        }
+
+        // GenePattern Indiana
+        if (url === GENEPATTERN_SERVERS[1][1]) {
+            theme = "gp-server-indiana";
+        }
+
+        // GenePattern Broad
+        if (url === GENEPATTERN_SERVERS[2][1]) {
+            theme = "gp-server-broad";
+        }
+
+        element.addClass(theme);
     };
 
     session_manager.register_session = function(server, username, password) {
