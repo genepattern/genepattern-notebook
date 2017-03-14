@@ -322,14 +322,18 @@ define("gp_auth", ["base/js/namespace",
 
             // Make calls that need run after the element has been inserted into the DOM
             setTimeout(function() {
+                // Get the server URL from the code
+                var server_url = widget._getCodeServerURL();
 
                 // Grab matching session, if one is available and session is not set
                 if (!widget.options.session) {
-                    widget.options.session = GPNotebook.session_manager.get_session(widget._getCodeServerURL());
+                    widget.options.session = GPNotebook.session_manager.get_session(server_url);
                 }
 
-                // Hide the login form if already authenticated
-                if (widget.options.session !== null && widget.options.session.authenticated) {
+                // Hide the login form if already authenticated and no other matching login
+                var authenticated = widget.options.session !== null && widget.options.session.authenticated;
+                var only_matching_login = $(".widget-server-label:contains('" + server_url + "')").length === 0;
+                if (authenticated && only_matching_login) {
                     element.find(".panel-body").hide();
                     var indicator = element.find(".widget-slide-indicator").find("span");
 
@@ -1151,7 +1155,6 @@ define("gp_auth", ["base/js/namespace",
             return cell;
         },
         render: function(cell) {
-            console.log("GPTool Rendered");
             GPNotebook.slider.createAuthCell(cell);
             return true;
         }
