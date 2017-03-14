@@ -32,10 +32,6 @@ define(["jquery", "jqueryui"], function ($) {
         gp.username = null;
         gp.token = null;
 
-        // TODO: Remove older style global references
-        // window.GenePattern = GenePattern;
-
-
         /**
          * Easily determine if the URL to the GenePattern server has been set or not.
          *
