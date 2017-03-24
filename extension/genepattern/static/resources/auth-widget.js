@@ -1135,7 +1135,7 @@ define("gp_auth", ["base/js/namespace",
     });
 
     var AuthWidgetTool = new NBToolManager.NBTool({
-        origin: "Tools",
+        origin: "+",
         id: "authentication",
         name: "GenePattern Login",
         // tags: ["GenePattern", "Authentication"],
