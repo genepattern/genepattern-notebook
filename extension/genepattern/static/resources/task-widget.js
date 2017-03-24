@@ -1649,7 +1649,17 @@ define("gp_task", ["base/js/namespace",
                 var is_job_cell = cell.element.find(".gp-widget-job").length > 0;
                 if (this_cell_found && is_job_cell) {
                     var task_lsid = this.options.task.lsid();
-                    var job_lsid = cell.element.find(".gp-widget-job").data("widget").options.job.task().lsid();
+                    var job_widget = cell.element.find(".gp-widget-job").data("widget");
+                    var job_ref = job_widget.options.job;
+
+                    // If the job object is null, this is a purged job, assume it matches
+                    if (job_ref === null) {
+                        output_cell = cell;
+                        break;
+                    }
+
+                    var job_task = job_ref.task();
+                    var job_lsid = job_task.lsid();
                     if (job_lsid === task_lsid) {
                         output_cell = cell;
                         break;
