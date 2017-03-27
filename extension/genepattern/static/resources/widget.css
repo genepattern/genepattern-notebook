@@ -25,21 +25,21 @@
  */
 
 .gp-widget.gp-server-indiana {
-    border-color: rgba(60, 10, 105, 0.80);
+    border-color: rgba(115, 25, 10, 0.80);
 }
 
 .gp-widget.gp-server-indiana .panel-heading {
-    background-color: rgba(60, 10, 105, 0.80);
+    background-color: rgba(115, 25, 10, 0.80);
 }
 
 .gp-widget.gp-server-indiana .btn-primary {
-    border-color: rgba(60, 10, 105, 0.80);
-    background-color: rgba(60, 10, 105, 0.80);
+    border-color: rgba(115, 25, 10, 0.80);
+    background-color: rgba(115, 25, 10, 0.80);
 }
 
 .gp-widget.gp-server-indiana .btn-primary:hover {
-    border-color: rgba(60, 10, 105, 1);
-    background-color: rgba(60, 10, 105, 1);
+    border-color: rgba(115, 25, 10, 1);
+    background-color: rgba(115, 25, 10, 1);
 }
 
 /*
