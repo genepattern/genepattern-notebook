@@ -808,11 +808,6 @@ define(["base/js/namespace",
                         })
                 );
         }
-
-        // Hide the loading screen
-        setTimeout(function () {
-            $(".loading-screen").hide("fade");
-        }, 100);
     };
 
     slider.makeGPCell = function (cell, type, server) {
