@@ -70,26 +70,23 @@ define(["base/js/namespace",
             tags: tags,
             description: module['description'],
             load: function() { return true; },
-            prepare: function() {
+            render: function() {
                 var cell = Jupyter.notebook.get_selected_cell();
                 var is_empty = cell.get_text().trim() == "";
 
                 // If this cell is not empty, insert a new cell and use that
+                // Otherwise just use this cell
                 if (!is_empty) {
                     cell = Jupyter.notebook.insert_cell_below();
                     Jupyter.notebook.select_next();
                 }
 
-                // Otherwise just use this cell
-                return cell;
-            },
-            render: function(cell) {
                 slider.buildModuleCode(cell, index, module);
                 setTimeout(function() {
                     cell.execute();
                 }, 10);
 
-                return true;
+                return cell;
             }
         });
 

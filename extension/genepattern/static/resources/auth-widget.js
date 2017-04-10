@@ -1141,22 +1141,19 @@ define("gp_auth", ["base/js/namespace",
         // tags: ["GenePattern", "Authentication"],
         description: "Sign into a GenePattern Server",
         load: function() { return true; },
-        prepare: function() {
+        render: function() {
             var cell = Jupyter.notebook.get_selected_cell();
             var is_empty = cell.get_text().trim() == "";
 
             // If this cell is not empty, insert a new cell and use that
+            // Otherwise just use this cell
             if (!is_empty) {
                 cell = Jupyter.notebook.insert_cell_below();
                 Jupyter.notebook.select_next();
             }
 
-            // Otherwise just use this cell
-            return cell;
-        },
-        render: function(cell) {
             GPNotebook.slider.createAuthCell(cell);
-            return true;
+            return cell;
         }
     });
 
