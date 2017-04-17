@@ -56,7 +56,7 @@ setup(name='genepattern-notebook',
           'Topic :: Scientific/Engineering :: Bio-Informatics',
           'License :: OSI Approved :: BSD License',
           'Programming Language :: Python',
-          'Framework :: IPython',
+          'Framework :: Jupyter',
       ],
       install_requires=[
           'genepattern-python>=1.2.3',
