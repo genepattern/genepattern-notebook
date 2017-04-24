@@ -21,7 +21,7 @@
 var GENEPATTERN_SERVERS = [
     ['Broad Institute', 'https://genepattern.broadinstitute.org/gp'],
     ['Indiana University', 'https://gp.indiana.edu/gp'],
-    // ['Broad Internal (Broad Institute Users Only)', 'https://gpbroad.broadinstitute.org/gp'],
+    ['Broad Internal (Broad Institute Users Only)', 'https://gpbroad.broadinstitute.org/gp'],
     ['Custom GenePattern Server', 'Custom']
 ];
 
@@ -996,7 +996,7 @@ define("gp_auth", ["base/js/namespace",
 
                         // Append the feedback message
                         messageBlock.append(
-                            widget.createFeedbackMessage("mailto:gp-help@broadinstitute.org?subject=GenePattern%20Notebook")
+                            widget.createFeedbackMessage("http://software.broadinstitute.org/cancer/software/genepattern/contact")
                         );
 
                         // Display the system message
@@ -1010,7 +1010,7 @@ define("gp_auth", ["base/js/namespace",
                     // Assume that the server is not a version that supports the system message call
 
                     // Attach the feedback messafe
-                    var message = widget.createFeedbackMessage("mailto:gp-help@broadinstitute.org?subject=GenePattern%20Notebook");
+                    var message = widget.createFeedbackMessage("http://software.broadinstitute.org/cancer/software/genepattern/contact");
                     widget.infoMessage(message);
 
                     // If a function to execute when done has been passed in, execute it
