@@ -1101,13 +1101,16 @@ define("gp_auth", ["base/js/namespace",
 
     var AuthWidgetView = widgets.DOMWidgetView.extend({
         render: function () {
+            console.log("RENDER CALLED");
+            console.log(this.options.cell);
+
             var cell = this.options.cell;
 
             // Protect against double-rendering
             if (cell.element.find(".gp-widget").length > 0) return;
 
             // Check to see if this auth widget was manually created, if so replace with full code
-            if (!('genepattern' in cell.metadata)) {
+            if (!('genepattern' in cell.metadata) && cell.code_mirror.getValue().trim() !== "") {
                 GPNotebook.init.buildCode(cell, GENEPATTERN_SERVERS[0][1], "", "");
             }
 
