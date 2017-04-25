@@ -2801,7 +2801,8 @@ define("gp_task", ["base/js/namespace",
 
             // Check to see if this is a legacy task widget, if so update the code
             if (!('genepattern' in cell.metadata) || cell.get_text().indexOf("gp.GPTask(gpserver") > -1) {
-                code = cell.get_text().replace("gp.GPTask(gpserver", "gp.GPTask(genepattern.get_session(" + 0 + ")");
+                code = cell.get_text().replace("GPTaskWidget", "genepattern.GPTaskWidget");
+                code = code.replace("# !AUTOEXEC\n\n", "");
                 code = code.replace("# !AUTOEXEC\n\n", "");
 
                 // Add the metadata
