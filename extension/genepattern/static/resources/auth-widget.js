@@ -1101,9 +1101,6 @@ define("gp_auth", ["base/js/namespace",
 
     var AuthWidgetView = widgets.DOMWidgetView.extend({
         render: function () {
-            console.log("RENDER CALLED");
-            console.log(this.options.cell);
-
             var cell = this.options.cell;
 
             // Protect against double-rendering
