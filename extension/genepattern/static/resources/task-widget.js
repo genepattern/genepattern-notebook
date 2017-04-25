@@ -2179,10 +2179,13 @@ define("gp_task", ["base/js/namespace",
                     message.slideDown();
                 }
 
-                // Only show the EULA if there is one to display
-                var task = widget.options.session.task(widget.options.lsid);
-                if (task && task.eula() && task.eula().pendingEulas && task.eula().pendingEulas.length > 0) {
-                    eula.slideDown();
+
+                if (widget.options.session) { // Protect against null
+                    // Only show the EULA if there is one to display
+                    var task = widget.options.session.task(widget.options.lsid);
+                    if (task && task.eula() && task.eula().pendingEulas && task.eula().pendingEulas.length > 0) {
+                        eula.slideDown();
+                    }
                 }
 
                 // Only show these bits if authenticated and installed
@@ -2797,7 +2800,7 @@ define("gp_task", ["base/js/namespace",
             var name = this.model.get('name');
 
             // Check to see if this is a legacy task widget, if so update the code
-            if (!('genepattern' in cell.metadata)) {
+            if (!('genepattern' in cell.metadata) || cell.get_text().indexOf("gp.GPTask(gpserver") > -1) {
                 code = cell.get_text().replace("gp.GPTask(gpserver", "gp.GPTask(genepattern.get_session(" + 0 + ")");
                 code = code.replace("# !AUTOEXEC\n\n", "");
 
