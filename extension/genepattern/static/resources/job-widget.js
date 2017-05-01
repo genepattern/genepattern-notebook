@@ -52,9 +52,6 @@ define("gp_job", ["base/js/namespace",
             var widget = this;
             var cell = this.options.cell;
 
-            // Protect against double-rendering
-            if (cell.element.find(".gp-widget").length > 0) return;
-
             // Ensure the job number is defined
             if ((isNaN(this.options.jobNumber) || this.options.jobNumber === null) && !this.options.json) {
                 throw "The job number is not correctly defined, cannot create job results widget";
@@ -986,6 +983,8 @@ define("gp_job", ["base/js/namespace",
                     var output = outputs[i];
                     var link = $("<a></a>")
                         .text(output["link"]["name"] + " ")
+                        .addClass("gp-widget-job-output-file")
+                        .attr("data-kind", output["kind"])
                         .attr("href", output["link"]["href"])
                         .attr("onclick", "return false;")
                         .attr("data-toggle", "popover")
