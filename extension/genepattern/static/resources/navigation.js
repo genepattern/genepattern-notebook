@@ -131,6 +131,34 @@ define(["base/js/namespace",
         }
     };
 
+    slider.output_files_by_kind = function(kinds) {
+        var matches = [];
+        var kind_list = kinds;
+
+        // Handle the special case of * (match all)
+        var match_all = kinds === "*";
+
+        // If passing in a single kind as a string, wrap it in a list
+        if (typeof kinds === 'string') {
+            kind_list = [kinds];
+        }
+
+        // For each out file, see if it is the right kind
+        $(".gp-widget-job-output-file").each(function(index, output) {
+            var kind = $(output).data("kind");
+            if (match_all || kind_list.indexOf(kind) >= 0) {
+                var job_desc = $(output).closest(".gp-widget").find(".gp-widget-job-task").text().trim();
+                matches.push({
+                    name: $(output).text().trim(),
+                    url: $(output).attr("href"),
+                    job: job_desc
+                });
+            }
+        });
+
+        return matches;
+    };
+
     /**
      * Returns structure containing all task widgets currently in the notebook, which accept the
      * indicated kind. Structure is a list of pairings with the cell index and the widget object.

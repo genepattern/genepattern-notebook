@@ -19,6 +19,142 @@ define("gp_task", ["base/js/namespace",
                    "nbextensions/genepattern/resources/job-widget",
                    "jqueryui"], function (Jupyter, widgets, GPNotebook) {
 
+    $.widget("gp.type_ahead", {
+        options: {
+            placeholder: "Add Upstream File or URL...",
+            width: "400px",
+            data: [],
+            click: function(widget) {},
+            blur: function(widget) {}
+        },
+
+        _create: function() {
+            var widget = this;
+
+            this.element
+                .addClass("gp-widget-typeahead")
+                .css("width", this.options.width)
+                .data("widget", this)
+                .append(
+                    $("<div></div>")
+                        .addClass("form-group has-feedback gp-widget-typeahead-group")
+                        .append(
+                            $("<input/>")
+                                .addClass("form-control gp-widget-typeahead-input")
+                                .attr("placeholder", this.options.placeholder)
+                                .attr("autocomplete", "off")
+                                .click(this._click)
+                                .blur(this._blur)
+                        )
+                        .append(
+                            $("<span></span>")
+                                .addClass("fa fa-caret-down form-control-feedback gp-widget-typeahead-arrow")
+                        )
+                        .append(
+                            $("<ul></ul>")
+                                .addClass("dropdown-menu gp-widget-typeahead-list")
+                        )
+                );
+        },
+        _destroy: function() {},
+        _setOptions: function(options) {},
+        _setOption: function(key, value) {},
+
+        _click: function(event) {
+            var typeahead_input = $(event.target);
+            var widget = typeahead_input.closest(".gp-widget-typeahead").data("widget");
+            var menu = widget.element.find(".gp-widget-typeahead-list");
+
+            // Make the click callback if one is defined
+            if (widget.options.click) {
+                widget.options.click(widget);
+            }
+
+            // Show the menu
+            menu.show();
+        },
+
+        _blur: function(event) {
+            var typeahead_input = $(event.target);
+
+            // Hide the menu
+            var typeahead = typeahead_input.closest(".gp-widget-typeahead");
+            var menu = typeahead.find(".gp-widget-typeahead-list");
+            var widget = typeahead_input.closest(".gp-widget-typeahead").data("widget");
+            menu.hide();
+
+            // Make the blur callback if one is defined
+            if (widget.options.blur) {
+                widget.options.blur(widget);
+            }
+        },
+
+        _update_menu: function(menu, kind) {
+            // Clear the menu
+            menu.empty();
+
+            // Get the latest output file data
+            var output_files = GPNotebook.slider.output_files_by_kind(kind);
+
+            // Handle the special case of no matching output files
+            if (output_files.length === 0) {
+                menu.append(this._create_menu_header("No Matching Upstream Files"));
+                return;
+            }
+
+            // Structure the data by job
+            output_files = this._files_by_job(output_files);
+
+            // Add files to the menu
+            for (var job in output_files) {
+                menu.append(this._create_menu_header(job));
+                var job_files = output_files[job];
+                for (var i in job_files) {
+                    menu.append(this._create_menu_file(job_files[i]));
+                }
+            }
+        },
+
+        _create_menu_file: function(file) {
+            var widget = this;
+            return $("<li></li>")
+                .append(
+                    $("<a></a>")
+                        .attr("href", "#")
+                        .attr("data-value", file.url)
+                        .text(file.name)
+                        .mousedown(function() {
+                            var typeahead_input = widget.element.find(".gp-widget-typeahead-input");
+                            var val = $(this).attr("data-value");
+                            $(typeahead_input).val(val);
+                        })
+                );
+        },
+
+        _create_menu_header: function(text) {
+           return $("<li></li>")
+               .addClass("dropdown-header")
+               .text(text);
+        },
+
+        _files_by_job: function(output_files) {
+            var by_job = {};
+
+            for (var i in output_files) {
+                var file = output_files[i];
+
+                if (!(file.job in by_job)) {
+                    by_job[file.job] = [];
+
+                }
+
+                by_job[file.job].push(file);
+            }
+
+            return by_job;
+        }
+    });
+
     /**
      * Widget for file input into a GenePattern Notebook.
      * Used for file inputs by the runTask widget.
@@ -95,14 +231,40 @@ define("gp_task", ["base/js/namespace",
                             })
                     )
                     .append(
-                        $("<button></button>")
-                            .addClass("file-widget-url")
-                            .addClass("btn btn-default file-widget-button")
-                            .text("Add Path or URL...")
-                            .click(function() {
-                                widget._pathBox(true);
-                                widget.element.find(".file-widget-path-input").focus();
-                            })
+                        $("<div></div>").type_ahead({
+                            placeholder: "Add Upstream File or URL...",
+                            data: [],
+                            click: function(twidget) {
+                                var menu = twidget.element.find(".gp-widget-typeahead-list");
+                                var kinds = widget.kinds();         // Get list of kinds this param accepts
+                                if (!kinds) kinds = "*";            // If none are defined, accepts everything
+
+                                // Update the menu
+                                twidget._update_menu(menu, kinds);
+                            },
+                            blur: function(twidget) {
+                                var typeahead_input = twidget.element.find(".gp-widget-typeahead-input");
+                                var typeahead_value = typeahead_input.val();
+
+                                // Clear the input
+                                twidget.element.find(".gp-widget-typeahead-input").val("");
+
+                                // Disregard if the value is blank
+                                if (typeahead_value.trim() === "") {
+                                    return;
+                                }
+
+                                // Throw an error if this would overflow max values
+                                if (!widget._valNumGood(typeahead_value)) {
+                                    widget._runTask.errorMessage(widget._param.name() + " cannot handle that many values. Max values: " + widget._param.maxValues());
+                                    return;
+                                }
+
+                                // Update the values
+                                widget.addValues(typeahead_value);
+                                widget._updateCode();
+                            }
+                        })
                     )
                     .append(
                         $("<span></span>")
@@ -119,59 +281,6 @@ define("gp_task", ["base/js/namespace",
                 $("<div></div>")
                     .addClass("file-widget-listing")
                     .css("display", "none")
-            );
-            this.element.append(
-                $("<div></div>")
-                    .addClass("form-group file-widget-path")
-                    .css("display", "none")
-                    .append(
-                        $("<div></div>")
-                            .addClass("control-label file-widget-path-label")
-                            .text("Enter Path or URL")
-                    )
-                    .append(
-                        $("<input />")
-                            .addClass("form-control file-widget-path-input")
-                            .attr("type", "text")
-                    )
-                    .append(
-                        $("<div></div>")
-                            .addClass("file-widget-path-buttons")
-                            .append(
-                                $("<button></button>")
-                                    .addClass("btn btn-default file-widget-button")
-                                    .text("Select")
-                                    .click(function() {
-                                        var boxValue = widget.element.find(".file-widget-path-input").val();
-                                        widget.element.find(".file-widget-path-input").val("");
-                                        widget._pathBox(false);
-
-                                        // Disregard if the value is blank
-                                        if (boxValue.trim() === "") {
-                                            return;
-                                        }
-
-                                        // Throw an error if this would overflow max values
-                                        if (!widget._valNumGood(boxValue)) {
-                                            widget._runTask.errorMessage(widget._param.name() + " cannot handle that many values. Max values: " + widget._param.maxValues());
-                                            return;
-                                        }
-
-                                        widget.addValues(boxValue);
-                                        widget._updateCode();
-                                    })
-                            )
-                            .append(" ")
-                            .append(
-                                $("<button></button>")
-                                    .addClass("btn btn-default file-widget-button")
-                                    .text("Cancel")
-                                    .click(function() {
-                                        widget._pathBox(false);
-                                        widget.element.find(".file-widget-path-input").val("");
-                                    })
-                            )
-                    )
             );
             this.element.append(
                 $("<div></div>")
@@ -579,27 +688,6 @@ define("gp_task", ["base/js/namespace",
         },
 
         /**
-         * Displays the select path or URL box
-         *
-         * @param showPathBox - Whether to display or hide the path box
-         * @private
-         */
-        _pathBox: function(showPathBox) {
-            if (showPathBox) {
-                this.element.find(".file-widget-path").show();
-                this.element.find(".file-widget-upload").hide();
-                this.element.find(".file-widget-listing").hide();
-            }
-            else {
-                this.element.find(".file-widget-path").hide();
-                this.element.find(".file-widget-upload").show();
-                if (this._values && this._values.length > 0) {
-                    this.element.find(".file-widget-listing").show();
-                }
-            }
-        },
-
-        /**
          * Update the pointers to the Run Task widget and parameter
          *
          * @private
@@ -627,24 +715,6 @@ define("gp_task", ["base/js/namespace",
                 this.element.find(".file-widget-upload-file").show();
                 this.element.find(".file-widget-drop").show();
                 this.element.find(".file-widget-size").show();
-            }
-            if (!this.options.allowExternalUrls && !this.options.allowFilePaths) {
-                this.element.find(".file-widget-url").hide();
-            }
-            else if (!this.options.allowExternalUrls && this.options.allowFilePaths) {
-                this.element.find(".file-widget-url").show();
-                this.element.find(".file-widget-url").text("Add Path...");
-                this.element.find(".file-widget-path-label").text("Enter Path");
-            }
-            else if (this.options.allowExternalUrls && !this.options.allowFilePaths) {
-                this.element.find(".file-widget-url").show();
-                this.element.find(".file-widget-url").text("Add URL...");
-                this.element.find(".file-widget-path-label").text("Enter URL");
-            }
-            else if (this.options.allowExternalUrls && this.options.allowFilePaths) {
-                this.element.find(".file-widget-url").show();
-                this.element.find(".file-widget-url").text("Add Path or URL...");
-                this.element.find(".file-widget-path-label").text("Enter Path or URL");
             }
         },
 

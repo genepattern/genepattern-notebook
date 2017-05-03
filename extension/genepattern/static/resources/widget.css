@@ -284,12 +284,14 @@
 
 .file-widget-drop {
     color: darkgray;
-    font-size: 2em;
+    font-size: 1.2em;
     letter-spacing: 1px;
-    margin-left: 9px;
     padding: 5px 10px;
-    position: relative;
-    top: 10px;
+    position: absolute;
+    display: block;
+    float: right;
+    bottom: 42px;
+    right: 0;
 }
 
 .file-widget-size {
@@ -422,4 +424,23 @@
     width: 100%;
     font-weight: bold;
     line-height: 3em;
+}
+
+.gp-widget-typeahead {
+    display: inline-block;
+}
+
+.gp-widget-typeahead-arrow {
+    font-size: 20px;
+    line-height: 32px;
+    cursor: pointer;
+}
+
+.gp-widget-typeahead-group {
+    margin-bottom: 0;
+}
+
+.gp-widget-typeahead-list {
+    width: 100%;
+    margin-top: -1px;
 }
