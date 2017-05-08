@@ -628,10 +628,19 @@ define(["base/js/namespace",
             });
         }
 
+        // Ensure that the popover showed
+        element.click(function() {
+            setTimeout(function() {
+                if ($(".popover:visible").length === 0) {
+                    element.trigger("click");
+                }
+            }, 400);
+        });
+
         // Make the "i" icon open the menus as well
         var icon = element.find(".fa-info-circle");
         icon.click(function(event) {
-            $(this).parent().popover("show");
+            $(this).parent().trigger("click");
             event.preventDefault();
             event.stopPropagation();
         });
