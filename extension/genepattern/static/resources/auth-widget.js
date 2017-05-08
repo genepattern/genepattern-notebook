@@ -950,7 +950,8 @@ define("gp_auth", ["base/js/namespace",
                         .css("margin-left", "10px")
                         .text("Leave Feedback")
                         .click(function() {
-                            window.location.href = feedbackLink;
+                            window.open(feedbackLink, '_blank');
+                            // window.location.href = feedbackLink;
                         })
                 )
                 .append(
