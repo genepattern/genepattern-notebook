@@ -269,6 +269,10 @@
     word-break: break-all;
 }
 
+.file-widget-upload {
+    position: relative;
+}
+
 .file-widget-upload-file {
     margin-right: 7px;
 }
@@ -286,11 +290,10 @@
     color: darkgray;
     font-size: 1.2em;
     letter-spacing: 1px;
-    padding: 5px 10px;
     position: absolute;
     display: block;
     float: right;
-    bottom: 42px;
+    bottom: 0px;
     right: 0;
 }
 
