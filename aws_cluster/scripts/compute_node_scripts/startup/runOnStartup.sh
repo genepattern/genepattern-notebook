@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #export HUB_LOCAL_IP=172.31.59.165
-export HUB_LOCAL_IP=172.31.45.252
+export HUB_LOCAL_IP=172.31.9.58
 
 
 export NODE_LOCAL_IP=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
