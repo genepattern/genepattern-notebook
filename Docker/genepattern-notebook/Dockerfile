@@ -2,85 +2,32 @@
 # Another Docker container should inherit with `FROM jupyter/notebook`
 # to run actual services.
 
-FROM ubuntu:wily
+FROM jupyter/scipy-notebook
 
-MAINTAINER Ted Liefeld
-
-# Not essential, but wise to set the lang
-# Note: Users with other languages should set this in their derivative image
-ENV LANGUAGE en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LC_ALL en_US.UTF-8
-ENV PYTHONIOENCODING UTF-8
-
-# Remove preinstalled copy of python that blocks our ability to install development python.
-# RUN DEBIAN_FRONTEND=noninteractive apt-get remove -yq \
-#        python3-minimal \
-#        python3.4 \
-#        python3.4-minimal \
-#        libpython3-stdlib \
-#        libpython3.4-stdlib \
-#        libpython3.4-minimal
-
-# Python binary and source dependencies
-RUN apt-get update -qq && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
-        build-essential \
-        python-matplotlib \
-        ca-certificates \
-        curl \
-        git \
-        language-pack-en \
-        libcurl4-openssl-dev \
-        libffi-dev \
-        libsqlite3-dev \
-        libzmq3-dev \
-        pandoc \
-        python \
-        python3 \
-        python-dev \
-        python3-dev \
-        sqlite3 \
-        texlive-fonts-recommended \
-        texlive-latex-base \
-        texlive-latex-extra \
-        zlib1g-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# Install Tini
-RUN curl -L https://github.com/krallin/tini/releases/download/v0.6.0/tini > tini && \
-    echo "d5ed732199c36a1189320e6c4859f0169e950692f451c03e7854243b95f4234b *tini" | sha256sum -c - && \
-    mv tini /usr/local/bin/tini && \
-    chmod +x /usr/local/bin/tini
-
-# Install the recent pip release
-RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
-    python2 get-pip.py && \
-    python3 get-pip.py && \
-    rm get-pip.py # && \
-
-RUN pip3 install notebook ipywidgets
-RUN pip3 install pandas numexpr scipy scikit-learn sympy
-RUN pip3 install genepattern-notebook jupyter-wysiwyg
-
-#add a notebook profile
-RUN mkdir -p -m 700 /root/.jupyter/ && \
-    echo "c.NotebookApp.ip = '*'" >> /root/.jupyter/jupyter_notebook_config.py
-
-# Enable the extension
-RUN jupyter nbextension enable --py widgetsnbextension
-RUN jupyter nbextension install --py genepattern
-RUN jupyter nbextension enable --py genepattern
-RUN jupyter serverextension enable --py genepattern
-RUN jupyter nbextension install --py jupyter_wysiwyg
-RUN jupyter nbextension enable --py jupyter_wysiwyg
-
-VOLUME /notebooks
-WORKDIR /notebooks
-
+MAINTAINER Thorin Tabor <tmtabor@cloud.ucsd.edu>
 
 EXPOSE 8888
 
-ENTRYPOINT ["tini", "--"]
-CMD ["jupyter", "notebook", "--port=8888", "--no-browser", "--ip=0.0.0.0"]
+USER root
+
+# Install the missing Qt4 API (used by matplotlib)
+RUN apt-get update && apt-get install -y python-qt4
+
+# Install the GenePattern Notebook environment
+RUN pip install nbtools genepattern-python genepattern-notebook jupyter-wysiwyg
+
+# Enable the extension
+RUN jupyter nbextension enable --py widgetsnbextension
+
+RUN jupyter nbextension install --py nbtools
+RUN jupyter nbextension enable --py nbtools
+RUN jupyter serverextension enable --py nbtools
+
+RUN jupyter nbextension install --py genepattern
+RUN jupyter nbextension enable --py genepattern
+RUN jupyter serverextension enable --py genepattern
+
+RUN jupyter nbextension install --py jupyter_wysiwyg
+RUN jupyter nbextension enable --py jupyter_wysiwyg
+
+USER $NB_USER
