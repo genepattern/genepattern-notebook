@@ -199,7 +199,7 @@ define(["jquery", "jqueryui"], function ($) {
             for (var i = 0; i < gp._tasks.length; i++) {
                 var task = gp._tasks[i];
                 if (isLsid && (task.lsid() === pObj.lsid || task.lsid() === identifier)) return task;
-                if (isBaseLsid && (task.lsid().startsWith(pObj.lsid) || task.lsid().startsWith(identifier))) return task;
+                if (isBaseLsid && (task.baseLsid() === pObj.lsid || task.baseLsid() === identifier)) return task;
                 if (!isBaseLsid && (task.name() === pObj.name || task.name() === identifier)) return task;
             }
 
@@ -649,6 +649,22 @@ define(["jquery", "jqueryui"], function ($) {
              */
             this.lsid = function () {
                 return this._lsid;
+            };
+
+            /**
+             * Get the base of the LSID
+             *
+             * @returns {null}
+             */
+            this.baseLsid = function () {
+                var parts = this._lsid.split(':');
+                if (parts.length === 6) {
+                    parts.pop();
+                    return parts.join(':');
+                }
+                else {
+                    return this._lsid;
+                }
             };
 
             /**
