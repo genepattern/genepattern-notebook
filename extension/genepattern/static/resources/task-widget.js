@@ -2015,6 +2015,101 @@ define("gp_task", ["base/js/namespace",
             return first[1];
         },
 
+        _buildParamGroupHeader: function(group) {
+            return $("<div></div>")
+                .addClass("gp-widget-task-group")
+                .css("margin-bottom", "10px")
+                .append(
+                    $("<div></div>")
+                        .addClass("panel-heading gp-widget-task-group-title")
+                        .css("display", group.name ? "block" : "none")
+                        .text(group.name)
+                        .append(
+                            $("<div></div>")
+                                .addClass("widget-float-right")
+                                .append(
+                                    $("<button></button>")
+                                        .addClass("btn btn-default btn-sm widget-slide-indicator")
+                                        .attr("title", "Expand or Collapse")
+                                        .attr("data-toggle", "tooltip")
+                                        .attr("data-placement", "bottom")
+                                        .css("padding", "2px 7px")
+                                        .append(
+                                            $("<span></span>")
+                                                .addClass(group.hidden ? "fa fa-plus" : "fa fa-minus")
+                                        )
+                                        .click(function() {
+                                            var toSlide = $(this).closest(".gp-widget-task-group").find(".gp-widget-task-group-params");
+                                            var indicator = $(this).find("span");
+                                            var isHidden = toSlide.is(":hidden");
+
+                                            if (isHidden) {
+                                                toSlide.slideDown();
+                                                indicator.removeClass("fa-plus");
+                                                indicator.addClass("fa-minus");
+                                            }
+                                            else if (!isHidden) {
+                                                toSlide.slideUp();
+                                                indicator.removeClass("fa-minus");
+                                                indicator.addClass("fa-plus");
+                                            }
+                                        })
+                                )
+                        )
+                )
+                .append(
+                    $("<div></div>")
+                        .addClass("gp-widget-task-group-params")
+                        .css("display", group.hidden ? "none" : "block")
+                        .append(
+                            $("<div></div>")
+                                .addClass("panel-body gp-widget-task-group-description")
+                                .css("display", group.description ? "block" : "none")
+                                .text(group.description)
+                        )
+                )
+
+        },
+
+        _addParamGroup: function(group, allParams, reloadVals) {
+            function getParam(name) {
+                for (var i = 0; i < allParams.length; i++) {
+                    if (allParams[i].name() === name) return allParams[i];
+                }
+                throw "no matching param name found: " + name;
+            }
+
+            // Add the parameter header
+            var form = this.element.find(".gp-widget-task-form");
+            var groupDiv = this._buildParamGroupHeader(group);
+            form.append(groupDiv);
+
+            // Add widgets for all parameters in the group
+            for (var i = 0; i < group.parameters.length; i++) {
+                try {
+                    // Get the Param object
+                    var param = null;
+                    if (typeof group.parameters[i] !== "string") {
+                        param = group.parameters[i];
+                    }
+                    else {
+                        param = getParam(group.parameters[i]);
+                    }
+
+                    // Add the parameter widget
+                    var pDiv = this._addParam(param, groupDiv.find(".gp-widget-task-group-params"));
+
+                    if (reloadVals[param.name()] !== undefined) {
+                        var pWidget = pDiv.data("widget");
+                        pWidget.value(reloadVals[param.name()]);
+                    }
+                }
+                catch(exception) {
+                    console.log(exception);
+                }
+            }
+        },
+
         /**
          * Make the call to the server to get the params and build the form
          *
@@ -2035,19 +2130,22 @@ define("gp_task", ["base/js/namespace",
                     success: function(response, params) {
                         var reloadVals = widget._parseJobSpec();
 
-                        for (var i = 0; i < params.length; i++) {
-                            try {
-                                var param = params[i];
-                                var pDiv = widget._addParam(param);
-
-                                if (reloadVals[param.name()] !== undefined) {
-                                    var pWidget = pDiv.data("widget");
-                                    pWidget.value(reloadVals[param.name()]);
-                                }
+                        // Iterate over parameter groups
+                        // TODO: Implement
+                        if (task.paramGroups()) {
+                            // Iterate over groups and add params
+                            var groups = task.paramGroups();
+                            for (var i = 0; i < groups.length; i++) {
+                                widget._addParamGroup(groups[i], params, reloadVals);
                             }
-                            catch(exception) {
-                                console.log(exception);
-                            }
+                        }
+                        else {
+                            // Assume one blank group if not defined
+                            widget._addParamGroup({
+                                name: "",
+                                description: "",
+                                parameters: params
+                            }, params, reloadVals);
                         }
 
                         // Build the accepted kinds list
@@ -2057,7 +2155,7 @@ define("gp_task", ["base/js/namespace",
                         widget._buildEula();
 
                         // Build the job_spec if necessary
-                        if (Object.keys(reloadVals).length == 0) {
+                        if (Object.keys(reloadVals).length === 0) {
                             widget._addJobSpec(params);
                         }
                         widget._paramsLoaded = true;
@@ -2286,8 +2384,7 @@ define("gp_task", ["base/js/namespace",
          * @param param {GenePattern.Param}
          * @private
          */
-        _addParam: function(param) {
-            var form = this.element.find(".gp-widget-task-form");
+        _addParam: function(param, form) {
             var required = param.optional() ? "" : "*";
 
             var paramBox = $("<div></div>")

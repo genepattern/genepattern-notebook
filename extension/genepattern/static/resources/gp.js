@@ -484,6 +484,7 @@ define(["jquery", "jqueryui"], function ($) {
             this._version = null;
             this._lsid = null;
             this._params = null;
+            this._param_groups = null;
             this._eula = null;
 
             /**
@@ -512,6 +513,39 @@ define(["jquery", "jqueryui"], function ($) {
              */
             this.jobInput = function () {
                 return new gp.JobInput(this);
+            };
+
+            /**
+             * Loads a specific Param object, loading parameters via REST, if necessary
+             *
+             * @param pObj - The following parameters may be set
+             *                  name: the name of the parameter
+             *                  success: callback function for a done() event,
+             *                          expects response and a Param object
+             *                  error: callback function for an fail() event, expects exception as argument
+             *
+             * @returns {jQuery.Deferred} - Returns a jQuery Deferred object for event chaining.
+             *      See http://api.jquery.com/jquery.deferred/ for details.
+             */
+            this.param = function(pObj) {
+                this.params({
+                    "success": function(response, params) {
+                        var found = false;
+                        params.forEach(function(i) {
+                            if (pObj.name === i.name()) {
+                                pObj.success(response, i);
+                                found = true;
+                                return false;
+                            }
+                        });
+
+                        // Return an error if no matching param found
+                        if (!found) {
+                            pObj.error("No parameter matching found matching: " + pObj.name);
+                        }
+                    },
+                    "error": pObj.error
+                });
             };
 
             /**
@@ -562,6 +596,11 @@ define(["jquery", "jqueryui"], function ($) {
                                     var param = params[i];
                                     task._params.push(new gp.Param(param));
                                 }
+                            }
+
+                            // Add param groups, if supported
+                            if (response['paramGroups']) {
+                                task._param_groups = response['paramGroups'];
                             }
 
                             // Add updated EULA info to Task Object
@@ -665,6 +704,15 @@ define(["jquery", "jqueryui"], function ($) {
                 else {
                     return this._lsid;
                 }
+            };
+
+            /**
+             * Getter for parameter group info
+             *
+             * @returns {null|string}
+             */
+            this.paramGroups = function () {
+                return this._param_groups;
             };
 
             /**
