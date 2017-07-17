@@ -43,6 +43,31 @@ define(["base/js/namespace",
         return a.hostname;
     };
 
+    /**
+     * Converts a raw parameter name to a displayable format
+     * @param name
+     */
+    util.display_name = function(name) {
+        var display_name = name;
+        display_name = display_name.replace(/\./g,' ');
+        display_name = display_name.replace(/_/g,' ');
+        return display_name;
+    };
+
+    util.select_cell = function(cell) {
+        // Unselect existing selected cells
+        Jupyter.notebook.get_selected_cells().forEach(function(c) {
+            c.unselect();
+        });
+
+        // Select provided cell
+        cell.select();
+    };
+
+    util.cell_index = function(cell) {
+        return Jupyter.notebook.get_cell_elements().index(cell.element);
+    };
+
     slider.registerModule = function(session, module) {
         // Prepare the origin
         var origin = null;

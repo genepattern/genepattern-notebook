@@ -2390,10 +2390,11 @@ define("gp_task", ["base/js/namespace",
             var paramBox = $("<div></div>")
                 .addClass(" form-group gp-widget-task-param")
                 .attr("name", param.name())
+                .attr("title", param.name())
                 .append(
                     $("<label></label>")
                         .addClass("col-sm-3 control-label gp-widget-task-param-name")
-                        .text(param.name() + required)
+                        .text(GPNotebook.util.display_name(param.name()) + required)
                 )
                 .append(
                     $("<div></div>")

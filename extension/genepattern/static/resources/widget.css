@@ -383,7 +383,7 @@
     width: 150px;
     font-weight: bold;
     font-size: 1em;
-    word-break: break-all;
+    /*word-break: break-all;*/
     vertical-align: top;
     padding-top: 10px;
     padding-right: 10px;

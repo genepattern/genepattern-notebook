@@ -1,7 +1,7 @@
 """
 GenePattern Notebook extension for Jupyter
 
-Copyright 2015-2016 The Broad Institute
+Copyright 2015-2017 The Broad Institute
 
 SOFTWARE COPYRIGHT NOTICE
 This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
@@ -11,9 +11,9 @@ responsible for its use, misuse, or functionality.
 
 __author__ = 'Thorin Tabor'
 __copyright__ = 'Copyright 2015-2017, Broad Institute'
-__version__ = '0.6.3'
+__version__ = '0.6.4'
 __status__ = 'Beta'
-__license__ = 'BSD-style'
+__license__ = 'BSD'
 
 import gp
 import inspect
@@ -203,14 +203,15 @@ class GPCallWidget(gp.GPResource, widgets.DOMWidget):
     params = List(sync=True)
     function_or_method = None
 
-    def __init__(self, function_or_method, **kwargs):
-        super(GPCallWidget, self).__init__(function_or_method.__name__)
-        widgets.DOMWidget.__init__(self, **kwargs)
+    def _docstring(self, function_or_method):
+        """Read docstring and protect against None"""
+        docstring = inspect.getdoc(function_or_method)
+        if docstring is None:
+            docstring = ""
+        return docstring
 
-        # Read call signature
-        sig = inspect.signature(function_or_method)
-
-        # Read params, values and annotations from the signature
+    def _params(self, sig):
+        """Read params, values and annotations from the signature"""
         params = []
         for p in sig.parameters:
             param = sig.parameters[p]
@@ -219,11 +220,20 @@ class GPCallWidget(gp.GPResource, widgets.DOMWidget):
             annotation = param.annotation if param.annotation != inspect.Signature.empty else ""
             p_list = [param.name, required, default, annotation]
             params.append(p_list)
+        return params
 
-        # Read docstring and protect against None
-        docstring = inspect.getdoc(function_or_method)
-        if docstring is None:
-            docstring = ""
+    def __init__(self, function_or_method, **kwargs):
+        super(GPCallWidget, self).__init__(function_or_method.__name__)
+        widgets.DOMWidget.__init__(self, **kwargs)
+
+        # Read call signature
+        sig = inspect.signature(function_or_method)
+
+        # Read params, values and annotations from the signature
+        params = self._params(sig)
+
+        # Read docstring
+        docstring = self._docstring(function_or_method)
 
         # Set the Traitlet values for the call
         self.name = function_or_method.__qualname__

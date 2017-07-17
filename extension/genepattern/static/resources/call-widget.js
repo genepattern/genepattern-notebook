@@ -37,8 +37,8 @@ define("gp_call", ["base/js/namespace",
             type: "text", // Accepts: text, number, password
             default: "",
 
-            // Pointers to associated runTask widget
-            runTask: null,
+            // Pointers to associated call widget
+            call: null,
             param: null
         },
 
@@ -48,7 +48,7 @@ define("gp_call", ["base/js/namespace",
          * @private
          */
         _create: function() {
-            // Save pointers to associated Run Task widget or parameter
+            // Save pointers to associated Call widget or parameter
             this._setPointers();
 
             // Set variables
@@ -115,12 +115,12 @@ define("gp_call", ["base/js/namespace",
         },
 
         /**
-         * Update the pointers to the Run Task widget and parameter
+         * Update the pointers to the Call widget and parameter
          *
          * @private
          */
         _setPointers: function() {
-            if (this.options.runTask) { this._runTask = this.options.runTask; }
+            if (this.options.call) { this._call = this.options.call; }
             if (this.options.param) { this._param = this.options.param; }
         },
 
@@ -153,12 +153,12 @@ define("gp_call", ["base/js/namespace",
         },
 
         /**
-         * Updates the Run Task Widget code to include the new value
+         * Updates the Call Widget code to include the new value
          *
          * @private
          */
         _updateCode: function() {
-            this._runTask.updateCode(this._param.name(), this._value);
+            this._call.updateCode(this._param.name(), this._value);
         },
 
         /**
@@ -241,7 +241,8 @@ define("gp_call", ["base/js/namespace",
                                     )
                                     .tooltip()
                                     .click(function(event) {
-                                        var cell = Jupyter.notebook.insert_cell_below();
+                                        var index = GPNotebook.util.cell_index(widget.options.cell) + 1;
+                                        var cell = Jupyter.notebook.insert_cell_at_index("code", index);
                                         cell.set_text("help(" + widget.options.name + ")");
                                         cell.execute();
 
@@ -426,7 +427,7 @@ define("gp_call", ["base/js/namespace",
             if (this.options.lsid) { return this.options.lsid; }
             else if (this.options.name) { return this.options.name }
             else {
-                throw "Error creating Run Task widget! No LSID or name!";
+                throw "Error creating Call widget! No LSID or name!";
             }
         },
 
@@ -592,10 +593,11 @@ define("gp_call", ["base/js/namespace",
             var paramBox = $("<div></div>")
                 .addClass(" form-group gp-widget-task-param")
                 .attr("name", param.name())
+                .attr("title", param.name())
                 .append(
                     $("<label></label>")
                         .addClass("col-sm-3 control-label gp-widget-task-param-name")
-                        .text(param.name() + required)
+                        .text(GPNotebook.util.display_name(param.name()) + required)
                 )
                 .append(
                     $("<div></div>")
@@ -643,7 +645,7 @@ define("gp_call", ["base/js/namespace",
                 });
             }
             else {
-                console.log("Unknown input type for Run Task widget: " + param.name() + " " + param.type());
+                console.log("Unknown input type for Call widget: " + param.name() + " " + param.type());
                 this.errorMessage("Type error in parameter " + param.name() + ", defaulting to text input.");
 
                 paramBox.find(".gp-widget-task-param-input").textInput({
@@ -707,7 +709,7 @@ define("gp_call", ["base/js/namespace",
         },
 
         /**
-         * Validate the current Run Task form
+         * Validate the current Call form
          */
         validate: function() {
             var validated = true;
@@ -750,9 +752,9 @@ define("gp_call", ["base/js/namespace",
             var values = [];
             for (var i = 0; i < input.length; i++) {
                 var value = input[i][0];
-                // if (!isNaN(parseFloat(value))) value = parseFloat(value);
-                // if (typeof value === "string") value = '"' + value + '"';
-                // if (typeof value === "boolean") value = value ? "True" : "False";
+                if (!isNaN(parseFloat(value))) value = parseFloat(value);
+                if (typeof value === "string") value = '"' + value + '"';
+                if (typeof value === "boolean") value = value ? "True" : "False";
                 values.push(value);
             }
 
@@ -766,7 +768,7 @@ define("gp_call", ["base/js/namespace",
         },
 
         /**
-         * Submit the Run Task form to the server
+         * Submit the Call form to the kernel
          */
         submit: function() {
             var widget = this;
@@ -791,8 +793,14 @@ define("gp_call", ["base/js/namespace",
                         }
                     }
 
+                    // Scroll to the new cell
+                    $('#site').animate({
+                        scrollTop: $(widget.options.cell.element).position().top
+                    }, 500);
+
                     widget.expandCollapse();
-                    var cell = Jupyter.notebook.insert_cell_below();
+                    var index = GPNotebook.util.cell_index(widget.options.cell) + 1;
+                    var cell = Jupyter.notebook.insert_cell_at_index("code", index);
                     var code = widget.buildFunctionCode(funcInput);
                     cell.code_mirror.setValue(code);
                     cell.execute();
@@ -884,16 +892,18 @@ define("gp_call", ["base/js/namespace",
                .map(function(x) { return x.match(/[\w\.]+/)[0]; });
         },
 
-        _quotesIfNeeded: function(value) {
+        _prepare_variables: function(value) {
             // Handle numbers
             if (!isNaN(parseFloat(value))) return parseFloat(value);
 
+            console.log(value);
+
             // Handle booleans
-            if (value.toLowerCase() === "true") return "True";
-            if (value.toLowerCase() === "false") return "False";
+            if ((typeof value === "boolean" && value) || value.toLowerCase() === "true") return true;
+            if ((typeof value === "boolean" && !value) || value.toLowerCase() === "false") return false;
 
             // Handle strings
-            if (typeof value === "string") return '"' + value + '"';
+            if (typeof value === "string") return this._escapeQuotes(value);
         },
 
         /**
@@ -906,8 +916,7 @@ define("gp_call", ["base/js/namespace",
             var var_list = this._getVariableList(raw_string);
 
             if (var_list.length === 0) {
-                var escaped_string = this._escapeQuotes(raw_string);
-                callback(this._quotesIfNeeded(escaped_string));
+                callback(this._prepare_variables(raw_string));
             }
             else {
                 callback(var_list[0]);
@@ -926,7 +935,9 @@ define("gp_call", ["base/js/namespace",
             var description = this.model.get('description');
             var params = this.model.get('params');
 
-            // Determine which identifier is used
+            console.log(params);
+
+            // Initialize the widget
             $(this.$el).callCode({
                 name: name,
                 description: description,
