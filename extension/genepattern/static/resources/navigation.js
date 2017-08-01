@@ -706,7 +706,7 @@ define(["base/js/namespace",
                 );
 
                 // Add GenePattern help link
-                $("#kernel-help-links").before($("<li><a href='http://genepattern.org/genepattern-notebooks' target='_blank'>GenePattern Help <i class='fa fa-external-link menu-icon pull-right'></i></a></li>"));
+                $("#kernel-help-links").before($("<li><a href='http://genepattern-notebook.org' target='_blank'>GenePattern Help <i class='fa fa-external-link menu-icon pull-right'></i></a></li>"));
 
                 // Start kernel disconnect detection
                 slider.detectKernelDisconnect();
