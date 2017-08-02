@@ -1755,7 +1755,7 @@ define("gp_task", ["base/js/namespace",
          *         leave undefined to toggle back and forth
          */
         expandCollapse: function(expand) {
-            var toSlide = this.element.find(".panel-body");
+            var toSlide = this.element.find(".panel-body:first");
             var indicator = this.element.find(".widget-slide-indicator").find("span");
             var isHidden = toSlide.is(":hidden");
 
