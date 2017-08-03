@@ -21,7 +21,7 @@ define("gp_task", ["base/js/namespace",
 
     $.widget("gp.type_ahead", {
         options: {
-            placeholder: "Add Upstream File or URL...",
+            placeholder: "Add GenePattern File or URL...",
             width: "400px",
             data: [],
             click: function(widget) {},
@@ -98,7 +98,7 @@ define("gp_task", ["base/js/namespace",
 
             // Handle the special case of no matching output files
             if (output_files.length === 0) {
-                menu.append(this._create_menu_header("No Matching Upstream Files"));
+                menu.append(this._create_menu_header("No Matching GenePattern Files"));
                 return;
             }
 
@@ -120,6 +120,7 @@ define("gp_task", ["base/js/namespace",
             return $("<li></li>")
                 .append(
                     $("<a></a>")
+                        .addClass("dropdown-file")
                         .attr("href", "#")
                         .attr("data-value", file.url)
                         .text(file.name)
@@ -232,7 +233,7 @@ define("gp_task", ["base/js/namespace",
                     )
                     .append(
                         $("<div></div>").type_ahead({
-                            placeholder: "Add Upstream File or URL...",
+                            placeholder: "Add GenePattern File or URL...",
                             data: [],
                             click: function(twidget) {
                                 var menu = twidget.element.find(".gp-widget-typeahead-list");
