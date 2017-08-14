@@ -204,6 +204,7 @@ define("gp_call", ["base/js/namespace",
             name: null,
             description: null,
             params: null,
+            function_import: null,
             cell: null
         },
 
@@ -747,14 +748,26 @@ define("gp_call", ["base/js/namespace",
 
         buildFunctionCode: function(input) {
             console.log(input);
-            var toReturn = this.options.name + "(";
+            var import_path = null;
+            var toReturn = '';
 
+            // Handle the case when the import couldn't be found
+            if (this.options.function_import === '') {
+                // toReturn += '# Unable to determine function import path. Please manually correct.\n';
+                import_path = this.options.name
+            }
+            else {
+                import_path = this.options.function_import;
+            }
+
+            toReturn += import_path + "(";
             var values = [];
             for (var i = 0; i < input.length; i++) {
                 var value = input[i][0];
                 if (!isNaN(parseFloat(value))) value = parseFloat(value);
                 if (typeof value === "string") value = '"' + value + '"';
                 if (typeof value === "boolean") value = value ? "True" : "False";
+                if (value === undefined) value = '[]'; // Hack fix for empty lists
                 values.push(value);
             }
 
@@ -934,6 +947,7 @@ define("gp_call", ["base/js/namespace",
             var name = this.model.get('name');
             var description = this.model.get('description');
             var params = this.model.get('params');
+            var function_import = this.model.get('function_import');
 
             console.log(params);
 
@@ -942,6 +956,7 @@ define("gp_call", ["base/js/namespace",
                 name: name,
                 description: description,
                 params: params,
+                function_import: function_import,
                 cell: this.options.cell
             });
 
