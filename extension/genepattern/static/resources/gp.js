@@ -448,11 +448,11 @@ define(["jquery", "jqueryui"], function ($) {
                 dataType: "text",
                 processData: false,
                 data: pObj.file,
-                headers: {"Authorization": "Bearer " + gp.token},
                 xhrFields: {
                     withCredentials: true
                 },
                 headers: {
+                    "Authorization": "Bearer " + gp.token,
                     "Content-Length": pObj.file.size
                 },
                 success: function (data, textStatus) {
