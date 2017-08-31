@@ -11,7 +11,7 @@
  * responsible for its use, misuse, or functionality.
  */
 
-define(["jquery", "jqueryui"], function ($) {
+define("genepattern", ["jquery", "jqueryui"], function ($) {
 
     /**
      * Declaration of top gp library namespace

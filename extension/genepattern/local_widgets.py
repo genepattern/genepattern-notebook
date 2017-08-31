@@ -18,7 +18,7 @@ The CallWidget and functions related to local code execution
 
 class GPCallWidget(gp.GPResource, widgets.DOMWidget):
     _view_name = Unicode('CallWidgetView').tag(sync=True)
-    _view_module = Unicode('gp_call').tag(sync=True)
+    _view_module = Unicode('genepattern/call').tag(sync=True)
 
     # Declare the Traitlet values for the widget
     name = Unicode("", sync=True)
@@ -65,8 +65,8 @@ class GPCallWidget(gp.GPResource, widgets.DOMWidget):
         for p in sig.parameters:
             param = sig.parameters[p]
             required = param.default != inspect.Signature.empty
-            default = param.default if param.default != inspect.Signature.empty else ""
-            annotation = param.annotation if param.annotation != inspect.Signature.empty else ""
+            default = param.default if param.default != inspect.Signature.empty else ''
+            annotation = param.annotation if param.annotation != inspect.Signature.empty else ''
             p_list = [param.name, required, default, annotation]
             params.append(p_list)
         return params

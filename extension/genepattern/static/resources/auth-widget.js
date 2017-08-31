@@ -1,5 +1,5 @@
 /**
- * Define the IPython GenePattern Authentication widget
+ * Define the Jupyter GenePattern Authentication widget
  *
  * @author Thorin Tabor
  * @requires - jQuery, navigation.js
@@ -25,13 +25,12 @@ var GENEPATTERN_SERVERS = [
     ['Custom GenePattern Server', 'Custom']
 ];
 
-define("gp_auth", ["base/js/namespace",
-                   "nbextensions/jupyter-js-widgets/extension",
-                   "nbtools",
-                   "nbextensions/genepattern/resources/navigation",
-                   "nbextensions/genepattern/resources/gp",
-                   "nbextensions/genepattern/index",
-                   "jqueryui"], function (Jupyter, widgets, NBToolManager, GPNotebook, gp) {
+define("genepattern/authentication", ["base/js/namespace",
+                                      "nbextensions/jupyter-js-widgets/extension",
+                                      "nbtools",
+                                      "genepattern/navigation",
+                                      "genepattern",
+                                      "jqueryui"], function (Jupyter, widgets, NBToolManager, GPNotebook, gp) {
 
     $.widget("gp.auth", {
         options: {

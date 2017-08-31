@@ -9,10 +9,10 @@
 // Add shim to support Jupyter 3.x and 4.x
 var Jupyter = Jupyter || IPython || {};
 
-define(["base/js/namespace",
+define("genepattern/navigation", ["base/js/namespace",
         "nbextensions/jupyter-js-widgets/extension",
         "nbtools",
-        "nbextensions/genepattern/resources/gp"], function (Jupyter, widgets, NBToolManager, gp) {
+        "genepattern"], function (Jupyter, widgets, NBToolManager, gp) {
 
     var slider = {};
     var init = {};
@@ -807,7 +807,7 @@ define(["base/js/namespace",
     init.launch_init = function() {
         // Register authentication widget with Tool Manager
         require(["nbtools",
-                 "gp_auth"],
+                 "genepattern/authentication"],
                   function(NBToolManager, auth) {
             NBToolManager.instance().register(auth.AuthWidgetTool);
         });

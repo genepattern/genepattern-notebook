@@ -12,173 +12,10 @@
  * responsible for its use, misuse, or functionality.
  */
 
-define("gp_call", ["base/js/namespace",
-                       "nbextensions/jupyter-js-widgets/extension",
-                       "nbextensions/genepattern/resources/navigation",
-                       "nbextensions/genepattern/index",
-                       "nbextensions/genepattern/resources/task-widget",
-                       "jqueryui"], function (Jupyter, widgets, GPNotebook, gpindex, task_widget) {
-
-
-    /**
-     * Widget for text input into a GenePattern Notebook.
-     * Used for text, number and password inputs by the callCode widget.
-     *
-     * Supported Features:
-     *      Text input
-     *      Password input
-     *      Number input
-     *
-     * Non-Supported Features:
-     *      Directory input
-     */
-    $.widget("gp.textInput", {
-        options: {
-            type: "text", // Accepts: text, number, password
-            default: "",
-
-            // Pointers to associated call widget
-            call: null,
-            param: null
-        },
-
-        /**
-         * Constructor
-         *
-         * @private
-         */
-        _create: function() {
-            // Save pointers to associated Call widget or parameter
-            this._setPointers();
-
-            // Set variables
-            var widget = this;
-            //noinspection JSValidateTypes
-            this._value = this.options.default;
-
-            // Clean the type option
-            this._cleanType();
-
-            // Add data pointer
-            this.element.data("widget", this);
-
-            // Add classes and child elements
-            this.element.addClass("text-widget");
-            this.element.append(
-                $("<input />")
-                    .addClass("form-control text-widget-input")
-                    .attr("type", this.options.type)
-                    .val(this._value)
-                    .change(function() {
-                        widget._value = $(this).val();
-                        widget._updateCode();
-                    })
-            );
-
-            // Hide elements if not in use by options
-            this._setDisplayOptions();
-        },
-
-        /**
-         * Destructor
-         *
-         * @private
-         */
-        _destroy: function() {
-            this.element.removeClass("text-widget");
-            this.element.empty();
-        },
-
-        /**
-         * Update all options
-         *
-         * @param options - Object contain options to update
-         * @private
-         */
-        _setOptions: function(options) {
-            this._superApply(arguments);
-            this._setPointers();
-            this._setDisplayOptions();
-        },
-
-        /**
-         * Update for single options
-         *
-         * @param key - The name of the option
-         * @param value - The new value of the option
-         * @private
-         */
-        _setOption: function(key, value) {
-            this._super(key, value);
-            this._setPointers();
-            this._setDisplayOptions();
-        },
-
-        /**
-         * Update the pointers to the Call widget and parameter
-         *
-         * @private
-         */
-        _setPointers: function() {
-            if (this.options.call) { this._call = this.options.call; }
-            if (this.options.param) { this._param = this.options.param; }
-        },
-
-        /**
-         * Update the display of the UI to match current options
-         *
-         * @private
-         */
-        _setDisplayOptions: function() {
-            this._cleanType();
-            this.element.find(".text-widget-input").prop("type", this.options.type);
-        },
-
-        /**
-         * Removes bad type listings, defaulting to text
-         *
-         * @private
-         */
-        _cleanType: function() {
-            if (typeof this.options.type !== 'string') {
-                console.log("Type option for text input is not a string, defaulting to text");
-                this.options.type = "text";
-            }
-            if (this.options.type.toLowerCase() !== "text" &&
-                this.options.type.toLowerCase() !== "password" &&
-                this.options.type.toLowerCase() !== "number") {
-                console.log("Type option for text input is not 'text', 'password' or 'number', defaulting to text");
-                this.options.type = "text";
-            }
-        },
-
-        /**
-         * Updates the Call Widget code to include the new value
-         *
-         * @private
-         */
-        _updateCode: function() {
-            this._call.updateCode(this._param.name(), this._value);
-        },
-
-        /**
-         * Gets or sets the value of the input
-         *
-         * @param val - the value for the setter
-         * @returns {_value|string}
-         */
-        value: function(val) {
-            // Do setter
-            if (val) {
-                this._value = val;
-                this.element.find(".text-widget-input").val(val);
-            }
-            // Do getter
-            else {
-                return this._value;
-            }
-        }
-    });
+define("genepattern/call", ["base/js/namespace",
+                            "nbextensions/jupyter-js-widgets/extension",
+                            "genepattern/navigation",
+                            "genepattern/task"], function (Jupyter, widgets, GPNotebook, task_widget) {
 
     /**
      * Widget for entering parameters and launching a job from a task.
@@ -195,7 +32,7 @@ define("gp_call", ["base/js/namespace",
      *      Batch Parameters
      *      Dynamic Dropdowns
      */
-    $.widget("gp.callCode", {
+    var callCode = $.widget("gp.callCode", {
         // Flags for whether events have been called on the widget
         _widgetRendered: false,
         _paramsLoaded: false,
@@ -231,31 +68,6 @@ define("gp_call", ["base/js/namespace",
                             .addClass("widget-float-right")
                             .append(
                                 $("<button></button>")
-                                    .addClass("btn btn-default btn-sm gp-widget-task-doc")
-                                    .css("padding", "2px 7px")
-                                    .attr("title", "View Documentation")
-                                    .attr("data-toggle", "tooltip")
-                                    .attr("data-placement", "bottom")
-                                    .append(
-                                        $("<span></span>")
-                                            .addClass("fa fa-question")
-                                    )
-                                    .tooltip()
-                                    .click(function(event) {
-                                        var index = GPNotebook.util.cell_index(widget.options.cell) + 1;
-                                        var cell = Jupyter.notebook.insert_cell_at_index("code", index);
-                                        cell.set_text("help(" + widget.options.name + ")");
-                                        cell.execute();
-
-                                        // Scroll to the new cell
-                                        $('#site').animate({
-                                            scrollTop: $(cell.element).position().top
-                                        }, 500);
-                                    })
-                            )
-                            .append(" ")
-                            .append(
-                                $("<button></button>")
                                     .addClass("btn btn-default btn-sm widget-slide-indicator")
                                     .css("padding", "2px 7px")
                                     .attr("title", "Expand or Collapse")
@@ -269,6 +81,57 @@ define("gp_call", ["base/js/namespace",
                                     .click(function() {
                                         widget.expandCollapse();
                                     })
+                            )
+                            .append(" ")
+                            .append(
+                                    $("<div></div>")
+                                        .addClass("btn-group")
+                                        .append(
+                                            $("<button></button>")
+                                                .addClass("btn btn-default btn-sm")
+                                                .css("padding", "2px 7px")
+                                                .attr("type", "button")
+                                                .attr("data-toggle", "dropdown")
+                                                .attr("aria-haspopup", "true")
+                                                .attr("aria-expanded", "false")
+                                                .append(
+                                                    $("<span></span>")
+                                                        .addClass("fa fa-cog")
+                                                )
+                                                .append(" ")
+                                                .append(
+                                                    $("<span></span>")
+                                                        .addClass("caret")
+                                                )
+                                        )
+                                        .append(
+                                            $("<ul></ul>")
+                                                .addClass("dropdown-menu")
+                                                .append(
+                                                    $("<li></li>")
+                                                        .append(
+                                                            $("<a></a>")
+                                                                .attr("title", "View Documentation")
+                                                                .attr("href", "#")
+                                                                .append("Documentation")
+                                                                .click(function() {
+                                                                    widget.show_documentation();
+                                                                })
+                                                        )
+                                                )
+                                                .append(
+                                                    $("<li></li>")
+                                                        .append(
+                                                            $("<a></a>")
+                                                                .attr("title", "Create GenePattern Module")
+                                                                .attr("href", "#")
+                                                                .append("Create Module")
+                                                                .click(function() {
+                                                                    widget.module_dialog();
+                                                                })
+                                                        )
+                                                )
+                                        )
                             )
                     )
                     .append(
@@ -393,6 +256,43 @@ define("gp_call", ["base/js/namespace",
          */
         _setOption: function(key, value) {
             this._super(key, value);
+        },
+
+        module_dialog: function() {
+            var dialog = require('base/js/dialog');
+            dialog.modal({
+                notebook: Jupyter.notebook,
+                keyboard_manager: this.keyboard_manager,
+                title : "Create GenePattern Module",
+                body : "This will attempt to convert the notebook into a GenePattern module using the parameters of the selected function.",
+                buttons : {
+                    "Cancel" : {
+                        "click": function() {}
+                    },
+                    "Create Module" : {
+                        "class" : "btn-primary",
+                        "click" : function() {
+                            // TODO: Implement
+                        }
+                    }
+                }
+            });
+        },
+
+        /**
+         * Displays the Python help doc for the function
+         */
+        show_documentation: function() {
+            var widget = this;
+            var index = GPNotebook.util.cell_index(widget.options.cell) + 1;
+            var cell = Jupyter.notebook.insert_cell_at_index("code", index);
+            cell.set_text("help(" + widget.options.name + ")");
+            cell.execute();
+
+            // Scroll to the new cell
+            $('#site').animate({
+                scrollTop: $(cell.element).position().top
+            }, 500);
         },
 
         /**
@@ -822,6 +722,23 @@ define("gp_call", ["base/js/namespace",
                     widget.errorMessage("Error evaluating kernel variables in preparation of job submission: " + exception.statusText);
                 }
             });
+        },
+
+        /**
+         * Gathers and returns metadata which is used when converting the notebook into a GenePattern module
+         */
+        module_metadata: function() {
+            var session = GPNotebook.session_manager.get_session(0);
+
+            var name = Jupyter.notebook.get_notebook_name();
+            var description = this.options.description;
+            var user = session ? session.username : null;
+
+            return {
+                name: name,
+                user: user,
+                description: description
+            };
         },
 
         /**

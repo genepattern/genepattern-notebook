@@ -12,12 +12,11 @@
  * responsible for its use, misuse, or functionality.
  */
 
-define("gp_task", ["base/js/namespace",
-                   "nbextensions/jupyter-js-widgets/extension",
-                   "nbextensions/genepattern/resources/navigation",
-                   "nbextensions/genepattern/index",
-                   "nbextensions/genepattern/resources/job-widget",
-                   "jqueryui"], function (Jupyter, widgets, GPNotebook) {
+define("genepattern/task", ["base/js/namespace",
+                            "nbextensions/jupyter-js-widgets/extension",
+                            "genepattern/navigation",
+                            "genepattern/job",
+                            "jqueryui"], function (Jupyter, widgets, GPNotebook) {
 
     $.widget("gp.type_ahead", {
         options: {
@@ -3030,6 +3029,7 @@ define("gp_task", ["base/js/namespace",
     });
 
     return {
-        TaskWidgetView: TaskWidgetView
+        TaskWidgetView: TaskWidgetView,
+        VariableManager: VariableManager
     }
 });

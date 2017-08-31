@@ -94,7 +94,7 @@ class GPAuthWidget(gp.GPResource, widgets.DOMWidget):
     polling the server until the job is completed.
     """
     _view_name = Unicode('AuthWidgetView').tag(sync=True)
-    _view_module = Unicode('gp_auth').tag(sync=True)
+    _view_module = Unicode('genepattern/authentication').tag(sync=True)
 
     def __init__(self, uri, **kwargs):
         super(GPAuthWidget, self).__init__(uri)
@@ -118,7 +118,7 @@ class GPJobWidget(gp.GPResource, widgets.DOMWidget):
     polling the server until the job is completed.
     """
     _view_name = Unicode('JobWidgetView').tag(sync=True)
-    _view_module = Unicode('gp_job').tag(sync=True)
+    _view_module = Unicode("genepattern/job").tag(sync=True)
     job_number = Integer(0).tag(sync=True)
 
     def __init__(self, job, **kwargs):
@@ -135,7 +135,7 @@ class GPTaskWidget(gp.GPResource, widgets.DOMWidget):
     polling the server until the job is completed.
     """
     _view_name = Unicode('TaskWidgetView').tag(sync=True)
-    _view_module = Unicode('gp_task').tag(sync=True)
+    _view_module = Unicode("genepattern/task").tag(sync=True)
     lsid = Unicode("", sync=True)
     name = Unicode("", sync=True)
 

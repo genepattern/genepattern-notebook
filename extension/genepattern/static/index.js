@@ -12,15 +12,16 @@
  */
 
 define([
-    "base/js/namespace",
-    'base/js/events',
-    "jquery",
+    // Load the dependencies
+    "base/js/namespace", "base/js/events", "jquery",
+
+    // Bootstrap loading the GenePattern requirejs modules
     "nbextensions/genepattern/resources/gp",
     "nbextensions/genepattern/resources/navigation",
     "nbextensions/genepattern/resources/auth-widget",
     "nbextensions/genepattern/resources/job-widget",
     "nbextensions/genepattern/resources/task-widget",
-    "nbextensions/genepattern/resources/call-widget"], function(Jupyter, events, $, gp, GPNotebook) {
+    "nbextensions/genepattern/resources/call-widget"], function(Jupyter, events, $) {
 
     function load_ipython_extension() {
         var STATIC_PATH = Jupyter.notebook.base_url + "nbextensions/genepattern/resources/";
@@ -42,9 +43,11 @@ define([
             );
 
         // Wait for the kernel to be ready and then initialize the widgets
-        var interval = setInterval(function() {
-            GPNotebook.init.wait_for_kernel(interval);
-        }, 500);
+        require(["genepattern/navigation"], function(GPNotebook) {
+            var interval = setInterval(function() {
+                GPNotebook.init.wait_for_kernel(interval);
+            }, 500);
+        });
     }
 
     return {

@@ -12,10 +12,9 @@
  * responsible for its use, misuse, or functionality.
  */
 
-define("gp_job", ["base/js/namespace",
+define("genepattern/job", ["base/js/namespace",
                   "nbextensions/jupyter-js-widgets/extension",
-                  "nbextensions/genepattern/resources/navigation",
-                  "nbextensions/genepattern/index",
+                  "genepattern/navigation",
                   "jqueryui"], function (Jupyter, widgets, GPNotebook) {
 
     /**
