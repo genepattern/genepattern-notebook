@@ -17,6 +17,9 @@ The CallWidget and functions related to local code execution
 
 
 class GPCallWidget(gp.GPResource, widgets.DOMWidget):
+    """
+    Widget used to render Python functions in as an input form
+    """
     _view_name = Unicode('CallWidgetView').tag(sync=True)
     _view_module = Unicode('genepattern/call').tag(sync=True)
 
@@ -104,3 +107,17 @@ class GPCallWidget(gp.GPResource, widgets.DOMWidget):
 
         # Not Found, return empty string
         return ''
+
+
+class GPModuleWidget(gp.GPResource, widgets.DOMWidget):
+    """
+    Widget used to create GenePattern modules from a notebook
+    """
+    _view_name = Unicode('ModuleWidgetView').tag(sync=True)
+    _view_module = Unicode("genepattern/call").tag(sync=True)
+    lsid = Unicode("", sync=True)
+
+    def __init__(self, lsid="", **kwargs):
+        super(GPModuleWidget, self).__init__(lsid)
+        widgets.DOMWidget.__init__(self, **kwargs)
+        self.lsid = lsid

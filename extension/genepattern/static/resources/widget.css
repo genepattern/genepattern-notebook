@@ -455,3 +455,10 @@
 .gp-widget-typeahead-list .dropdown-file {
     padding-left: 40px;
 }
+
+.gp-widget-module-previous-button, .gp-widget-module-next-button {
+    float: right;
+    margin-left: 5px;
+    position: relative;
+    top: -5px;
+}
