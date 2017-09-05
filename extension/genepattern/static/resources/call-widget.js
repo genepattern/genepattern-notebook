@@ -119,18 +119,19 @@ define("genepattern/call", ["base/js/namespace",
                                                                 })
                                                         )
                                                 )
-                                                .append(
-                                                    $("<li></li>")
-                                                        .append(
-                                                            $("<a></a>")
-                                                                .attr("title", "Create GenePattern Module")
-                                                                .attr("href", "#")
-                                                                .append("Create Module")
-                                                                .click(function() {
-                                                                    widget.module_dialog();
-                                                                })
-                                                        )
-                                                )
+                                                // TODO: Uncomment once module widget is finished
+                                                // .append(
+                                                //     $("<li></li>")
+                                                //         .append(
+                                                //             $("<a></a>")
+                                                //                 .attr("title", "Create GenePattern Module")
+                                                //                 .attr("href", "#")
+                                                //                 .append("Create Module")
+                                                //                 .click(function() {
+                                                //                     widget.module_dialog();
+                                                //                 })
+                                                //         )
+                                                // )
                                         )
                             )
                     )
@@ -367,52 +368,6 @@ define("genepattern/call", ["base/js/namespace",
             widget.element.find(".gp-widget-task-subheader").show();
             widget.element.find(".gp-widget-task-footer").show();
             widget.element.find(".gp-widget-task-desc").empty().text(description);
-        },
-
-        /**
-         * Given a line of code with job_spec.set_parameter, parse and return the value
-         *
-         * @param line
-         * @returns {object}
-         * @private
-         */
-        _parseValueFromLine: function(line) {
-            // Pull the text out of the parentheses
-            var pullFromParen = /\(([^)]+)\)/;
-            var match = line.match(pullFromParen);
-            var insideParen = match && match[1];
-
-            // If it couldn't find the correct text, abort
-            if (insideParen === null) {
-                console.log("Couldn't find parameters in: " + line);
-                return null;
-            }
-
-            // Pull out the value substring
-            var commaIndex = insideParen.indexOf(",");
-            var valueStr = insideParen.substring(commaIndex+1).trim();
-
-            // Determine whether this represents a list or not
-            var firstChar = valueStr.charAt(0);
-            var isList = firstChar === "[";
-
-            // If not, trim the quotes and return the unescaped string
-            if (!isList) {
-                var withoutQuotes = valueStr.substring(1, valueStr.length-1);
-                return this._unescapeQuotes(withoutQuotes);
-            }
-
-            // If this is a list, parse into constituent strings
-            if (isList) {
-                try {
-                    var valueList = eval(valueStr);
-                    return valueList;
-                }
-                catch (e) {
-                    console.log("Error parsing list from: " + valueStr);
-                    return null;
-                }
-            }
         },
 
         /**
@@ -748,7 +703,7 @@ define("genepattern/call", ["base/js/namespace",
                 if (value === null || value === undefined) value = [];
 
                 var makeCall = function(iWidget, value, valueIndex) {
-                    widget._evaluateVariables(value, function(evalValue) {
+                    tasks.VariableManager.evaluateVariables(value, function(evalValue) {
                         if (valueIndex === undefined) iWidget._value = evalValue;
                         else iWidget._values[valueIndex] = evalValue;
 
@@ -817,23 +772,6 @@ define("genepattern/call", ["base/js/namespace",
 
             // Handle strings
             if (typeof value === "string") return this._escapeQuotes(value);
-        },
-
-        /**
-         * Evaluate a string and replace with variable reference, if any have been included
-         *
-         * @param raw_string
-         * @param callback
-         */
-        _evaluateVariables: function(raw_string, callback) {
-            var var_list = this._getVariableList(raw_string);
-
-            if (var_list.length === 0) {
-                callback(this._prepare_variables(raw_string));
-            }
-            else {
-                callback(var_list[0]);
-            }
         }
     });
 
