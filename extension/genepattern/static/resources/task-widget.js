@@ -271,11 +271,6 @@ define("genepattern/task", ["base/js/namespace",
                             .addClass("file-widget-drop")
                             .text("Drag Files Here")
                     )
-                    .append(
-                        $("<div></div>")
-                            .addClass("file-widget-size")
-                            .text(" 2GB file upload limit using the Upload File... button.")
-                    )
             );
             this.element.append(
                 $("<div></div>")
@@ -709,12 +704,10 @@ define("genepattern/task", ["base/js/namespace",
             if (!this.options.allowJobUploads) {
                 this.element.find(".file-widget-upload-file").hide();
                 this.element.find(".file-widget-drop").hide();
-                this.element.find(".file-widget-size").hide();
             }
             else {
                 this.element.find(".file-widget-upload-file").show();
                 this.element.find(".file-widget-drop").show();
-                this.element.find(".file-widget-size").show();
             }
         },
 
@@ -2881,10 +2874,13 @@ define("genepattern/task", ["base/js/namespace",
         /**
          * Extract a list of kernel variables from the given string
          *
-         * @param raw_string
+         * @param raw_value
          * @returns {*}
          */
-        getVariableList: function(raw_string) {
+        getVariableList: function(raw_value) {
+            // Ensure that the value is a string
+            const raw_string = typeof raw_value !== "string" ? raw_value.toString() : raw_value;
+
             // Handle the case of there being no variables
             if (!raw_string.includes("{{") || !raw_string.includes("}}")) return [];
 

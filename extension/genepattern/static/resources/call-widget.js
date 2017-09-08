@@ -59,7 +59,7 @@ define("genepattern/call", ["base/js/namespace",
             this.element.data("widget", this);
 
             // Add classes and scaffolding
-            this.element.addClass("panel panel-default gp-widget gp-widget-call");
+            this.element.addClass("panel panel-default gp-widget gp-widget-call gp-server-local");
             this.element.append( // Attach header
                 $("<div></div>")
                     .addClass("panel-heading gp-widget-task-header")
@@ -146,7 +146,7 @@ define("genepattern/call", ["base/js/namespace",
                             .append(
                                 $("<span></span>")
                                     .addClass("gp-widget-task-name")
-                                    .append(identifier)
+                                    .append(identifier + " { }")
                             )
                     )
             );
@@ -177,7 +177,7 @@ define("genepattern/call", ["base/js/namespace",
                                     .append(
                                         $("<button></button>")
                                             .addClass("btn btn-primary gp-widget-task-run-button")
-                                            .text("Call")
+                                            .text("Run")
                                             .click(function() {
                                                 if (widget.validate()) {
                                                     widget.submit();
@@ -200,7 +200,7 @@ define("genepattern/call", ["base/js/namespace",
                                     .append(
                                         $("<button></button>")
                                             .addClass("btn btn-primary gp-widget-task-run-button")
-                                            .text("Call")
+                                            .text("Run")
                                             .click(function() {
                                                 if (widget.validate()) {
                                                     widget.submit();
@@ -592,13 +592,19 @@ define("genepattern/call", ["base/js/namespace",
 
             // Display message to user
             if (validated) {
-                //this.successMessage("All required parameters present.");
+                this.clearError();
             }
             else {
                 this.errorMessage("Missing required parameters: " + missing.join(", "));
             }
 
             return validated;
+        },
+
+        clearError: function() {
+            const messageBox = this.element.find(".gp-widget-task-message");
+            messageBox.removeClass("alert-danger");
+            messageBox.hide();
         },
 
         buildFunctionCode: function(input) {
@@ -720,7 +726,7 @@ define("genepattern/call", ["base/js/namespace",
                     // Count this as an eval needed
                     evalsNeeded++;
 
-                    makeCall(iWidget, value);
+                    makeCall(iWidget, value.toString());
                 }
                 // Otherwise, iterate over the list, evaluate and set
                 else {
@@ -730,7 +736,7 @@ define("genepattern/call", ["base/js/namespace",
                         var valueIndex = j;
                         var innerValue = value[j];
 
-                        makeCall(iWidget, innerValue, valueIndex);
+                        makeCall(iWidget, innerValue.toString(), valueIndex);
                     }
                 }
             }

@@ -87,6 +87,28 @@
 }
 
 /*
+ * Local execution in GenePattern
+ */
+
+.gp-widget.gp-server-local {
+    border-color: rgba(43, 43, 43, 0.8);
+}
+
+.gp-widget.gp-server-local .panel-heading {
+    background-color: rgba(43, 43, 43, 0.8);
+}
+
+.gp-widget.gp-server-local .btn-primary {
+    border-color: rgba(43, 43, 43, 0.8);
+    background-color: rgba(43, 43, 43, 0.8);
+}
+
+.gp-widget.gp-server-local .btn-primary:hover {
+    border-color: rgba(43, 43, 43, 1);
+    background-color: rgba(43, 43, 43, 1);
+}
+
+/*
  * Styles for widget display
  */
 
@@ -106,6 +128,10 @@
     max-width: 100%;
     border-color: rgba(10, 45, 105, 0.80);
     overflow: visible !important;
+}
+
+.gp-widget.panel {
+    margin-bottom: 0;
 }
 
 .gp-widget .panel-heading {
@@ -288,7 +314,6 @@
 
 .file-widget-drop {
     color: darkgray;
-    font-size: 1.2em;
     letter-spacing: 1px;
     position: absolute;
     display: block;
@@ -375,15 +400,14 @@
 
 .gp-widget-task-param {
     margin: 10px;
-    padding: 10px;
+    padding-right: 20px;
 }
 
 .gp-widget-task-param-name {
     display: inline-block;
-    width: 150px;
+    min-width: 150px;
     font-weight: bold;
     font-size: 1em;
-    /*word-break: break-all;*/
     vertical-align: top;
     padding-top: 10px;
     padding-right: 10px;
