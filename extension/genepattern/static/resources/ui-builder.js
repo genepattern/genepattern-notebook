@@ -119,6 +119,18 @@ define("genepattern/uibuilder", ["base/js/namespace",
                                                                 })
                                                         )
                                                 )
+                                                .append(
+                                                    $("<li></li>")
+                                                        .append(
+                                                            $("<a></a>")
+                                                                .attr("title", "Toggle Code View")
+                                                                .attr("href", "#")
+                                                                .append("Toggle Code View")
+                                                                .click(function() {
+                                                                    widget.toggle_code();
+                                                                })
+                                                        )
+                                                )
                                                 // TODO: Uncomment once module widget is finished
                                                 // .append(
                                                 //     $("<li></li>")
@@ -257,6 +269,23 @@ define("genepattern/uibuilder", ["base/js/namespace",
          */
         _setOption: function(key, value) {
             this._super(key, value);
+        },
+
+        toggle_code: function() {
+            // Get the code block
+            const code = this.element.closest(".cell").find(".input");
+            const is_hidden = code.is(":hidden"); //code.height() === 0;
+
+            if (is_hidden) {
+                // Show the code block
+                //code.removeAttr("style");
+                code.slideDown();
+            }
+            else {
+                // Hide the code block
+                //code.css("height", "0").css("overflow", "hidden");
+                code.slideUp();
+            }
         },
 
         module_dialog: function() {

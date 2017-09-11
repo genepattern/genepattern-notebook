@@ -1,4 +1,5 @@
 import inspect
+import functools
 import gp
 import sys
 
@@ -19,15 +20,49 @@ class build_ui():
         @genepattern.build_ui
         def example_function(arg1, arg2):
             return (arg1, arg2)
+
+    Example:
+        @genepattern.build_ui(name="custom name", description="custom description")
+        def example_function(arg1, arg2):
+            return (arg1, arg2)
     """
     func = None
+    kwargs = None
 
-    def __init__(self, func):
-        self.func = func
-        display(GPUIBuilder(func))
+    def __init__(self, *args, **kwargs):
+        # Display if decorator with no arguments
+        if len(args) > 0:
+            self.func = args[0]              # Set the function
+            display(GPUIBuilder(self.func))  # Display
+        else:
+            # Save the kwargs for decorators with arguments
+            self.kwargs = kwargs
 
     def __call__(self, *args):
-        return self.func(*args)
+        # Decorators with arguments make this call at define time, while decorators without
+        # arguments make this call at runtime. That's the reason for this madness.
+
+        # Figure out what type of call this is, then figure out func and args
+        decorator_args = self.func is None
+        if decorator_args:
+            func = args[0]
+            func_args = args[1:]
+        else:
+            func = self.func
+            func_args = args
+
+        # Display if decorator has arguments
+        if decorator_args:
+            display(GPUIBuilder(func, **self.kwargs))
+
+            # Return wrapped function
+            @functools.wraps(func)
+            def decorated(*args, **kwargs):
+                func(*args, **kwargs)
+            return decorated
+        else:
+            # Otheriwse, just call the function
+            func(*func_args)
 
 
 class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
@@ -60,9 +95,13 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
         # Determine how the function is imported in the namespace
         function_import = self._import(function_or_method)
 
+        # Do arguments override the default name or description?
+        custom_name = kwargs['name'] if 'name' in kwargs else None
+        custom_desc = kwargs['description'] if 'description' in kwargs else None
+
         # Set the Traitlet values for the call
-        self.name = function_or_method.__qualname__
-        self.description = docstring
+        self.name = custom_name or function_or_method.__qualname__
+        self.description = custom_desc or docstring
         self.params = params
         self.function_import = function_import
         self.function_or_method = function_or_method
@@ -119,8 +158,8 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
             if all_globals[n] == module_ref:
                 return n + '.' + func_name
 
-        # Not Found, return empty string
-        return ''
+        # Not Found, return function name
+        return func_name
 
 
 class GPModuleWidget(gp.GPResource, widgets.DOMWidget):
