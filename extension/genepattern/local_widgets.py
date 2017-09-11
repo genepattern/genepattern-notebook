@@ -9,19 +9,19 @@ The CallWidget and functions related to local code execution
 """
 
 
-# def call_widget(func):
+# def ui_builder(func):
 #     # def widget():
-#     #     return GPCallWidget(func)
+#     #     return GPUIBuilder(func)
 #     # return widget
-#     yield GPCallWidget(func)
+#     yield GPUIBuilder(func)
 
 
-class GPCallWidget(gp.GPResource, widgets.DOMWidget):
+class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
     """
     Widget used to render Python functions in as an input form
     """
-    _view_name = Unicode('CallWidgetView').tag(sync=True)
-    _view_module = Unicode('genepattern/call').tag(sync=True)
+    _view_name = Unicode('UIBuilderView').tag(sync=True)
+    _view_module = Unicode('genepattern/uibuilder').tag(sync=True)
 
     # Declare the Traitlet values for the widget
     name = Unicode("", sync=True)
@@ -31,7 +31,7 @@ class GPCallWidget(gp.GPResource, widgets.DOMWidget):
     function_or_method = None
 
     def __init__(self, function_or_method, **kwargs):
-        super(GPCallWidget, self).__init__(function_or_method.__name__)
+        super(GPUIBuilder, self).__init__(function_or_method.__name__)
         widgets.DOMWidget.__init__(self, **kwargs)
 
         # Read call signature
@@ -114,7 +114,7 @@ class GPModuleWidget(gp.GPResource, widgets.DOMWidget):
     Widget used to create GenePattern modules from a notebook
     """
     _view_name = Unicode('ModuleWidgetView').tag(sync=True)
-    _view_module = Unicode("genepattern/call").tag(sync=True)
+    _view_module = Unicode("genepattern/uibuilder").tag(sync=True)
     lsid = Unicode("", sync=True)
 
     def __init__(self, lsid="", **kwargs):

@@ -12,7 +12,7 @@
  * responsible for its use, misuse, or functionality.
  */
 
-define("genepattern/call", ["base/js/namespace",
+define("genepattern/uibuilder", ["base/js/namespace",
                             "nbextensions/jupyter-js-widgets/extension",
                             "genepattern/navigation",
                             "genepattern/task"], function (Jupyter, widgets, GPNotebook, tasks) {
@@ -781,7 +781,7 @@ define("genepattern/call", ["base/js/namespace",
         }
     });
 
-    var CallWidgetView = widgets.DOMWidgetView.extend({
+    var UIBuilderView = widgets.DOMWidgetView.extend({
         render: function () {
             var cell = this.options.cell;
 
@@ -1396,7 +1396,7 @@ define("genepattern/call", ["base/js/namespace",
     });
 
     return {
-        CallWidgetView: CallWidgetView,
+        UIBuilderView: UIBuilderView,
         ModuleWidgetView: ModuleWidgetView
     }
 });
