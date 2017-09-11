@@ -1,6 +1,8 @@
 import inspect
 import gp
 import sys
+
+from IPython.core.display import display
 from ipywidgets import widgets
 from traitlets import Unicode, List
 
@@ -9,11 +11,23 @@ The CallWidget and functions related to local code execution
 """
 
 
-# def ui_builder(func):
-#     # def widget():
-#     #     return GPUIBuilder(func)
-#     # return widget
-#     yield GPUIBuilder(func)
+class build_ui():
+    """
+    Decorator used to display the UI Builder upon definition of a function.
+
+    Example:
+        @genepattern.build_ui
+        def example_function(arg1, arg2):
+            return (arg1, arg2)
+    """
+    func = None
+
+    def __init__(self, func):
+        self.func = func
+        display(GPUIBuilder(func))
+
+    def __call__(self, *args):
+        return self.func(*args)
 
 
 class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
