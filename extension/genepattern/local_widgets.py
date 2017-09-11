@@ -61,7 +61,7 @@ class build_ui():
                 func(*args, **kwargs)
             return decorated
         else:
-            # Otheriwse, just call the function
+            # Otherwise, just call the function
             func(*func_args)
 
 
