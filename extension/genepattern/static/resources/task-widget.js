@@ -2072,6 +2072,9 @@ define("genepattern/task", ["base/js/namespace",
                 throw "no matching param name found: " + name;
             }
 
+            // Handle groups without any parameters
+            if (!group.parameters) return;
+
             // Add the parameter header
             var form = this.element.find(".gp-widget-task-form");
             var groupDiv = this._buildParamGroupHeader(group);
@@ -2613,6 +2616,15 @@ define("genepattern/task", ["base/js/namespace",
         },
 
         /**
+         * Given the DOM node for a parameter, obtain and return the parameter's name
+         * @param uiParam
+         * @private
+         */
+        _getParamName: function(uiParam) {
+            return $(uiParam).attr("name");
+        },
+
+        /**
          * Submit the Run Task form to the server
          */
         submit: function() {
@@ -2632,6 +2644,7 @@ define("genepattern/task", ["base/js/namespace",
                                     var uiParam = $(uiParams[i]);
                                     var uiInput = uiParam.find(".gp-widget-task-param-input");
                                     var uiValue = widget._getInputValue(uiInput);
+                                    var uiName = widget._getParamName(uiParam);
 
                                     if (uiValue !== null) {
                                         // Wrap value in list if not already wrapped
@@ -2639,7 +2652,7 @@ define("genepattern/task", ["base/js/namespace",
                                             uiValue = [uiValue];
                                         }
 
-                                        var objParam = jobInput.params()[i];
+                                        const objParam = jobInput.param(uiName);
                                         objParam.values(uiValue);
                                     }
                                 }
