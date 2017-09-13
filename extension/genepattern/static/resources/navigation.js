@@ -769,8 +769,10 @@ define("genepattern/navigation", ["base/js/namespace",
         if (cell.cell_type === 'markdown') {
             console.log("ERROR: Attempting to turn markdown cell into widget in authWidget.buildCode()")
         }
-        else if (cell.cell_type == 'code') {
-            slider.makeGPCell(cell, "auth", server);
+        else if (cell.cell_type === 'code') {
+            slider.makeGPCell(cell, "auth", {
+                "server": server
+            });
             cell.code_mirror.setValue(code);
         }
         else {
@@ -779,18 +781,61 @@ define("genepattern/navigation", ["base/js/namespace",
     };
 
     /**
+     * Ensure that the genepattern and gp Python libraries have been loaded
+     */
+    init.load_genepattern_py = function(callback) {
+        // The print() is necessary to force the callback
+        Jupyter.notebook.kernel.execute('import gp\nimport genepattern\nprint("OK")',
+            {
+                iopub: {
+                    output: function(response) {
+                        // console.log(response.content.data["text/plain"]);
+                        if (callback) callback();
+                    }
+                }
+            },
+            {
+                silent: false,
+                store_history: false,
+                stop_on_error: true
+            });
+    };
+
+    init.is_gp_cell = function (cell) {
+        // Check for valid input
+        if (typeof cell !== 'object' || cell.metadata === undefined) {
+            console.log('ERROR reading cell metadata');
+            return;
+        }
+
+        return 'genepattern' in cell.metadata;
+    };
+
+    /**
      * Automatically run all GenePattern widgets
      */
     init.auto_run_widgets = function() {
         require(["nbextensions/jupyter-js-widgets/extension"], function() {
-            var all_cells = Jupyter.notebook.get_cells();
+            const all_cells = Jupyter.notebook.get_cells();
+            let genepattern_loaded = false;
+
             all_cells.forEach(function(cell) {
                 // Skip GenePattern cells that are already rendered
                 if (cell.element.find(".gp-widget").length > 0) return;
 
-                if ('genepattern' in cell.metadata) {
-                    cell.execute();
-                    return;
+                if (init.is_gp_cell(cell)) {
+                    // Do we need to load the genepattern library first?
+                    if (slider.get_metadata(cell, "type") === "uibuilder" && !genepattern_loaded) {
+                        init.load_genepattern_py(function() {
+                            genepattern_loaded = true;
+                            cell.execute();
+                        });
+                        return;
+                    }
+                    else {
+                        cell.execute();
+                        return;
+                    }
                 }
 
                 // Legacy support for # !AUTOEXEC
@@ -836,7 +881,7 @@ define("genepattern/navigation", ["base/js/namespace",
             $('[data-toggle="tooltip"]').tooltip();
         });
 
-        // Auto-run widgets
+        // Load genepattern library and auto-run widgets
         $(function () {
             init.auto_run_widgets();
         });
@@ -874,7 +919,25 @@ define("genepattern/navigation", ["base/js/namespace",
         }
     };
 
-    slider.makeGPCell = function (cell, type, server) {
+    /**
+     * Add the metadata to this cell to identify it as a GenePattern cell
+     *
+     * Valid types:
+     *      auth - auth cell
+     *      task - task cell
+     *      job - job cell
+     *      uibuilder - UI builder cell
+     *
+     * Valid options:
+     *      server: default GP server URL (used in auth cell)
+     *      show_code: hide or show the input code (default is false)
+     *      parameters: give alternate default values or hide (used in uibuilder)
+     *
+     * @param cell
+     * @param type
+     * @param options
+     */
+    slider.makeGPCell = function(cell, type, options) {
         // Check for valid input
         if (typeof cell !== 'object') {
             console.log('ERROR applying metadata to cell');
@@ -890,9 +953,44 @@ define("genepattern/navigation", ["base/js/namespace",
         cell.metadata.genepattern.type = type;
 
         // If the server has been passed in, set it too
-        if (server) {
-            cell.metadata.genepattern.server = server;
+        if (options) {
+            const opts = Object.keys(options);
+            opts.forEach(function(key) {
+                cell.metadata.genepattern[key] = options[key];
+            });
         }
+    };
+
+    slider.get_metadata = function(cell, key) {
+        // Check for valid input
+        if (typeof cell !== 'object') {
+            console.log('ERROR reading cell to get metadata');
+            return null;
+        }
+
+        // Check if GenePattern metadata is missing
+        if (!('genepattern' in cell.metadata)) {
+            console.log('ERROR metadata missing genepattern flag');
+            return null;
+        }
+
+        return cell.metadata.genepattern[key];
+    };
+
+    slider.set_metadata = function(cell, key, value) {
+        // Check for valid input
+        if (typeof cell !== 'object') {
+            console.log('ERROR reading cell to set metadata');
+            return;
+        }
+
+        // Add GenePattern metadata if it is missing
+        if (!('genepattern' in cell.metadata)) {
+            cell.metadata.genepattern = {};
+        }
+
+        // Set the value
+        cell.metadata.genepattern[key] = value;
     };
 
     slider.applyColors = function(element, url) {

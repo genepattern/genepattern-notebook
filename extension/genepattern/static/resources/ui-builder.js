@@ -227,6 +227,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
             // Make call to build the header & form
             widget._buildHeader();
             widget._buildForm();
+            widget._handle_metadata();
 
             // Trigger gp.widgetRendered event on cell element
             setTimeout(function() {
@@ -271,20 +272,39 @@ define("genepattern/uibuilder", ["base/js/namespace",
             this._super(key, value);
         },
 
+        _handle_metadata: function() {
+            const cell = this.options.cell;
+
+            // If the metadata has not been set, set it
+            if (!GPNotebook.init.is_gp_cell(cell)) {
+                GPNotebook.slider.makeGPCell(cell, "uibuilder", {
+                    show_code: false
+                });
+            }
+
+            // Read the metadata and alter the widget accordingly
+            if (!cell.metadata.genepattern.show_code) {
+                cell.element.find(".input").hide();
+            }
+        },
+
         toggle_code: function() {
             // Get the code block
             const code = this.element.closest(".cell").find(".input");
-            const is_hidden = code.is(":hidden"); //code.height() === 0;
+            const is_hidden = code.is(":hidden");
+            const cell = this.options.cell;
 
             if (is_hidden) {
                 // Show the code block
                 //code.removeAttr("style");
                 code.slideDown();
+                GPNotebook.slider.set_metadata(cell, "show_code", true);
             }
             else {
                 // Hide the code block
                 //code.css("height", "0").css("overflow", "hidden");
                 code.slideUp();
+                GPNotebook.slider.set_metadata(cell, "show_code", false);
             }
         },
 
@@ -821,8 +841,6 @@ define("genepattern/uibuilder", ["base/js/namespace",
             var description = this.model.get('description');
             var params = this.model.get('params');
             var function_import = this.model.get('function_import');
-
-            console.log(params);
 
             // Initialize the widget
             $(this.$el).callCode({
