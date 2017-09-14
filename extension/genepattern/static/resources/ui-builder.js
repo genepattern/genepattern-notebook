@@ -131,6 +131,18 @@ define("genepattern/uibuilder", ["base/js/namespace",
                                                                 })
                                                         )
                                                 )
+                                                .append(
+                                                    $("<li></li>")
+                                                        .append(
+                                                            $("<a></a>")
+                                                                .attr("title", "Reset Parameters")
+                                                                .attr("href", "#")
+                                                                .append("Reset Parameters")
+                                                                .click(function() {
+                                                                    widget.reset_parameters();
+                                                                })
+                                                        )
+                                                )
                                                 // TODO: Uncomment once module widget is finished
                                                 // .append(
                                                 //     $("<li></li>")
@@ -272,7 +284,32 @@ define("genepattern/uibuilder", ["base/js/namespace",
             this._super(key, value);
         },
 
+        reset_parameters: function() {
+            const param_doms = this.element.find(".text-widget, .file-widget, .choice-widget");
+            param_doms.each(function(i, dom) {
+                const widget = $(dom).data("widget");
+                if (widget) {
+                    let default_value = widget.options.param.defaultValue();
+
+                    // Special case for blank default values
+                    if (default_value === "") default_value = " ";
+
+                    widget.value(default_value);
+                }
+                else {
+                    console.log("ERROR: Unknown widget in reset_parameters()");
+                }
+            })
+        },
+
+        _get_parameter: function(name) {
+            const param_dom = this.element.find(".gp-widget-task-param[name='" + name + "']").find(".text-widget");
+            if (param_dom) return param_dom.data("widget");
+            else console.log("Parameter cannot be found to obtain value: " + name);
+        },
+
         _handle_metadata: function() {
+            const widget = this;
             const cell = this.options.cell;
 
             // If the metadata has not been set, set it
@@ -283,8 +320,20 @@ define("genepattern/uibuilder", ["base/js/namespace",
             }
 
             // Read the metadata and alter the widget accordingly
+
+            // Hide or show code
             if (!cell.metadata.genepattern.show_code) {
                 cell.element.find(".input").hide();
+            }
+
+            // Current values of parameters
+            if (cell.metadata.genepattern.param_values) {
+                const params = Object.keys(cell.metadata.genepattern.param_values);
+                params.forEach(function(key) {
+                    const value = cell.metadata.genepattern.param_values[key];
+                    const param = widget._get_parameter(key);
+                    if (param) param.value(value);
+                });
             }
         },
 
@@ -477,13 +526,38 @@ define("genepattern/uibuilder", ["base/js/namespace",
         },
 
         /**
-         * No op function for compatibility with textInput
-         * Mirrors updateCode() in GPTaskWidget
+         * Mirrors updateCode() in GPTaskWidget, named for compatibility
+         * Actually updates the parameter value in the cell metadata
          *
          * @param paramName
          * @param value
          */
-        updateCode: function(paramName, value) {},
+        updateCode: function(paramName, value) {
+            this._set_parameter_metadata(paramName, value);
+        },
+
+        /**
+         * Set the new value in the cell metadata
+         *
+         * @param param_name
+         * @param value
+         * @private
+         */
+        _set_parameter_metadata: function(param_name, value) {
+            const cell = this.options.cell;
+
+            // Get the existing param values
+            let params = GPNotebook.slider.get_metadata(cell, "param_values");
+
+            // Initialize the parameter map if not defined
+            if (!params) params = {};
+
+            // Set the new value
+            params[param_name] = value;
+
+            // Write to the cell metadata
+            GPNotebook.slider.set_metadata(cell, "param_values", params)
+        },
 
         /**
          * Add the parameter to the form and return the widget

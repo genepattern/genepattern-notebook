@@ -931,7 +931,8 @@ define("genepattern/navigation", ["base/js/namespace",
      * Valid options:
      *      server: default GP server URL (used in auth cell)
      *      show_code: hide or show the input code (default is false)
-     *      parameters: give alternate default values or hide (used in uibuilder)
+     *      param_values: a map of the current parameter values (used in uibuilder) (not set is use function default)
+     *      hide_params: a map of whether parameters are hidden (default is false)
      *
      * @param cell
      * @param type
