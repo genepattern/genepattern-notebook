@@ -143,19 +143,6 @@ define("genepattern/uibuilder", ["base/js/namespace",
                                                                 })
                                                         )
                                                 )
-                                                // TODO: Uncomment once module widget is finished
-                                                // .append(
-                                                //     $("<li></li>")
-                                                //         .append(
-                                                //             $("<a></a>")
-                                                //                 .attr("title", "Create GenePattern Module")
-                                                //                 .attr("href", "#")
-                                                //                 .append("Create Module")
-                                                //                 .click(function() {
-                                                //                     widget.module_dialog();
-                                                //                 })
-                                                //         )
-                                                // )
                                         )
                             )
                     )
@@ -220,6 +207,10 @@ define("genepattern/uibuilder", ["base/js/namespace",
                             .addClass("gp-widget-task-footer")
                             .append(
                                 $("<div></div>")
+                                    .addClass("form-horizontal gp-widget-ui-output")
+                            )
+                            .append(
+                                $("<div></div>")
                                     .addClass("gp-widget-task-run")
                                     .append(
                                         $("<button></button>")
@@ -239,6 +230,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
             // Make call to build the header & form
             widget._buildHeader();
             widget._buildForm();
+            widget._buildFooter();
             widget._handle_metadata();
 
             // Trigger gp.widgetRendered event on cell element
@@ -271,6 +263,8 @@ define("genepattern/uibuilder", ["base/js/namespace",
             var widget = this;
             widget._buildHeader();
             widget._buildForm();
+            widget._buildFooter();
+            widget._handle_metadata();
         },
 
         /**
@@ -286,7 +280,9 @@ define("genepattern/uibuilder", ["base/js/namespace",
 
         reset_parameters: function() {
             const widget = this;
-            const param_doms = this.element.find(".text-widget, .file-widget, .choice-widget");
+
+            // Reset each of the input variables
+            const param_doms = widget.element.find(".gp-widget-task-form").find(".text-widget, .file-widget, .choice-widget");
             param_doms.each(function(i, dom) {
                 const param_widget = $(dom).data("widget");
                 if (param_widget) {
@@ -297,12 +293,18 @@ define("genepattern/uibuilder", ["base/js/namespace",
                     if (default_value === "") default_value = " ";
 
                     param_widget.value(default_value);
-                    widget._set_parameter_metadata(param_name, default_value)
+                    widget._set_parameter_metadata(param_name, default_value);
                 }
                 else {
                     console.log("ERROR: Unknown widget in reset_parameters()");
                 }
-            })
+            });
+
+            // Reset the output variable
+            const output_dom = widget.element.find(".gp-widget-ui-output").find(".text-widget");
+            const output_widget = $(output_dom).data("widget");
+            output_widget.value(" ");
+            GPNotebook.slider.set_metadata(widget.options.cell, "output_variable", "");
         },
 
         _get_parameter: function(name) {
@@ -337,6 +339,13 @@ define("genepattern/uibuilder", ["base/js/namespace",
                     const param = widget._get_parameter(key);
                     if (param) param.value(value);
                 });
+            }
+
+            // Set the output variable, if defined
+            if (cell.metadata.genepattern.output_variable) {
+                const value = cell.metadata.genepattern.output_variable;
+                const param = widget._get_parameter("_output_variable");
+                if (param) param.value(value);
             }
         },
 
@@ -477,12 +486,13 @@ define("genepattern/uibuilder", ["base/js/namespace",
          * @private
          */
         _buildForm: function() {
-            var widget = this;
-            var params = widget.options.params;
+            const widget = this;
+            const params = widget.options.params;
+            const form = widget.element.find(".gp-widget-task-form");
 
-            for (var i = 0; i < params.length; i++) {
+            for (let i = 0; i < params.length; i++) {
                 try {
-                    var param = {
+                    const param = {
                         _name: params[i][0],
                         _optional: params[i][1],
                         _description: params[i][3],
@@ -496,7 +506,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
                         defaultValue: function() {return this._defaultValue }
                     };
 
-                    var pDiv = widget._addParam(param);
+                    const pDiv = widget._addParam(param, form);
                 }
                 catch(exception) {
                     console.log(exception);
@@ -504,6 +514,30 @@ define("genepattern/uibuilder", ["base/js/namespace",
             }
 
             $(widget.element).trigger("runTask.paramLoad");
+        },
+
+        /**
+         * Adds the output variable field to the footer
+         *
+         * @private
+         */
+        _buildFooter: function() {
+            try {
+                const output_param = {
+                    name: function() {return "_output_variable" },
+                    optional: function() {return true; },
+                    type: function() {return "java.lang.String" },
+                    description: function() {return "The returned value of the function will be assigned to this variable, if provided." },
+                    choices: function() {return false },
+                    defaultValue: function() {return "" }
+                };
+
+                const footer = this.element.find(".gp-widget-ui-output");
+                const pDiv = this._addParam(output_param, footer);
+            }
+            catch(exception) {
+                console.log(exception);
+            }
         },
 
         /**
@@ -536,7 +570,15 @@ define("genepattern/uibuilder", ["base/js/namespace",
          * @param value
          */
         updateCode: function(paramName, value) {
-            this._set_parameter_metadata(paramName, value);
+            // Special case for the output variable
+            if (paramName === "_output_variable") {
+                GPNotebook.slider.set_metadata(this.options.cell, "output_variable", value);
+            }
+
+            // Otherwise just set the parameter metadata
+            else {
+                this._set_parameter_metadata(paramName, value);
+            }
         },
 
         /**
@@ -566,10 +608,10 @@ define("genepattern/uibuilder", ["base/js/namespace",
          * Add the parameter to the form and return the widget
          *
          * @param param
+         * @param addTo
          * @private
          */
-        _addParam: function(param) {
-            var form = this.element.find(".gp-widget-task-form");
+        _addParam: function(param, addTo) {
             var required = param.optional() ? "" : "*";
 
             var paramBox = $("<div></div>")
@@ -637,7 +679,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
                 });
             }
 
-            form.append(paramBox);
+            addTo.append(paramBox);
             return paramBox.find(".gp-widget-task-param-input");
         },
 
@@ -734,10 +776,13 @@ define("genepattern/uibuilder", ["base/js/namespace",
             messageBox.hide();
         },
 
-        buildFunctionCode: function(input) {
-            console.log(input);
-            var import_path = null;
-            var toReturn = '';
+        buildFunctionCode: function(input, output_variable) {
+            let import_path = null;
+            let toReturn = '';
+
+            if (output_variable) {
+                toReturn += output_variable + " = ";
+            }
 
             // Handle the case when the import couldn't be found
             if (this.options.function_import === '') {
@@ -749,9 +794,9 @@ define("genepattern/uibuilder", ["base/js/namespace",
             }
 
             toReturn += import_path + "(";
-            var values = [];
-            for (var i = 0; i < input.length; i++) {
-                var value = input[i][0];
+            let values = [];
+            for (let i = 0; i < input.length; i++) {
+                let value = input[i][0];
                 if (!isNaN(parseFloat(value))) value = parseFloat(value);
                 if (typeof value === "string") value = '"' + value + '"';
                 if (typeof value === "boolean") value = value ? "True" : "False";
@@ -760,29 +805,63 @@ define("genepattern/uibuilder", ["base/js/namespace",
             }
 
             toReturn += values.join(", ");
-
             toReturn += ")";
 
-            console.log(toReturn);
-
             return toReturn
+        },
+
+        /**
+         * Retrieves the output variable from metadata and escapes invalid characters
+         * Returns null if no valid value is defined.
+         *
+         * @private
+         */
+        _get_valid_output_variable: function() {
+            // Get the output in the metadata
+            let output = GPNotebook.slider.get_metadata(this.options.cell, "output_variable");
+
+            // Return null if the value is not defined
+            if (output === null || output === undefined) return null;
+
+            // Convert to string and trim
+            output = output.toString().trim();
+
+            // Remove invalid characters
+            output = output.replace(/\W/g, '');
+
+            // Return null if the converted value is the empty string
+            if (output === "") return null;
+
+            // Return null for the special cases of None, True, False
+            if (output === "None" || output === "True" || output === "False") return null;
+
+            // Return null for numerical values
+            if (/^\d+$/.test(output)) return null;
+
+            return output;
         },
 
         /**
          * Submit the Call form to the kernel
          */
         submit: function() {
-            var widget = this;
+            const widget = this;
 
             widget.evaluateAllVars({
                 success: function() {
+                    // Get the output variable, if one is defined
+                    const funcOutput = widget._get_valid_output_variable();
+
                     // Assign values from the inputs to the job input
-                    var funcInput = [];
-                    var uiParams = widget.element.find(".gp-widget-task-param");
-                    for (var i = 0; i < uiParams.length; i++) {
-                        var uiParam = $(uiParams[i]);
-                        var uiInput = uiParam.find(".gp-widget-task-param-input");
-                        var uiValue = widget._getInputValue(uiInput);
+                    let funcInput = [];
+                    const uiParams = widget.element.find(".gp-widget-task-form").find(".gp-widget-task-param");
+                    for (let i = 0; i < uiParams.length; i++) {
+                        const uiParam = $(uiParams[i]);
+                        const uiInput = uiParam.find(".gp-widget-task-param-input");
+                        let uiValue = widget._getInputValue(uiInput);
+
+                        // Handle leading and trailing whitespace
+                        if (typeof uiValue === "string") uiValue = uiValue.trim();
 
                         if (uiValue !== null) {
                             // Wrap value in list if not already wrapped
@@ -800,9 +879,9 @@ define("genepattern/uibuilder", ["base/js/namespace",
                     }, 500);
 
                     widget.expandCollapse();
-                    var index = GPNotebook.util.cell_index(widget.options.cell) + 1;
-                    var cell = Jupyter.notebook.insert_cell_at_index("code", index);
-                    var code = widget.buildFunctionCode(funcInput);
+                    const index = GPNotebook.util.cell_index(widget.options.cell) + 1;
+                    const cell = Jupyter.notebook.insert_cell_at_index("code", index);
+                    const code = widget.buildFunctionCode(funcInput, funcOutput);
                     cell.code_mirror.setValue(code);
                     cell.execute();
                 },
