@@ -703,8 +703,9 @@ define("genepattern/uibuilder", ["base/js/namespace",
                 var param = $(params[i]);
                 var required = param.hasClass("gp-widget-task-required");
                 if (required) {
-                    var input = param.find(".gp-widget-task-param-input");
-                    var value = this._getInputValue(input);
+                    const input = param.find(".gp-widget-task-param-input");
+                    let value = this._getInputValue(input);
+                    if (typeof value === "string") value = value.trim();
                     if (value === null || value === "" || value.length === 0) {
                         param.addClass("gp-widget-task-param-missing");
                         missing.push(param.attr("name"));
