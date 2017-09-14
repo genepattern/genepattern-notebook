@@ -285,16 +285,19 @@ define("genepattern/uibuilder", ["base/js/namespace",
         },
 
         reset_parameters: function() {
+            const widget = this;
             const param_doms = this.element.find(".text-widget, .file-widget, .choice-widget");
             param_doms.each(function(i, dom) {
-                const widget = $(dom).data("widget");
-                if (widget) {
-                    let default_value = widget.options.param.defaultValue();
+                const param_widget = $(dom).data("widget");
+                if (param_widget) {
+                    let default_value = param_widget.options.param.defaultValue();
+                    const param_name = param_widget.options.param.name();
 
                     // Special case for blank default values
                     if (default_value === "") default_value = " ";
 
-                    widget.value(default_value);
+                    param_widget.value(default_value);
+                    widget._set_parameter_metadata(param_name, default_value)
                 }
                 else {
                     console.log("ERROR: Unknown widget in reset_parameters()");
