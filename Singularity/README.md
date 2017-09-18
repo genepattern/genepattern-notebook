@@ -1,0 +1,1 @@
+Support for Singularity is still in development.
