@@ -3,7 +3,6 @@
 [![Documentation Status](https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat)](http://genepattern.org/genepattern-notebooks)
 [![Docker Pulls](https://img.shields.io/docker/pulls/genepattern/genepattern-notebook.svg)](https://hub.docker.com/r/genepattern/genepattern-notebook/)
 [![Join the chat at https://gitter.im/genepattern](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/genepattern?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[//]: # ( [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/genepattern/genepattern-notebook) )
 
 GenePattern Notebook
 ====================
@@ -19,7 +18,7 @@ to write code.
 # Installation
 
 Full installation instructions for casual use are detailed on the 
-[GenePattern website](http://www.broadinstitute.org/cancer/software/genepattern/genepattern-notebooks-installation).
+[GenePattern Notebook website](http://www.genepattern-notebook.org/install/).
 
 ## Development Install
 
@@ -113,4 +112,3 @@ however, have yet to be implemented. GenePattern features that are not yet suppo
 * Batch job submission
 * GenomeSpace integration
 * Dynamically updated choice parameters
-* Parameter groups
