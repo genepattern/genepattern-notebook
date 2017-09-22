@@ -463,6 +463,10 @@
     cursor: pointer;
 }
 
+.gp-widget-typeahead-input {
+    display: inline-block;
+}
+
 .gp-widget-typeahead-group {
     margin-bottom: 0;
 }
@@ -470,6 +474,9 @@
 .gp-widget-typeahead-list {
     width: 100%;
     margin-top: -1px;
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .gp-widget-typeahead-list .dropdown-header {

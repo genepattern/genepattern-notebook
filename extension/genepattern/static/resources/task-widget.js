@@ -52,6 +52,7 @@ define("genepattern/task", ["base/js/namespace",
                         .append(
                             $("<ul></ul>")
                                 .addClass("dropdown-menu gp-widget-typeahead-list")
+                                .attr("tabindex", 0) // Marks as control element, so that the blur event works correctly
                         )
                 );
         },
@@ -74,12 +75,18 @@ define("genepattern/task", ["base/js/namespace",
         },
 
         _blur: function(event) {
-            var typeahead_input = $(event.target);
+            const typeahead_input = $(event.target);
+            const typeahead = typeahead_input.closest(".gp-widget-typeahead");
+            const menu = typeahead.find(".gp-widget-typeahead-list");
+
+            // Don't go any of this if they clicked on the menu's scrollbar
+            if (menu.length && event.relatedTarget === menu[0]) {
+                typeahead_input.focus();
+                return;
+            }
 
             // Hide the menu
-            var typeahead = typeahead_input.closest(".gp-widget-typeahead");
-            var menu = typeahead.find(".gp-widget-typeahead-list");
-            var widget = typeahead_input.closest(".gp-widget-typeahead").data("widget");
+            const widget = typeahead_input.closest(".gp-widget-typeahead").data("widget");
             menu.hide();
 
             // Make the blur callback if one is defined
@@ -88,12 +95,12 @@ define("genepattern/task", ["base/js/namespace",
             }
         },
 
-        _update_menu: function(menu, kind) {
+        _update_menu: function(menu, kind, choices={}) {
             // Clear the menu
             menu.empty();
 
             // Get the latest output file data
-            var output_files = GPNotebook.slider.output_files_by_kind(kind);
+            let output_files = GPNotebook.slider.output_files_by_kind(kind);
 
             // Handle the special case of no matching output files
             if (output_files.length === 0) {
@@ -105,35 +112,77 @@ define("genepattern/task", ["base/js/namespace",
             output_files = this._files_by_job(output_files);
 
             // Add files to the menu
-            for (var job in output_files) {
+            for (let job in output_files) {
                 menu.append(this._create_menu_header(job));
-                var job_files = output_files[job];
-                for (var i in job_files) {
+                const job_files = output_files[job];
+                for (let i in job_files) {
                     menu.append(this._create_menu_file(job_files[i]));
+                }
+            }
+
+            // Add the dynamic choices to the menu, if available
+            if (Object.keys(choices).length > 0) {
+                menu.append(this._create_menu_header("FTP Server Files", "ftp"));
+                for (let key in choices) {
+                    const choice = {
+                        name: key,
+                        url: choices[key]
+                    };
+                    menu.append(this._create_menu_file(choice, "ftp"));
                 }
             }
         },
 
-        _create_menu_file: function(file) {
-            var widget = this;
+        /**
+         * Create a file listing to add to the typeahead menu
+         *
+         * @param file
+         * @param type
+         * @returns {*|jQuery}
+         * @private
+         */
+        _create_menu_file: function(file, type="job") {
+            const widget = this;
+            let type_class = "";
+            if (type === "job") type_class = "gp-widget-typeahead-job-file";
+            if (type === "ftp") type_class = "gp-widget-typeahead-ftp-file";
+
             return $("<li></li>")
                 .append(
                     $("<a></a>")
                         .addClass("dropdown-file")
+                        .addClass(type_class)
                         .attr("href", "#")
+                        .attr("tabindex", 0) // Marks as control element, so that the blur event works correctly
                         .attr("data-value", file.url)
                         .text(file.name)
                         .mousedown(function() {
-                            var typeahead_input = widget.element.find(".gp-widget-typeahead-input");
-                            var val = $(this).attr("data-value");
+                            const typeahead_input = widget.element.find(".gp-widget-typeahead-input");
+                            const val = $(this).attr("data-value");
                             $(typeahead_input).val(val);
+
+                            // Hide the menu, if necessary
+                            typeahead_input.focus();
                         })
                 );
         },
 
-        _create_menu_header: function(text) {
+        /**
+         * Create a header in the typeahead menu.
+         *
+         * @param text
+         * @param type - job or ftp
+         * @returns {*|jQuery}
+         * @private
+         */
+        _create_menu_header: function(text, type="job") {
+            let type_class = "";
+            if (type === "job") type_class = "gp-widget-typeahead-job-header";
+            if (type === "ftp") type_class = "gp-widget-typeahead-ftp-header";
+
            return $("<li></li>")
                .addClass("dropdown-header")
+               .addClass(type_class)
                .text(text);
         },
 
@@ -235,12 +284,17 @@ define("genepattern/task", ["base/js/namespace",
                             placeholder: "Add GenePattern File or URL...",
                             data: [],
                             click: function(twidget) {
-                                var menu = twidget.element.find(".gp-widget-typeahead-list");
-                                var kinds = widget.kinds();         // Get list of kinds this param accepts
+                                const menu = twidget.element.find(".gp-widget-typeahead-list");
+                                let kinds = widget.kinds();         // Get list of kinds this param accepts
                                 if (!kinds) kinds = "*";            // If none are defined, accepts everything
 
+                                // Get the list of dynamic dropdown choices, if available
+                                let choices = null;
+                                if (widget.options.param) choices = widget.options.param.choices();
+                                if (!choices) choices = {};
+
                                 // Update the menu
-                                twidget._update_menu(menu, kinds);
+                                twidget._update_menu(menu, kinds, choices);
                             },
                             blur: function(twidget) {
                                 var typeahead_input = twidget.element.find(".gp-widget-typeahead-input");
