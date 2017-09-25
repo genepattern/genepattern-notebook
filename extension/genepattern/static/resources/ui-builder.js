@@ -32,7 +32,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
      *      Batch Parameters
      *      Dynamic Dropdowns
      */
-    $.widget("gp.callCode", {
+    $.widget("gp.buildUI", {
         // Flags for whether events have been called on the widget
         _widgetRendered: false,
         _paramsLoaded: false,
@@ -776,6 +776,10 @@ define("genepattern/uibuilder", ["base/js/namespace",
             messageBox.hide();
         },
 
+        escape_quotes: function(str) {
+            return str.replace(/\"/g, '\\"').replace(/\'/g, '\\\'');
+        },
+
         buildFunctionCode: function(input, output_variable) {
             let import_path = null;
             let toReturn = '';
@@ -798,7 +802,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
             for (let i = 0; i < input.length; i++) {
                 let value = input[i][0];
                 if (!isNaN(parseFloat(value))) value = parseFloat(value);
-                if (typeof value === "string") value = '"' + value + '"';
+                if (typeof value === "string") value = '"' + this.escape_quotes(value) + '"';
                 if (typeof value === "boolean") value = value ? "True" : "False";
                 if (value === undefined) value = '[]'; // Hack fix for empty lists
                 values.push(value);
@@ -900,21 +904,38 @@ define("genepattern/uibuilder", ["base/js/namespace",
          *                  error: Callback on error, expects exception
          */
         evaluateAllVars: function(pObj) {
-            var widget = this;
-            var inputWidgets = this.element.find(".gp-widget-task-param-input");
-            var evalCallsFinished = false;
-            var evalsNeeded = 0;
-            var evalsFinished = 0;
+            const widget = this;
+            const inputWidgets = this.element.find(".gp-widget-task-form").find(".gp-widget-task-param-input");
+            let evalCallsFinished = false;
+            let evalsNeeded = 0;
+            let evalsFinished = 0;
 
             // Iterate over each widget
-            for (var i = 0; i < inputWidgets.length; i++) {
-                var iWidget = $(inputWidgets[i]).data("widget");
-                var value = iWidget.value();
+            for (let i = 0; i < inputWidgets.length; i++) {
+                const iWidget = $(inputWidgets[i]).data("widget");
+                iWidget.element.find("input").change(); // Update widget values
+                let value = iWidget.value();
 
                 // Protect against nulls
                 if (value === null || value === undefined) value = [];
 
-                var makeCall = function(iWidget, value, valueIndex) {
+                const makeCall = function(iWidget, value, valueIndex) {
+                    // If surrounding quote, treat as string literal and skip variable evaluation
+                    const quote_test = new RegExp("^\'.*\'$|^\".*\"$");
+                    if (quote_test.test(value.trim())) {
+                        const evalValue = value.trim().substring(1, value.trim().length-1);
+                        if (valueIndex === undefined) iWidget._value = evalValue;
+                        else iWidget._values[valueIndex] = evalValue;
+
+                        // Count this as an eval finished
+                        evalsFinished++;
+
+                        // Make the final callback once ready
+                        if (evalCallsFinished && evalsFinished === evalsNeeded) pObj.success();
+                        return; // Return now, don't evaluate the string literal for variables
+                    }
+
+                    // Otherwise, evaluate the variables
                     tasks.VariableManager.evaluateVariables(value, function(evalValue) {
                         if (valueIndex === undefined) iWidget._value = evalValue;
                         else iWidget._values[valueIndex] = evalValue;
@@ -938,9 +959,9 @@ define("genepattern/uibuilder", ["base/js/namespace",
                 else {
                     evalsNeeded += value.length;
 
-                    for (var j = 0; j < value.length; j++) {
-                        var valueIndex = j;
-                        var innerValue = value[j];
+                    for (let j = 0; j < value.length; j++) {
+                        const valueIndex = j;
+                        const innerValue = value[j];
 
                         makeCall(iWidget, innerValue.toString(), valueIndex);
                     }
@@ -1000,7 +1021,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
             var function_import = this.model.get('function_import');
 
             // Initialize the widget
-            $(this.$el).callCode({
+            $(this.$el).buildUI({
                 name: name,
                 description: description,
                 params: params,
