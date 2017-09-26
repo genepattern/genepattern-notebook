@@ -103,7 +103,7 @@ define("genepattern/task", ["base/js/namespace",
             let output_files = GPNotebook.slider.output_files_by_kind(kind);
 
             // Handle the special case of no matching output files
-            if (output_files.length === 0) {
+            if (output_files.length === 0 && Object.keys(choices).length === 0) {
                 menu.append(this._create_menu_header("No Matching GenePattern Files"));
                 return;
             }
