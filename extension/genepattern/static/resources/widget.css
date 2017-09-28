@@ -180,6 +180,10 @@ div.output_subarea {
     overflow-x: visible;
 }
 
+div.cell.selected {
+    z-index: 10;
+}
+
 .widget-auto-login {
     position: absolute;
     top: 0;

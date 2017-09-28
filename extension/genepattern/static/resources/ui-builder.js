@@ -811,7 +811,6 @@ define("genepattern/uibuilder", ["base/js/namespace",
                     reference = true;
                 }
 
-
                 // Handle booleans
                 try {
                     if (typeof JSON.parse(value.toLowerCase()) === "boolean") {
@@ -833,7 +832,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
             toReturn += values.join(", ");
             toReturn += ")";
 
-            return toReturn
+            return toReturn;
         },
 
         /**
