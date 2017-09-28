@@ -3029,7 +3029,11 @@ define("genepattern/task", ["base/js/namespace",
 
     var TaskWidgetView = widgets.DOMWidgetView.extend({
         render: function () {
-            var cell = this.options.cell;
+            let cell = this.options.cell;
+
+            // Ugly hack for getting the Cell object in ipywidgets 7
+            if (!cell) cell = this.options.output.element.closest(".cell").data("cell");
+
             var code = null;
 
             // Protect against double-rendering
@@ -3058,18 +3062,15 @@ define("genepattern/task", ["base/js/namespace",
             if (lsid) {
                 $(this.$el).runTask({
                     lsid: lsid,
-                    cell: this.options.cell
+                    cell: cell
                 });
             }
             else {
                 $(this.$el).runTask({
                     name: name,
-                    cell: this.options.cell
+                    cell: cell
                 });
             }
-
-            // Hide the close button
-            cell.element.find(".prompt").hide();
 
             // Hide the code by default
             var element = this.$el;

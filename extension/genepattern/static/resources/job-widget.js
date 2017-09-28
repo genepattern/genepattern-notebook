@@ -1082,7 +1082,10 @@ define("genepattern/job", ["base/js/namespace",
 
     var JobWidgetView = widgets.DOMWidgetView.extend({
         render: function () {
-            var cell = this.options.cell;
+            let cell = this.options.cell;
+
+            // Ugly hack for getting the Cell object in ipywidgets 7
+            if (!cell) cell = this.options.output.element.closest(".cell").data("cell");
 
             // Get the job number
             var jobNumber = this.model.get('job_number');
@@ -1099,9 +1102,6 @@ define("genepattern/job", ["base/js/namespace",
                 jobNumber: jobNumber,
                 cell: cell
             });
-
-            // Hide the close button
-            cell.element.find(".prompt").hide();
 
             // Hide the code by default
             var element = this.$el;

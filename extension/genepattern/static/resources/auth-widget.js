@@ -1101,7 +1101,10 @@ define("genepattern/authentication", ["base/js/namespace",
 
     var AuthWidgetView = widgets.DOMWidgetView.extend({
         render: function () {
-            var cell = this.options.cell;
+            let cell = this.options.cell;
+
+            // Ugly hack for getting the Cell object in ipywidgets 7
+            if (!cell) cell = this.options.output.element.closest(".cell").data("cell");
 
             // Protect against double-rendering
             if (cell.element.find(".gp-widget").length > 0) return;
@@ -1117,9 +1120,6 @@ define("genepattern/authentication", ["base/js/namespace",
             $(this.$el).auth({
                 cell: cell
             });
-
-            // Hide the close button
-            cell.element.find(".prompt").hide();
 
             // Hide the code by default
             var element = this.$el;
