@@ -38,7 +38,7 @@ class build_ui():
             # Save the kwargs for decorators with arguments
             self.kwargs = kwargs
 
-    def __call__(self, *args):
+    def __call__(self, *args, **kwargs):
         # Decorators with arguments make this call at define time, while decorators without
         # arguments make this call at runtime. That's the reason for this madness.
 
@@ -62,7 +62,7 @@ class build_ui():
             return decorated
         else:
             # Otherwise, just call the function
-            func(*func_args)
+            func(*func_args, **kwargs)
 
 
 class GPUIBuilder(gp.GPResource, widgets.DOMWidget):

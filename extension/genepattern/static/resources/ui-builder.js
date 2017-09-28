@@ -800,12 +800,33 @@ define("genepattern/uibuilder", ["base/js/namespace",
             toReturn += import_path + "(";
             let values = [];
             for (let i = 0; i < input.length; i++) {
-                let value = input[i][0];
-                if (!isNaN(parseFloat(value))) value = parseFloat(value);
-                if (typeof value === "string") value = '"' + this.escape_quotes(value) + '"';
-                if (typeof value === "boolean") value = value ? "True" : "False";
-                if (value === undefined) value = '[]'; // Hack fix for empty lists
-                values.push(value);
+                // Read the input object
+                const in_obj = input[i];
+                let value = in_obj.value[0];
+                let reference = in_obj.reference;
+
+                // Handle numbers
+                if (!isNaN(parseFloat(value))) {
+                    reference = true;
+                }
+
+
+                // Handle booleans
+                try {
+                    if (typeof JSON.parse(value.toLowerCase()) === "boolean") {
+                        value = JSON.parse(value.toLowerCase()) ? "True" : "False";
+                        reference = true;
+                    }
+                }
+                catch (e) {} // Not a boolean, do nothing
+
+                // Handle strings
+                if (typeof value === "string" && !reference) value = '"' + this.escape_quotes(value) + '"';
+
+                // Hack fix for empty lists
+                if (value === undefined) value = '[]';
+
+                values.push(in_obj.name + "=" + value);
             }
 
             toReturn += values.join(", ");
@@ -852,7 +873,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
             const widget = this;
 
             widget.evaluateAllVars({
-                success: function() {
+                success: function(globals) {
                     // Get the output variable, if one is defined
                     const funcOutput = widget._get_valid_output_variable();
 
@@ -863,6 +884,8 @@ define("genepattern/uibuilder", ["base/js/namespace",
                         const uiParam = $(uiParams[i]);
                         const uiInput = uiParam.find(".gp-widget-task-param-input");
                         let uiValue = widget._getInputValue(uiInput);
+                        let name = uiParam.attr("name");
+                        let reference = globals.indexOf(uiValue) >= 0;
 
                         // Handle leading and trailing whitespace
                         if (typeof uiValue === "string") uiValue = uiValue.trim();
@@ -873,7 +896,11 @@ define("genepattern/uibuilder", ["base/js/namespace",
                                 uiValue = [uiValue];
                             }
 
-                            funcInput.push(uiValue);
+                            funcInput.push({
+                                name: name,
+                                value: uiValue,
+                                reference: reference
+                            });
                         }
                     }
 
@@ -896,6 +923,29 @@ define("genepattern/uibuilder", ["base/js/namespace",
         },
 
         /**
+         * Query the kernel for the list of global names, then make a callback,
+         *      passing as a parameter the list of global names
+         *
+         * @param callback
+         */
+        get_globals: function(callback) {
+            const code = "import json\njson.dumps(list(globals().keys()))";
+
+            tasks.VariableManager.getKernelValue(code, function(raw_text) {
+                let globals = [];
+
+                try {
+                    globals = JSON.parse(raw_text);
+                }
+                catch (e) {
+                    console.log("Error parsing JSON from globals()");
+                }
+
+                callback(globals);
+            });
+        },
+
+        /**
          * Iterate through every input parameter and replace input string with
          * kernel variables, if any, then make a callback
          *
@@ -910,69 +960,71 @@ define("genepattern/uibuilder", ["base/js/namespace",
             let evalsNeeded = 0;
             let evalsFinished = 0;
 
-            // Iterate over each widget
-            for (let i = 0; i < inputWidgets.length; i++) {
-                const iWidget = $(inputWidgets[i]).data("widget");
-                iWidget.element.find("input").change(); // Update widget values
-                let value = iWidget.value();
+            widget.get_globals(function(globals) {
+                // Iterate over each widget
+                for (let i = 0; i < inputWidgets.length; i++) {
+                    const iWidget = $(inputWidgets[i]).data("widget");
+                    iWidget.element.find("input").change(); // Update widget values
+                    let value = iWidget.value();
 
-                // Protect against nulls
-                if (value === null || value === undefined) value = [];
+                    // Protect against nulls
+                    if (value === null || value === undefined) value = [];
 
-                const makeCall = function(iWidget, value, valueIndex) {
-                    // If surrounding quote, treat as string literal and skip variable evaluation
-                    const quote_test = new RegExp("^\'.*\'$|^\".*\"$");
-                    if (quote_test.test(value.trim())) {
-                        const evalValue = value.trim().substring(1, value.trim().length-1);
-                        if (valueIndex === undefined) iWidget._value = evalValue;
-                        else iWidget._values[valueIndex] = evalValue;
+                    const makeCall = function(iWidget, value, valueIndex) {
+                        // If surrounding quote, treat as string literal and skip variable evaluation
+                        const quote_test = new RegExp("^\'.*\'$|^\".*\"$");
+                        if (quote_test.test(value.trim())) {
+                            const evalValue = value.trim().substring(1, value.trim().length-1);
+                            if (valueIndex === undefined) iWidget._value = evalValue;
+                            else iWidget._values[valueIndex] = evalValue;
 
-                        // Count this as an eval finished
-                        evalsFinished++;
+                            // Count this as an eval finished
+                            evalsFinished++;
 
-                        // Make the final callback once ready
-                        if (evalCallsFinished && evalsFinished === evalsNeeded) pObj.success();
-                        return; // Return now, don't evaluate the string literal for variables
+                            // Make the final callback once ready
+                            if (evalCallsFinished && evalsFinished === evalsNeeded) pObj.success(globals);
+                            return; // Return now, don't evaluate the string literal for variables
+                        }
+
+                        // Otherwise, evaluate the variables
+                        tasks.VariableManager.evaluateVariables(value, function(evalValue) {
+                            if (valueIndex === undefined) iWidget._value = evalValue;
+                            else iWidget._values[valueIndex] = evalValue;
+
+                            // Count this as an eval finished
+                            evalsFinished++;
+
+                            // Make the final callback once ready
+                            if (evalCallsFinished && evalsFinished === evalsNeeded) pObj.success(globals);
+                        });
+                    };
+
+                    // If value is not a list, evaluate and set
+                    if (!Array.isArray(value)) {
+                        // Count this as an eval needed
+                        evalsNeeded++;
+
+                        makeCall(iWidget, value.toString());
                     }
+                    // Otherwise, iterate over the list, evaluate and set
+                    else {
+                        evalsNeeded += value.length;
 
-                    // Otherwise, evaluate the variables
-                    tasks.VariableManager.evaluateVariables(value, function(evalValue) {
-                        if (valueIndex === undefined) iWidget._value = evalValue;
-                        else iWidget._values[valueIndex] = evalValue;
+                        for (let j = 0; j < value.length; j++) {
+                            const valueIndex = j;
+                            const innerValue = value[j];
 
-                        // Count this as an eval finished
-                        evalsFinished++;
-
-                        // Make the final callback once ready
-                        if (evalCallsFinished && evalsFinished === evalsNeeded) pObj.success();
-                    });
-                };
-
-                // If value is not a list, evaluate and set
-                if (!Array.isArray(value)) {
-                    // Count this as an eval needed
-                    evalsNeeded++;
-
-                    makeCall(iWidget, value.toString());
-                }
-                // Otherwise, iterate over the list, evaluate and set
-                else {
-                    evalsNeeded += value.length;
-
-                    for (let j = 0; j < value.length; j++) {
-                        const valueIndex = j;
-                        const innerValue = value[j];
-
-                        makeCall(iWidget, innerValue.toString(), valueIndex);
+                            makeCall(iWidget, innerValue.toString(), valueIndex);
+                        }
                     }
                 }
-            }
 
-            // All calls for evaluation have been made
-            evalCallsFinished = true;
+                // All calls for evaluation have been made
+                evalCallsFinished = true;
 
-            // Check one last time to see if we need to make the final callback
-            if (evalCallsFinished && evalsFinished === evalsNeeded) pObj.success();
+                // Check one last time to see if we need to make the final callback
+                if (evalCallsFinished && evalsFinished === evalsNeeded) pObj.success(globals);
+            });
         },
 
         /**
