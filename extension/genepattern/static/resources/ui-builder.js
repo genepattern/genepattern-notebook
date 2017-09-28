@@ -804,6 +804,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
                 const in_obj = input[i];
                 let value = in_obj.value[0];
                 let reference = in_obj.reference;
+                let literal = in_obj.string_literal;
 
                 // Handle numbers
                 if (!isNaN(parseFloat(value))) {
@@ -821,7 +822,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
                 catch (e) {} // Not a boolean, do nothing
 
                 // Handle strings
-                if (typeof value === "string" && !reference) value = '"' + this.escape_quotes(value) + '"';
+                if (literal || (typeof value === "string" && !reference)) value = '"' + this.escape_quotes(value) + '"';
 
                 // Hack fix for empty lists
                 if (value === undefined) value = '[]';
@@ -885,7 +886,8 @@ define("genepattern/uibuilder", ["base/js/namespace",
                         const uiInput = uiParam.find(".gp-widget-task-param-input");
                         let uiValue = widget._getInputValue(uiInput);
                         let name = uiParam.attr("name");
-                        let reference = globals.indexOf(uiValue.trim()) >= 0;
+                        let quotes = widget.is_string_literal(uiInput.find("input, select").val());
+                        let reference = globals.indexOf(uiValue.trim()) >= 0 && !quotes;
 
                         // Handle leading and trailing whitespace
                         if (typeof uiValue === "string") uiValue = uiValue.trim();
@@ -899,7 +901,8 @@ define("genepattern/uibuilder", ["base/js/namespace",
                             funcInput.push({
                                 name: name,
                                 value: uiValue,
-                                reference: reference
+                                reference: reference,
+                                string_literal: quotes
                             });
                         }
                     }
@@ -946,6 +949,17 @@ define("genepattern/uibuilder", ["base/js/namespace",
         },
 
         /**
+         * Test if the value is surrounded by matching quotes
+         *
+         * @param test_string
+         * @returns {boolean}
+         */
+        is_string_literal: function(test_string) {
+            const quote_test = new RegExp("^\'.*\'$|^\".*\"$");
+            return quote_test.test(test_string.trim())
+        },
+
+        /**
          * Iterate through every input parameter and replace input string with
          * kernel variables, if any, then make a callback
          *
@@ -972,8 +986,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
 
                     const makeCall = function(iWidget, value, valueIndex) {
                         // If surrounding quote, treat as string literal and skip variable evaluation
-                        const quote_test = new RegExp("^\'.*\'$|^\".*\"$");
-                        if (quote_test.test(value.trim())) {
+                        if (widget.is_string_literal(value)) {
                             const evalValue = value.trim().substring(1, value.trim().length-1);
                             if (valueIndex === undefined) iWidget._value = evalValue;
                             else iWidget._values[valueIndex] = evalValue;
