@@ -885,7 +885,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
                         const uiInput = uiParam.find(".gp-widget-task-param-input");
                         let uiValue = widget._getInputValue(uiInput);
                         let name = uiParam.attr("name");
-                        let reference = globals.indexOf(uiValue) >= 0;
+                        let reference = globals.indexOf(uiValue.trim()) >= 0;
 
                         // Handle leading and trailing whitespace
                         if (typeof uiValue === "string") uiValue = uiValue.trim();
