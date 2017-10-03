@@ -74,6 +74,10 @@ enable in Jupyter. To do this run the following on the command line:
 
 > jupyter nbextension enable --py widgetsnbextension
 >
+> jupyter nbextension install --py nbtools
+>
+> jupyter nbextension enable --py nbtools
+>
 > jupyter nbextension install --py genepattern
 >
 > jupyter nbextension enable --py genepattern
