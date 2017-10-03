@@ -99,12 +99,38 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
         custom_name = kwargs['name'] if 'name' in kwargs else None
         custom_desc = kwargs['description'] if 'description' in kwargs else None
 
+        # Read parameter metadata
+        if 'parameters' in kwargs:
+            self._apply_custom_parameter_info(params, kwargs['parameters'])
+
         # Set the Traitlet values for the call
         self.name = custom_name or function_or_method.__qualname__
         self.description = custom_desc or docstring
         self.params = params
         self.function_import = function_import
         self.function_or_method = function_or_method
+
+    @staticmethod
+    def _apply_custom_parameter_info(params, metadata):
+        for param in params:  # Iterate through each parameter
+            if param['name'] in metadata:  # If there is something to override
+                p_meta = metadata[param['name']]
+
+                # Handle overriding the display name
+                if 'name' in p_meta:
+                    param['label'] = p_meta['name']
+
+                # Handle overriding the description
+                if 'description' in p_meta:
+                    param['description'] = p_meta['description']
+
+                # Handle overriding the default value
+                if 'default' in p_meta:
+                    param['default'] = p_meta['default']
+
+                # Handle hiding the parameter
+                if 'hide' in p_meta:
+                    param['hide'] = p_meta['hide']
 
     @staticmethod
     def _docstring(function_or_method):
@@ -120,11 +146,18 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
         params = []
         for p in sig.parameters:
             param = sig.parameters[p]
-            required = param.default != inspect.Signature.empty
+            optional = param.default != inspect.Signature.empty
             default = param.default if param.default != inspect.Signature.empty else ''
             annotation = param.annotation if param.annotation != inspect.Signature.empty else ''
-            p_list = [param.name, required, default, annotation]
-            params.append(p_list)
+            p_attr = {
+                "name": param.name,
+                "label": param.name,
+                "optional": optional,
+                "default": default,
+                "description": annotation,
+                "hide": False
+            }
+            params.append(p_attr)
         return params
 
     @staticmethod

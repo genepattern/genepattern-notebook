@@ -491,19 +491,25 @@ define("genepattern/uibuilder", ["base/js/namespace",
             const form = widget.element.find(".gp-widget-task-form");
 
             for (let i = 0; i < params.length; i++) {
+                const p = params[i];
+
                 try {
                     const param = {
-                        _name: params[i][0],
-                        _optional: params[i][1],
-                        _description: params[i][3],
-                        _defaultValue: params[i][2],
+                        _name: p["name"],
+                        _label: p["label"],
+                        _optional: p["optional"],
+                        _description: p["description"],
+                        _defaultValue: p["default"],
+                        _hidden: p["hide"],
 
                         name: function() {return this._name },
+                        label: function() {return this._label },
                         optional: function() {return this._optional },
                         type: function() {return "java.lang.String" },
                         description: function() {return this._description },
                         choices: function() {return false },
-                        defaultValue: function() {return this._defaultValue }
+                        defaultValue: function() {return this._defaultValue },
+                        hidden: function() { return this._hidden; }
                     };
 
                     const pDiv = widget._addParam(param, form);
@@ -524,12 +530,14 @@ define("genepattern/uibuilder", ["base/js/namespace",
         _buildFooter: function() {
             try {
                 const output_param = {
-                    name: function() {return "_output_variable" },
+                    name: function() {return "_output_variable"; },
+                    label: function() {return "_output_variable"; },
                     optional: function() {return true; },
-                    type: function() {return "java.lang.String" },
-                    description: function() {return "The returned value of the function will be assigned to this variable, if provided." },
-                    choices: function() {return false },
-                    defaultValue: function() {return "" }
+                    type: function() {return "java.lang.String"; },
+                    description: function() {return "The returned value of the function will be assigned to this variable, if provided."; },
+                    choices: function() {return false; },
+                    defaultValue: function() {return ""; },
+                    hidden: function() { return false; }
                 };
 
                 const footer = this.element.find(".gp-widget-ui-output");
@@ -621,7 +629,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
                 .append(
                     $("<label></label>")
                         .addClass("col-sm-3 control-label gp-widget-task-param-name")
-                        .text(GPNotebook.util.display_name(param.name()) + required)
+                        .text(GPNotebook.util.display_name(param.label()) + required)
                 )
                 .append(
                     $("<div></div>")
@@ -677,6 +685,11 @@ define("genepattern/uibuilder", ["base/js/namespace",
                     param: param,
                     default: param.defaultValue()
                 });
+            }
+
+            // Hide the parameter if param.hidden() is true
+            if (param.hidden()) {
+                paramBox.hide();
             }
 
             addTo.append(paramBox);
