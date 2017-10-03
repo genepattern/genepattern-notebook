@@ -501,13 +501,14 @@ define("genepattern/uibuilder", ["base/js/namespace",
                         _description: p["description"],
                         _defaultValue: p["default"],
                         _hidden: p["hide"],
+                        _choices: p["choices"] && Object.keys(p["choices"]).length ? p["choices"] : false,
 
                         name: function() {return this._name },
                         label: function() {return this._label },
                         optional: function() {return this._optional },
                         type: function() {return "java.lang.String" },
                         description: function() {return this._description },
-                        choices: function() {return false },
+                        choices: function() {return this._choices },
                         defaultValue: function() {return this._defaultValue },
                         hidden: function() { return this._hidden; }
                     };

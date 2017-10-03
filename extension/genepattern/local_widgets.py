@@ -132,6 +132,10 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
                 if 'hide' in p_meta:
                     param['hide'] = p_meta['hide']
 
+                # Handle giving the parameter a list of choices
+                if 'choices' in p_meta:
+                    param['choices'] = p_meta['choices']
+
     @staticmethod
     def _docstring(function_or_method):
         """Read docstring and protect against None"""
@@ -155,7 +159,8 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
                 "optional": optional,
                 "default": default,
                 "description": annotation,
-                "hide": False
+                "hide": False,
+                "choices": []
             }
             params.append(p_attr)
         return params
