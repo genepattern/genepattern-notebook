@@ -1270,6 +1270,11 @@ define("genepattern/task", ["base/js/namespace",
          * @private
          */
         _applyDefault: function() {
+            // If the default is not in the list of options, select Custom Value
+            if (Object.values(this.options.choices).indexOf(this.options.default) < 0) {
+                this.element.find("option:last").val(this.options.default);
+            }
+
             this.element.find(".choice-widget-select").val(this.options.default);
             this._value = this.element.find(".choice-widget-select").val();
         },
