@@ -604,7 +604,7 @@ define("genepattern/navigation", ["base/js/namespace",
 
                     // Scroll to the new cell
                     $('#site').animate({
-                        scrollTop: $(cell.element).position().top
+                        scrollTop: $(cell.element).offset().top
                     }, 500);
                 });
 
@@ -644,7 +644,7 @@ define("genepattern/navigation", ["base/js/namespace",
 
                     // Scroll to the new cell
                     $('#site').animate({
-                        scrollTop: $(theWidget.element).position().top
+                        scrollTop: $(theWidget.element).offset().top
                     }, 500);
 
                     // Expand the cell, if necessary
