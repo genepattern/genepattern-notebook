@@ -15,7 +15,8 @@
 define("genepattern/uibuilder", ["base/js/namespace",
                             "nbextensions/jupyter-js-widgets/extension",
                             "genepattern/navigation",
-                            "genepattern/task"], function (Jupyter, widgets, GPNotebook, tasks) {
+                            "genepattern/task",
+                            "nbtools"], function (Jupyter, widgets, GPNotebook, tasks, NBToolManager) {
 
     /**
      * Widget for entering parameters and launching a job from a task.
@@ -233,6 +234,9 @@ define("genepattern/uibuilder", ["base/js/namespace",
             widget._buildFooter();
             widget._handle_metadata();
 
+            // Register the widget with the Tool Manager
+            widget.register_tool();
+
             // Trigger gp.widgetRendered event on cell element
             setTimeout(function() {
                 widget._widgetRendered = true;
@@ -276,6 +280,51 @@ define("genepattern/uibuilder", ["base/js/namespace",
          */
         _setOption: function(key, value) {
             this._super(key, value);
+        },
+
+        /**
+         * Register the widget with the Tool Manager
+         */
+        register_tool: function() {
+            const widget = this;
+            const code = widget.options.cell.get_text();
+
+            const UIBuilderTool = new NBToolManager.NBTool({
+                origin: "Notebook",
+                id: widget.options.name,
+                name: widget.options.name,
+                description: widget.options.description,
+                load: function() { return true; },
+                render: function() {
+                    let cell = Jupyter.notebook.get_selected_cell();
+                    const is_empty = cell.get_text().trim() === "";
+
+                    // If this cell is not empty, insert a new cell and use that
+                    // Otherwise just use this cell
+                    if (!is_empty) {
+                        cell = Jupyter.notebook.insert_cell_below();
+                        Jupyter.notebook.select_next();
+                    }
+
+                    cell.set_text(code);
+                    cell.execute();
+
+                    return cell;
+                }
+            });
+
+            // Does a UI Builder tool by this name already exist?
+            Object.keys(NBToolManager.instance()._tools).forEach(function(key) {
+                let tool = NBToolManager.instance()._tools[key];
+
+                // If so, unregister that tool first
+                if (tool.origin === "Notebook" && tool.id === widget.options.name) {
+                    NBToolManager.instance().unregister(key);
+                }
+            });
+
+            // Register the tool
+            NBToolManager.instance().register(UIBuilderTool);
         },
 
         reset_parameters: function() {
