@@ -334,8 +334,6 @@ define("genepattern/task", ["base/js/namespace",
             this.element.append(
                 $("<div></div>")
                     .addClass("file-widget-warning alert alert-warning")
-                    .append("File may not be an acceptable format. This input expects ")
-                    .append(this._kindsListString() + ".")
                     .hide()
             );
 
@@ -525,8 +523,8 @@ define("genepattern/task", ["base/js/namespace",
                 });
                 this.element.find(".file-widget-listing").show();
 
-                // Display type warning, if necessary
-                this._setTypeWarning(files);
+                // Display file warning, if necessary
+                this._setFileWarning(files);
 
                 // Hide upload stuff if at max
                 var maxVals = this._param.maxValues();
@@ -539,7 +537,7 @@ define("genepattern/task", ["base/js/namespace",
                 this.element.find(".file-widget-upload").show();
                 this.element.find(".file-widget-listing").hide();
                 this.element.find(".file-widget-listing").empty();
-                this._hideTypeWarning();
+                this._hideWarning();
             }
         },
 
@@ -549,12 +547,37 @@ define("genepattern/task", ["base/js/namespace",
          * @param files
          * @private
          */
-        _setTypeWarning: function(files) {
+        _setFileWarning: function(files) {
             // Transform File objects to strings
-            var displays = this._valuesToDisplay(files);
+            const displays = this._valuesToDisplay(files);
 
-            if (this._needTypeWarning(displays)) { this._displayTypeWarning(); }
-            else { this._hideTypeWarning(); }
+            if (this._needRepoWarning(displays)) {
+                this._displayFileWarning("Files uploaded directly to the Notebook Repository workspace are not accessible to GenePattern jobs. Please remove the file and upload it using the Upload button on this widget.");
+            }
+            else if (this._needTypeWarning(displays)) {
+                this._displayFileWarning("File may not be an acceptable format. This input expects " + this._kindsListString() + ".");
+            }
+            else { this._hideWarning(); }
+        },
+
+        /**
+         * Determines if the file URL matches the Notebook Repository upload
+         *
+         * @param files
+         * @private
+         */
+        _needRepoWarning: function(files) {
+            let foundWarning = false;
+
+            for (let i in files) {
+                const file = files[i];
+
+                if (file.startsWith("https://notebook.genepattern.org/")) {
+                    foundWarning = true;
+                }
+            }
+
+            return foundWarning;
         },
 
         /**
@@ -597,16 +620,19 @@ define("genepattern/task", ["base/js/namespace",
          *
          * @private
          */
-        _displayTypeWarning: function() {
-            this.element.find(".file-widget-warning").show();
+        _displayFileWarning: function(message) {
+            this.element.find(".file-widget-warning")
+                .empty()
+                .append(message)
+                .show();
         },
 
         /**
-         * Hides the warning message that the file type doesn't match the expected input type
+         * Hides the warning message about the input file
          *
          * @private
          */
-        _hideTypeWarning: function() {
+        _hideWarning: function() {
             this.element.find(".file-widget-warning").hide();
         },
 
@@ -633,7 +659,7 @@ define("genepattern/task", ["base/js/namespace",
                             widget._removeValue(file);
                             widget.element.find(".file-widget-value[name='" + file + "']").remove();
                             widget.element.find(".file-widget-upload").show();
-                            widget._setTypeWarning(widget._values);
+                            widget._setFileWarning(widget._values);
                             widget._updateCode();
                         })
                 )
@@ -2186,7 +2212,6 @@ define("genepattern/task", ["base/js/namespace",
                         var reloadVals = widget._parseJobSpec();
 
                         // Iterate over parameter groups
-                        // TODO: Implement
                         if (task.paramGroups()) {
                             // Iterate over groups and add params
                             var groups = task.paramGroups();
