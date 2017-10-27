@@ -14,7 +14,7 @@ USER root
 RUN apt-get update && apt-get install -y python-qt4
 
 # Install R and RPY2
-RUN sh -c 'echo "deb http://cran.rstudio.com/bin/linux/debian jessie-cran3/" >> /etc/apt/sources.list'
+RUN sh -c 'echo "deb http://cran.rstudio.com/bin/linux/debian jessie-cran34/" >> /etc/apt/sources.list'
 RUN sudo apt-get update
 RUN sudo apt-get install r-base --allow-unauthenticated -y
 RUN pip install rpy2
