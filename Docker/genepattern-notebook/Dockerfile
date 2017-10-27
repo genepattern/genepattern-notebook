@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y python-qt4
 
 # Install R and RPY2
 RUN sh -c 'echo "deb http://cran.rstudio.com/bin/linux/debian jessie-cran3/" >> /etc/apt/sources.list'
-RUN sudo apt-key adv --keyserver subkeys.pgp.net --recv-key 381BA480
+RUN sudo apt-key adv --keyserver subkeys.pgp.net:80 --recv-key 381BA480
 RUN sudo apt-get update
 RUN sudo apt-get install r-base
 RUN pip install rpy2
