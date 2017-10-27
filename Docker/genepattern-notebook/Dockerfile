@@ -15,9 +15,8 @@ RUN apt-get update && apt-get install -y python-qt4
 
 # Install R and RPY2
 RUN sh -c 'echo "deb http://cran.rstudio.com/bin/linux/debian jessie-cran3/" >> /etc/apt/sources.list'
-RUN sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 381BA480
 RUN sudo apt-get update
-RUN sudo apt-get install r-base
+RUN sudo apt-get install r-base --allow-unauthenticated -y
 RUN pip install rpy2
 
 # Install the GenePattern Notebook environment
