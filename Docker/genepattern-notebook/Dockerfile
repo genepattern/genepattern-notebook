@@ -37,4 +37,4 @@ RUN jupyter nbextension enable --py jupyter_wysiwyg
 USER $NB_USER
 
 # Install R and RPY2
-RUN pip install rpy2
+RUN pip install rpy2==2.8.5
