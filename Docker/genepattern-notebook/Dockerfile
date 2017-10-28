@@ -14,9 +14,7 @@ USER root
 RUN apt-get update && apt-get install -y python-qt4
 
 # Install R and RPY2
-RUN sudo apt-get update
-# RUN sudo apt-get install r-base -y
-RUN conda install -c r rpy2
+RUN pip install rpy2
 
 # Install the GenePattern Notebook environment
 RUN pip install nbtools genepattern-python genepattern-notebook jupyter-wysiwyg
