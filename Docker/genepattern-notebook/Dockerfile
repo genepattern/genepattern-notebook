@@ -13,6 +13,10 @@ USER root
 # Install the missing Qt4 API (used by matplotlib)
 RUN apt-get update && apt-get install -y python-qt4
 
+# Install R and RPY2
+RUN sudo apt-get update
+RUN sudo apt-get install r-base -y
+
 # Install the GenePattern Notebook environment
 RUN pip install nbtools genepattern-python genepattern-notebook jupyter-wysiwyg
 
