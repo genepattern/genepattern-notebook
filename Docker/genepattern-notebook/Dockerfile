@@ -17,7 +17,8 @@ RUN apt-get update && apt-get install -y python-qt4
 RUN sudo apt-get update
 RUN sudo apt-get install r-base r-base-dev -y
 RUN pip install rpy2==2.8.5
-# RUN jupyter serverextension enable --py rpy2.ipython
+RUN mkdir -p /home/jovyan/.ipython/profile_default/startup
+RUN echo '%load_ext rpy2.ipython' >> /home/jovyan/.ipython/profile_default/startup/rmagic.ipy
 
 # Install the GenePattern Notebook environment
 RUN pip install nbtools genepattern-python genepattern-notebook jupyter-wysiwyg
