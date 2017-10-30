@@ -17,6 +17,8 @@ RUN apt-get update && apt-get install -y python-qt4
 RUN sudo apt-get update
 RUN sudo apt-get install r-base r-base-dev -y
 RUN pip install rpy2==2.8.5
+RUN mkdir -p /home/$NB_USER/.ipython/profile_default/startup
+RUN echo '%load_ext rpy2.ipython' >> /home/jovyan/.ipython/profile_default/startup/mymagics.ipy
 
 # Install the GenePattern Notebook environment
 RUN pip install nbtools genepattern-python genepattern-notebook jupyter-wysiwyg
@@ -38,5 +40,5 @@ RUN jupyter nbextension enable --py jupyter_wysiwyg
 USER $NB_USER
 
 # Make rmagic load by default
-RUN mkdir -p /home/$NB_USER/.ipython/profile_default/startup
-RUN echo '%load_ext rpy2.ipython' >> /home/jovyan/.ipython/profile_default/startup/mymagics.ipy
+#RUN mkdir -p /home/$NB_USER/.ipython/profile_default/startup
+#RUN echo '%load_ext rpy2.ipython' >> /home/jovyan/.ipython/profile_default/startup/mymagics.ipy
