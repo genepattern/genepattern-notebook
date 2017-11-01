@@ -2,7 +2,7 @@
 # Another Docker container should inherit with `FROM jupyter/notebook`
 # to run actual services.
 
-FROM jupyter/scipy-notebook
+FROM jupyter/scipy-notebook:fa77fe99579b
 
 MAINTAINER Thorin Tabor <tmtabor@cloud.ucsd.edu>
 
