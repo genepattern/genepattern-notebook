@@ -58,11 +58,11 @@ class build_ui():
             # Return wrapped function
             @functools.wraps(func)
             def decorated(*args, **kwargs):
-                func(*args, **kwargs)
+                return func(*args, **kwargs)
             return decorated
         else:
             # Otherwise, just call the function
-            func(*func_args, **kwargs)
+            return func(*func_args, **kwargs)
 
 
 class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
