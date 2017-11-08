@@ -41,7 +41,7 @@ class GPDevelop(_develop):
 
 setup(name='genepattern-notebook',
       packages=['genepattern'],
-      version='0.6.6',
+      version='0.6.7',
       description='GenePattern Notebook extension for Jupyter',
       license='BSD',
       author='Thorin Tabor',

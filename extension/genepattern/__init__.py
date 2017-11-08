@@ -16,6 +16,6 @@ from.jupyter_extensions import (GenePatternMagic, load_ipython_extension, load_j
 
 __author__ = 'Thorin Tabor'
 __copyright__ = 'Copyright 2015-2017, Broad Institute'
-__version__ = '0.6.6'
+__version__ = '0.6.7'
 __status__ = 'Beta'
 __license__ = 'BSD'

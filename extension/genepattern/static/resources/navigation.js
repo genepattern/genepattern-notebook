@@ -603,8 +603,11 @@ define("genepattern/navigation", ["base/js/namespace",
                     $(".popover").popover("hide");
 
                     // Scroll to the new cell
-                    $('#site').animate({
-                        scrollTop: $(cell.element).offset().top
+                    const site_div = $('#site');
+                    const current_offset = Math.abs(site_div.find(".container").offset().top);
+                    const cell_offset = $(cell.element).offset().top;
+                    site_div.animate({
+                        scrollTop: current_offset + cell_offset
                     }, 500);
                 });
 
@@ -635,16 +638,19 @@ define("genepattern/navigation", ["base/js/namespace",
 
                 // Add event to hand changes on the "Send to Downstream Task" dropdown
                 sendToExistingTask.change(function() {
-                    var option = $(this).find(":selected");
-                    var theWidget = option.data("widget");
+                    const option = $(this).find(":selected");
+                    const theWidget = option.data("widget");
                     theWidget.receiveFile(element.attr("href"), fixedKind);
 
                     // Hide the popover
                     $(".popover").popover("hide");
 
                     // Scroll to the new cell
-                    $('#site').animate({
-                        scrollTop: $(theWidget.element).offset().top
+                    const site_div = $('#site');
+                    const current_offset = Math.abs(site_div.find(".container").offset().top);
+                    const cell_offset = $(theWidget.element).offset().top;
+                    site_div.animate({
+                        scrollTop: current_offset + cell_offset
                     }, 500);
 
                     // Expand the cell, if necessary
