@@ -3,12 +3,7 @@
  *
  * Loads the GenePattern Notebook extension for Jupyter Notebook
  *
- * Copyright 2015-2016 The Broad Institute, Inc.
- *
- * SOFTWARE COPYRIGHT NOTICE
- * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
- * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not
- * responsible for its use, misuse, or functionality.
+ * Copyright 2015-2017, Regents of the University of California & Broad Institute
  */
 
 define([
