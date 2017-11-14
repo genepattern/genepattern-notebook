@@ -115,4 +115,3 @@ however, have yet to be implemented. GenePattern features that are not yet suppo
 
 * Batch job submission
 * GenomeSpace integration
-* Dynamically updated choice parameters
