@@ -7,7 +7,7 @@
 GenePattern Notebook
 ====================
 
-The [GenePattern Notebook](http://www.broadinstitute.org/cancer/software/genepattern/genepattern-notebooks) 
+The [GenePattern Notebook](http://www.genepattern-notebook.org) 
 environment gives GenePattern users the ability to interleave text, graphics, and code with 
 their GenePattern analyses to create "notebooks" that can be edited, shared, and published. 
 GenePattern Notebooks are built on the [Jupyter Notebook](https://jupyter.org/) system 
