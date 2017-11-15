@@ -12,7 +12,7 @@ The CallWidget and functions related to local code execution
 """
 
 
-class build_ui():
+class build_ui:
     """
     Decorator used to display the UI Builder upon definition of a function.
 
@@ -73,10 +73,11 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
     _view_module = Unicode('genepattern/uibuilder').tag(sync=True)
 
     # Declare the Traitlet values for the widget
-    name = Unicode("", sync=True)
-    description = Unicode("", sync=True)
+    name = Unicode('', sync=True)
+    description = Unicode('', sync=True)
+    output_var = Unicode('', sync=True)
     params = List(sync=True)
-    function_import = Unicode("", sync=True)
+    function_import = Unicode('', sync=True)
     function_or_method = None
 
     def __init__(self, function_or_method, **kwargs):
@@ -95,9 +96,10 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
         # Determine how the function is imported in the namespace
         function_import = self._import(function_or_method)
 
-        # Do arguments override the default name or description?
+        # Do arguments override the default name, description or output?
         custom_name = kwargs['name'] if 'name' in kwargs else None
         custom_desc = kwargs['description'] if 'description' in kwargs else None
+        custom_output = kwargs['output_var'] if 'output_var' in kwargs else None
 
         # Read parameter metadata
         if 'parameters' in kwargs:
@@ -106,6 +108,7 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
         # Set the Traitlet values for the call
         self.name = custom_name or function_or_method.__qualname__
         self.description = custom_desc or docstring
+        self.output_var = custom_output or ''
         self.params = params
         self.function_import = function_import
         self.function_or_method = function_or_method

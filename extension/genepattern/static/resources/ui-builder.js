@@ -41,6 +41,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
         options: {
             name: null,
             description: null,
+            output_var: null,
             params: null,
             function_import: null,
             cell: null
@@ -352,8 +353,13 @@ define("genepattern/uibuilder", ["base/js/namespace",
             // Reset the output variable
             const output_dom = widget.element.find(".gp-widget-ui-output").find(".text-widget");
             const output_widget = $(output_dom).data("widget");
-            output_widget.value(" ");
-            GPNotebook.slider.set_metadata(widget.options.cell, "output_variable", "");
+            let default_value = output_widget.options.param.defaultValue();
+
+            // Special case for blank default values
+            if (default_value === "") default_value = " ";
+
+            output_widget.value(default_value);
+            GPNotebook.slider.set_metadata(widget.options.cell, "output_variable", default_value.trim());
         },
 
         _get_parameter: function(name) {
@@ -578,6 +584,8 @@ define("genepattern/uibuilder", ["base/js/namespace",
          * @private
          */
         _buildFooter: function() {
+            const widget = this;
+
             try {
                 const output_param = {
                     name: function() {return "_output_variable"; },
@@ -586,7 +594,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
                     type: function() {return "java.lang.String"; },
                     description: function() {return "The returned value of the function will be assigned to this variable, if provided."; },
                     choices: function() {return false; },
-                    defaultValue: function() {return ""; },
+                    defaultValue: function() {return widget.options.output_var; },
                     hidden: function() { return false; }
                 };
 
@@ -1148,6 +1156,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
 
             var name = this.model.get('name');
             var description = this.model.get('description');
+            var output_var = this.model.get('output_var');
             var params = this.model.get('params');
             var function_import = this.model.get('function_import');
 
@@ -1155,6 +1164,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
             $(this.$el).buildUI({
                 name: name,
                 description: description,
+                output_var: output_var,
                 params: params,
                 function_import: function_import,
                 cell: cell
