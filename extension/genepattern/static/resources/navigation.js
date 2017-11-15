@@ -714,7 +714,11 @@ define("genepattern/navigation", ["base/js/namespace",
                 // Add GenePattern help link
                 function add_help_link() {
                     const help_section = $("#kernel-help-links");
-                    if (help_section.length > 0) help_section.before($("<li><a href='http://genepattern-notebook.org' target='_blank'>GenePattern Help <i class='fa fa-external-link menu-icon pull-right'></i></a></li>"));
+                    const library_section = $("#help_menu").find(".divider:last");
+                    if (help_section.length > 0) {
+                        help_section.before($("<li><a href='https://groups.google.com/forum/#!forum/genepattern-help' target='_blank'>GenePattern Help <i class='fa fa-external-link menu-icon pull-right'></i></a></li>"));
+                        library_section.before($("<li><a href='http://genepattern-notebook.org' target='_blank'>GenePattern<i class='fa fa-external-link menu-icon pull-right'></i></a></li>"));
+                    }
                     else setTimeout(add_help_link, 200);
                 }
                 add_help_link();
