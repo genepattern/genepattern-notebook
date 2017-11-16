@@ -496,7 +496,7 @@ define("genepattern/navigation", ["base/js/namespace",
                         )
                 );
 
-            // Attach "Send to DataFrame" if GCT
+            // Attach "Send to DataFrame" if GCT or ODF
             if (kind.indexOf("gct") !== -1 || name.endsWith(".odf")) {
                 popover.find(".gp-widget-job-send-code").after(
                     $("<a></a>")

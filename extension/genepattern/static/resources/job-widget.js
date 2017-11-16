@@ -1023,6 +1023,12 @@ define("genepattern/job", ["base/js/namespace",
                        var_name;
             var cell = Jupyter.notebook.insert_cell_below();
             cell.code_mirror.setValue(code);
+
+            // Select and run the cell
+            cell.execute();
+            setTimeout(function() {
+                $(cell.element).click();
+            }, 100);
         },
 
         dataFrameCell: function(job, fileName, kind) {
@@ -1034,6 +1040,12 @@ define("genepattern/job", ["base/js/namespace",
                        var_name;
             var cell = Jupyter.notebook.insert_cell_below();
             cell.code_mirror.setValue(code);
+
+            // Select and run the cell
+            cell.execute();
+            setTimeout(function() {
+                $(cell.element).click();
+            }, 100);
         },
 
         /**
