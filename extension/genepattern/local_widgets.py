@@ -100,6 +100,7 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
         custom_name = kwargs['name'] if 'name' in kwargs else None
         custom_desc = kwargs['description'] if 'description' in kwargs else None
         custom_output = kwargs['output_var'] if 'output_var' in kwargs else None
+        custom_import = kwargs['function_import'] if 'function_import' in kwargs else None
 
         # Read parameter metadata
         if 'parameters' in kwargs:
@@ -110,7 +111,7 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
         self.description = custom_desc or docstring
         self.output_var = custom_output or ''
         self.params = params
-        self.function_import = function_import
+        self.function_import = custom_import or function_import
         self.function_or_method = function_or_method
 
     @staticmethod
