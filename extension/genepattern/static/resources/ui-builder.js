@@ -449,16 +449,22 @@ define("genepattern/uibuilder", ["base/js/namespace",
          * Displays the Python help doc for the function
          */
         show_documentation: function() {
-            var widget = this;
-            var index = GPNotebook.util.cell_index(widget.options.cell) + 1;
-            var cell = Jupyter.notebook.insert_cell_at_index("code", index);
-            cell.set_text("help(" + widget.options.name + ")");
-            cell.execute();
+            const widget = this;
 
-            // Scroll to the new cell
-            $('#site').animate({
-                scrollTop: $(cell.element).position().top
-            }, 500);
+            // Handle the case when the import couldn't be found
+            const code = this.options.function_import === '' ? this.options.name + '?' : this.options.function_import + '?';
+
+            // Display the help pager
+            Jupyter.notebook.kernel.execute(
+                code,
+                {
+                    shell : {
+                        payload : {
+                            page : function(payload) { widget.options.cell.events.trigger('open_with_text.Pager', payload); }
+                        }
+                    }
+                }
+            );
         },
 
         /**
