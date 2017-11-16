@@ -742,6 +742,14 @@ define("genepattern/job", ["base/js/namespace",
                     force: true,
                     permissions: true,
                     success: function(response, job) {
+                        // Check to see if the job just completed and send a notification if it has
+                        if (widget.options.job && widget._statusText(job.status()) === "Completed") {
+                            widget.send_notification(error=false);
+                        }
+                        else if (widget.options.job && widget._statusText(job.status()) === "Error") {
+                            widget.send_notification(error=true);
+                        }
+
                         // Set the job object
                         widget.options.job = job;
 
@@ -1046,6 +1054,14 @@ define("genepattern/job", ["base/js/namespace",
             setTimeout(function() {
                 $(cell.element).click();
             }, 100);
+        },
+
+        /**
+         * Send a notification to the browser that the job is complete or has an error
+         */
+        send_notification: function(error = false) {
+            GPNotebook.util.send_notification(this.options.job.taskName() + " job #" + this.options.job.jobNumber() +
+                (error ? " has an error!" : " complete!"));
         },
 
         /**

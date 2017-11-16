@@ -54,6 +54,39 @@ define("genepattern/navigation", ["base/js/namespace",
         return display_name;
     };
 
+    /**
+     * Send a browser notification
+     *
+     * @param title
+     * @param message
+     */
+    util.send_notification = function(message) {
+        // Internal function to display the notification
+        function notification() {
+            new Notification("GenePattern Notebook", {
+                body: message,
+                badge: Jupyter.notebook.base_url + "nbextensions/genepattern/resources/gp-logo.png",
+                icon: Jupyter.notebook.base_url + "nbextensions/genepattern/resources/gp-logo.png",
+                silent: true
+            });
+        }
+
+        // Browser supports notifications and permission is granted
+        if ("Notification" in window && Notification.permission === "granted") {
+            notification()
+        }
+
+        // Otherwise, we need to ask the user for permission
+        else if ("Notification" in window && Notification.permission !== "denied") {
+            Notification.requestPermission(function (permission) {
+                // If the user accepts, let's create a notification
+                if (permission === "granted") {
+                    notification()
+                }
+            });
+        }
+    };
+
     util.select_cell = function(cell) {
         // Unselect existing selected cells
         Jupyter.notebook.get_selected_cells().forEach(function(c) {
