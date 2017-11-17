@@ -729,13 +729,13 @@ define("genepattern/job", ["base/js/namespace",
         _loadJobStatus: function() {
             // If JSON already loaded
             if (this.options.json) {
-                var jsonObj = JSON.parse(this.options.json);
-                var job = new this.options.session.Job(jsonObj);
+                const jsonObj = JSON.parse(this.options.json);
+                const job = new this.options.session.Job(jsonObj);
                 this._displayJob(job);
             }
             // If we need to load the JSON from the server
             else {
-                var widget = this;
+                const widget = this;
 
                 this.options.session.job({
                     jobNumber: this.options.jobNumber,
