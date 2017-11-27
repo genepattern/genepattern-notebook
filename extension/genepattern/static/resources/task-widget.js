@@ -1523,7 +1523,7 @@ define("genepattern/task", ["base/js/namespace",
                                                             .attr("href", "#")
                                                             .append("Toggle Code View")
                                                             .click(function() {
-                                                                widget.toggleCode();
+                                                                widget.toggle_code();
                                                             })
                                                     )
                                             )
@@ -1548,11 +1548,6 @@ define("genepattern/task", ["base/js/namespace",
                 $("<div></div>")
                     .addClass("panel-body")
                     .css("position", "relative")
-                    .append(
-                        $("<div></div>")
-                            .addClass("widget-code gp-widget-task-code")
-                            .css("display", "none")
-                    )
                     .append( // Attach message box
                         $("<div></div>")
                             .addClass("alert gp-widget-task-message")
@@ -2400,61 +2395,21 @@ define("genepattern/task", ["base/js/namespace",
         /**
          * Toggle the code view on or off
          */
-        toggleCode: function() {
-            var widget = this;
-            var code = this.element.find(".gp-widget-task-code");
-            var form = this.element.find(".gp-widget-task-form");
-            var headers = this.element.find(".gp-widget-task-subheader, .gp-widget-task-footer");
-            var eula = this.element.find(".gp-widget-task-eula");
-            var message = this.element.find(".gp-widget-task-message");
+        toggle_code: function() {
+            // Get the code block
+            const code = this.element.closest(".cell").find(".input");
+            const is_hidden = code.is(":hidden");
+            const cell = this.options.cell;
 
-            if (code.is(":hidden")) {
-                this.options.cell.code_mirror.refresh();
-                var raw = this.element.closest(".cell").find(".input").html();
-                code.html(raw);
-
-                // Fix the issue where the code couldn't be selected
-                code.find(".CodeMirror-scroll").attr("draggable", "false");
-
-                // Fix the issue with the bogus scrollbars
-                code.find(".CodeMirror-hscrollbar").remove();
-                code.find(".CodeMirror-vscrollbar").remove();
-                code.find(".CodeMirror-sizer").css("min-width", "").css("overflow", "auto");
-
-                form.slideUp();
-                headers.slideUp();
-                eula.slideUp();
-                message.slideUp();
+            if (is_hidden) {
+                // Show the code block
                 code.slideDown();
+                GPNotebook.slider.set_metadata(cell, "show_code", true);
             }
             else {
-                form.slideDown();
-
-                // Only show message if there is one
-                if (message.hasClass("alert-success") || message.hasClass("alert-danger")) {
-                    message.slideDown();
-                }
-
-
-                if (widget.options.session) { // Protect against null
-                    // Only show the EULA if there is one to display
-                    var task = widget.options.session.task(widget.options.lsid);
-                    if (task && task.eula() && task.eula().pendingEulas && task.eula().pendingEulas.length > 0) {
-                        eula.slideDown();
-                    }
-                }
-
-                // Only show these bits if authenticated and installed
-                if (widget.options.session && widget.options.session.authenticated && this._installed) {
-                    headers.slideDown();
-                }
-
+                // Hide the code block
                 code.slideUp();
-            }
-
-            var collapsed = this.element.find(".widget-slide-indicator").find(".fa-plus").length > 0;
-            if (collapsed) {
-                this.expandCollapse();
+                GPNotebook.slider.set_metadata(cell, "show_code", false);
             }
         },
 
@@ -3110,9 +3065,7 @@ define("genepattern/task", ["base/js/namespace",
                     // Protect against the "double render" bug in Jupyter 3.2.1
                     element.parent().find(".gp-widget-task:not(:first-child)").remove();
 
-                    element.closest(".cell").find(".input")
-                        .css("height", "0")
-                        .css("overflow", "hidden");
+                    element.closest(".cell").find(".input").hide();
                 }
                 else {
                     setTimeout(hideCode, 10);

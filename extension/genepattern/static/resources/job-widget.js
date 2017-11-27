@@ -149,7 +149,7 @@ define("genepattern/job", ["base/js/namespace",
                                                                     .attr("href", "#")
                                                                     .append("Toggle Code View")
                                                                     .click(function() {
-                                                                        widget.toggleCode();
+                                                                        widget.toggle_code();
                                                                     })
                                                             )
                                                     )
@@ -208,18 +208,12 @@ define("genepattern/job", ["base/js/namespace",
                                     .addClass("gp-widget-job-children")
                             )
                     )
-                    .append(
-                        $("<div></div>")
-                            .addClass("widget-code gp-widget-job-code")
-                            .css("display", "none")
-                    )
             );
 
             // Set as child job, if necessary
             if (this.options.childJob) {
                 this.element.find(".gp-widget-job-share").hide();
                 this.element.find(".gp-widget-job-reload").hide();
-                this.element.find(".gp-widget-job-codetoggle").hide();
                 this.element.find(".gp-widget-logo").hide();
             }
 
@@ -630,34 +624,21 @@ define("genepattern/job", ["base/js/namespace",
         /**
          * Toggle the code view on or off
          */
-        toggleCode: function() {
-            var code = this.element.find(".gp-widget-job-code:last");
-            var view = this.element.find(".gp-widget-job-body-wrapper:first");
+        toggle_code: function() {
+            // Get the code block
+            const code = this.element.closest(".cell").find(".input");
+            const is_hidden = code.is(":hidden");
+            const cell = this.options.cell;
 
-            if (code.is(":hidden")) {
-                this.element.closest(".cell").data("cell").code_mirror.refresh();
-                var raw = this.element.closest(".cell").find(".input").html();
-                code.html(raw);
-
-                // Fix the issue where the code couldn't be selected
-                code.find(".CodeMirror-scroll").attr("draggable", "false");
-
-                // Fix the issue with the bogus scrollbars
-                code.find(".CodeMirror-hscrollbar").remove();
-                code.find(".CodeMirror-vscrollbar").remove();
-                code.find(".CodeMirror-sizer").css("min-width", "").css("overflow", "auto");
-
-                view.slideUp();
+            if (is_hidden) {
+                // Show the code block
                 code.slideDown();
+                GPNotebook.slider.set_metadata(cell, "show_code", true);
             }
             else {
-                view.slideDown();
+                // Hide the code block
                 code.slideUp();
-            }
-
-            var collapsed = this.element.find(".widget-slide-indicator:first").find(".fa-plus").length > 0;
-            if (collapsed) {
-                this.expandCollapse();
+                GPNotebook.slider.set_metadata(cell, "show_code", false);
             }
         },
 
@@ -1139,9 +1120,7 @@ define("genepattern/job", ["base/js/namespace",
                     // Protect against the "double render" bug in Jupyter 3.2.1
                     element.parent().find(".gp-widget-job:not(:first-child)").remove();
 
-                    element.closest(".cell").find(".input")
-                    .css("height", "0")
-                    .css("overflow", "hidden");
+                    element.closest(".cell").find(".input").hide();
                 }
                 else {
                     setTimeout(hideCode, 10);

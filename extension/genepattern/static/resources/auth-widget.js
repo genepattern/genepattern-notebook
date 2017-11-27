@@ -21,6 +21,7 @@
 var GENEPATTERN_SERVERS = [
     ['Broad Institute', 'https://genepattern.broadinstitute.org/gp'],
     ['Indiana University', 'https://gp.indiana.edu/gp'],
+    ['GenePattern AWS Beta', 'https://gp-beta-ami.genepattern.org/gp'],
     ['Broad Internal (Broad Institute Users Only)', 'https://gpbroad.broadinstitute.org/gp'],
     ['Custom GenePattern Server', 'Custom']
 ];
@@ -118,7 +119,7 @@ define("genepattern/authentication", ["base/js/namespace",
                                                                 .attr("href", "#")
                                                                 .append("Toggle Code View")
                                                                 .click(function() {
-                                                                    widget.toggleCode();
+                                                                    widget.toggle_code();
                                                                 })
                                                         )
                                                 )
@@ -140,11 +141,6 @@ define("genepattern/authentication", ["base/js/namespace",
                                 )
                         )
                     )
-                .append(
-                    $("<div></div>")
-                        .addClass("panel-body widget-code")
-                        .css("display", "none")
-                )
                 .append(
                     $("<div></div>")
                         .addClass("panel-body widget-view")
@@ -309,9 +305,7 @@ define("genepattern/authentication", ["base/js/namespace",
             var hideCode = function() {
                 var cell = element.closest(".cell");
                 if (cell.length > 0) {
-                    element.closest(".cell").find(".input")
-                    .css("height", "0")
-                    .css("overflow", "hidden");
+                    element.closest(".cell").find(".input").hide();
                 }
                 else {
                     setTimeout(hideCode, 10);
@@ -702,18 +696,12 @@ define("genepattern/authentication", ["base/js/namespace",
          * @param message - String containing the message to show
          */
         successMessage: function(message) {
-            // Get into the correct view
-            var code = this.element.find(".widget-code");
-            var view = this.element.find(".widget-view");
-            view.slideDown();
-            code.slideUp();
-
             // Hide the loading message & logged in
             this.element.find(".gp-widget-loading").hide();
             this.element.find(".gp-widget-logged-in").hide();
 
             // Display the message
-            var messageBox = this.element.find(".gp-widget-auth-message");
+            const messageBox = this.element.find(".gp-widget-auth-message");
             messageBox.removeClass("alert-danger");
             messageBox.removeClass("alert-info");
             messageBox.addClass("alert-success");
@@ -727,18 +715,12 @@ define("genepattern/authentication", ["base/js/namespace",
          * @param message - String containing the message to show
          */
         errorMessage: function(message) {
-            // Get into the correct view
-            var code = this.element.find(".widget-code");
-            var view = this.element.find(".widget-view");
-            view.slideDown();
-            code.slideUp();
-
             // Hide the loading message & logged in
             this.element.find(".gp-widget-loading").hide();
             this.element.find(".gp-widget-logged-in").hide();
 
             // Display the error
-            var messageBox = this.element.find(".gp-widget-auth-message");
+            const messageBox = this.element.find(".gp-widget-auth-message");
             messageBox.removeClass("alert-success");
             messageBox.removeClass("alert-info");
             messageBox.addClass("alert-danger");
@@ -752,18 +734,12 @@ define("genepattern/authentication", ["base/js/namespace",
          * @param message - String containing the message to show
          */
         infoMessage: function(message) {
-            // Get into the correct view
-            var code = this.element.find(".widget-code");
-            var view = this.element.find(".widget-view");
-            view.slideDown();
-            code.slideUp();
-
             // Hide the loading message & logged in
             this.element.find(".gp-widget-loading").hide();
             this.element.find(".gp-widget-logged-in").hide();
 
             // Display the message
-            var messageBox = this.element.find(".gp-widget-auth-message");
+            const messageBox = this.element.find(".gp-widget-auth-message");
             messageBox.removeClass("alert-danger");
             messageBox.removeClass("alert-success");
             messageBox.addClass("alert-info");
@@ -787,7 +763,6 @@ define("genepattern/authentication", ["base/js/namespace",
                 toSlide.slideDown();
                 indicator.removeClass("fa-plus");
                 indicator.addClass("fa-minus");
-                this.element.find(".widget-code").slideUp();
             }
             else {
                 toSlide.slideUp();
@@ -796,37 +771,21 @@ define("genepattern/authentication", ["base/js/namespace",
             }
         },
 
-        toggleCode: function() {
-            var code = this.element.find(".widget-code");
-            var view = this.element.find(".widget-view");
+        toggle_code: function() {
+            // Get the code block
+            const code = this.element.closest(".cell").find(".input");
+            const is_hidden = code.is(":hidden");
+            const cell = this.options.cell;
 
-            if (code.is(":hidden")) {
-                this.options.cell.code_mirror.refresh();
-                var raw = this.element.closest(".cell").find(".input").html();
-                code.html(raw);
-
-                // Fix the issue where the code couldn't be selected
-                code.find(".CodeMirror-scroll").attr("draggable", "false");
-
-                // Fix the issue with the bogus scrollbars
-                code.find(".CodeMirror-hscrollbar").remove();
-                code.find(".CodeMirror-vscrollbar").remove();
-                code.find(".CodeMirror-sizer").css("min-width", "").css("overflow", "auto");
-
-                view.slideUp();
+            if (is_hidden) {
+                // Show the code block
                 code.slideDown();
+                GPNotebook.slider.set_metadata(cell, "show_code", true);
             }
             else {
-                // If normally collapsed
-                var collapsed = this.element.find(".widget-slide-indicator").find(".fa-plus").length > 0;
-                if (collapsed) {
-                    code.slideUp();
-                }
-                // If otherwise expanded
-                else {
-                    view.slideDown();
-                    code.slideUp();
-                }
+                // Hide the code block
+                code.slideUp();
+                GPNotebook.slider.set_metadata(cell, "show_code", false);
             }
         },
 
@@ -1127,9 +1086,7 @@ define("genepattern/authentication", ["base/js/namespace",
                 // Protect against the "double render" bug in Jupyter 3.2.1
                 element.parent().find(".gp-widget-auth:not(:first-child)").remove();
 
-                element.closest(".cell").find(".input")
-                    .css("height", "0")
-                    .css("overflow", "hidden");
+                element.closest(".cell").find(".input").hide();
             }, 1);
         }
     });
