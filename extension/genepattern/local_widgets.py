@@ -130,7 +130,7 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
 
                 # Handle overriding the default value
                 if 'default' in p_meta:
-                    param['default'] = p_meta['default']
+                    param['default'] = GPUIBuilder._safe_default(p_meta['default'])
 
                 # Handle hiding the parameter
                 if 'hide' in p_meta:
@@ -149,14 +149,31 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
         return docstring
 
     @staticmethod
+    def _is_primitive(thing):
+        """Determine if the value is a primitive"""
+        primitive = (int, str, bool, float)
+        return isinstance(thing, primitive)
+
+    @staticmethod
+    def _safe_default(default):
+        """If not safe to serialize in a traitlet, cast to a string"""
+
+        # If the value is not a primitive, cast to string
+        if not GPUIBuilder._is_primitive(default):
+            default = str(default)
+        return default
+
+    @staticmethod
     def _params(sig):
         """Read params, values and annotations from the signature"""
         params = []
         for p in sig.parameters:
             param = sig.parameters[p]
             optional = param.default != inspect.Signature.empty
-            default = param.default if param.default != inspect.Signature.empty else ''
+            default = GPUIBuilder._safe_default(param.default) if param.default != inspect.Signature.empty else ''
             annotation = param.annotation if param.annotation != inspect.Signature.empty else ''
+
+            # Create the parameter attribute dict
             p_attr = {
                 "name": param.name,
                 "label": param.name,
