@@ -167,11 +167,6 @@ define("genepattern/uibuilder", ["base/js/namespace",
                 $("<div></div>")
                     .addClass("panel-body")
                     .css("position", "relative")
-                    .append(
-                        $("<div></div>")
-                            .addClass("widget-code gp-widget-task-code")
-                            .css("display", "none")
-                    )
                     .append( // Attach message box
                         $("<div></div>")
                             .addClass("alert gp-widget-task-message")
@@ -336,7 +331,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
             param_doms.each(function(i, dom) {
                 const param_widget = $(dom).data("widget");
                 if (param_widget) {
-                    let default_value = param_widget.options.param.defaultValue();
+                    let default_value = param_widget.options.param.defaultValue().toString();
                     const param_name = param_widget.options.param.name();
 
                     // Special case for blank default values
@@ -353,7 +348,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
             // Reset the output variable
             const output_dom = widget.element.find(".gp-widget-ui-output").find(".text-widget");
             const output_widget = $(output_dom).data("widget");
-            let default_value = output_widget.options.param.defaultValue();
+            let default_value = output_widget.options.param.defaultValue().toString();
 
             // Special case for blank default values
             if (default_value === "") default_value = " ";
@@ -363,7 +358,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
         },
 
         _get_parameter: function(name) {
-            const param_dom = this.element.find(".gp-widget-task-param[name='" + name + "']").find(".text-widget");
+            const param_dom = this.element.find(".gp-widget-task-param[name='" + name + "']").find(".text-widget, .choice-widget, .file-widget");
             if (param_dom) return param_dom.data("widget");
             else console.log("Parameter cannot be found to obtain value: " + name);
         },
@@ -563,11 +558,12 @@ define("genepattern/uibuilder", ["base/js/namespace",
                         _defaultValue: p["default"],
                         _hidden: p["hide"],
                         _choices: p["choices"] && Object.keys(p["choices"]).length ? p["choices"] : false,
+                        _type: p["type"],
 
                         name: function() {return this._name },
                         label: function() {return this._label },
                         optional: function() {return this._optional },
-                        type: function() {return "java.lang.String" },
+                        type: function() {return this._type },
                         description: function() {return this._description },
                         choices: function() {return this._choices },
                         defaultValue: function() {return this._defaultValue },
@@ -711,13 +707,13 @@ define("genepattern/uibuilder", ["base/js/namespace",
             if (required) paramBox.addClass("gp-widget-task-required");
 
             // Add the correct input widget
-            if (param.type() === "java.io.File") {
+            if (param.type() === "java.io.File" || param.type() === "file") {
                 paramBox.find(".gp-widget-task-param-input").fileInput({
                     runTask: this,
                     param: param
                 });
             }
-            else if (param.choices()) {
+            else if (param.choices() || param.type() === "choice") {
                 paramBox.find(".gp-widget-task-param-input").choiceInput({
                     runTask: this,
                     param: param,
@@ -725,19 +721,27 @@ define("genepattern/uibuilder", ["base/js/namespace",
                     default: param.defaultValue()
                 });
             }
-            else if (param.type() === "java.lang.String") {
+            else if (param.type() === "java.lang.String" || param.type() === "text") {
                 paramBox.find(".gp-widget-task-param-input").textInput({
                     runTask: this,
                     param: param,
                     default: param.defaultValue()
                 });
             }
-            else if (param.type() === "java.lang.Integer" || param.type() === "java.lang.Float") {
+            else if (param.type() === "java.lang.Integer" || param.type() === "java.lang.Float" || param.type() === "number") {
                 paramBox.find(".gp-widget-task-param-input").textInput({
                     runTask: this,
                     param: param,
                     default: param.defaultValue(),
                     type: "number"
+                });
+            }
+            else if (param.type() === "password") {
+                paramBox.find(".gp-widget-task-param-input").textInput({
+                    runTask: this,
+                    param: param,
+                    default: param.defaultValue(),
+                    type: "password"
                 });
             }
             else {

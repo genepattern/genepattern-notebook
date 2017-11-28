@@ -1297,11 +1297,11 @@ define("genepattern/task", ["base/js/namespace",
          */
         _applyDefault: function() {
             // If the default is not in the list of options, select Custom Value
-            if (Object.values(this.options.choices).indexOf(this.options.default) < 0) {
+            if (Object.values(this.options.choices).indexOf(this.options.default.toString()) < 0) {
                 this.element.find("option:last").val(this.options.default);
             }
 
-            this.element.find(".choice-widget-select").val(this.options.default);
+            this.element.find(".choice-widget-select").val(this.options.default.toString());
             this._value = this.element.find(".choice-widget-select").val();
         },
 
@@ -2447,13 +2447,13 @@ define("genepattern/task", ["base/js/namespace",
             if (required) paramBox.addClass("gp-widget-task-required");
 
             // Add the correct input widget
-            if (param.type() === "java.io.File") {
+            if (param.type() === "java.io.File" || param.type() === "file") {
                 paramBox.find(".gp-widget-task-param-input").fileInput({
                     runTask: this,
                     param: param
                 });
             }
-            else if (param.choices()) {
+            else if (param.choices() || param.type() === "choice") {
                 paramBox.find(".gp-widget-task-param-input").choiceInput({
                     runTask: this,
                     param: param,
@@ -2461,19 +2461,27 @@ define("genepattern/task", ["base/js/namespace",
                     default: param.defaultValue()
                 });
             }
-            else if (param.type() === "java.lang.String") {
+            else if (param.type() === "java.lang.String" || param.type() === "text") {
                 paramBox.find(".gp-widget-task-param-input").textInput({
                     runTask: this,
                     param: param,
                     default: param.defaultValue()
                 });
             }
-            else if (param.type() === "java.lang.Integer" || param.type() === "java.lang.Float") {
+            else if (param.type() === "java.lang.Integer" || param.type() === "java.lang.Float" || param.type() === "number") {
                 paramBox.find(".gp-widget-task-param-input").textInput({
                     runTask: this,
                     param: param,
                     default: param.defaultValue(),
                     type: "number"
+                });
+            }
+            else if (param.type() === "password") {
+                paramBox.find(".gp-widget-task-param-input").textInput({
+                    runTask: this,
+                    param: param,
+                    default: param.defaultValue(),
+                    type: "password"
                 });
             }
             else {

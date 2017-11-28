@@ -115,6 +115,14 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
         self.function_or_method = function_or_method
 
     @staticmethod
+    def _safe_type(raw_type):
+        """Ensure that the provided type is a known type, defaulting to text"""
+        if raw_type == 'text' or raw_type == 'number' or raw_type == 'password' or raw_type == 'choice' or raw_type == 'file':
+            return raw_type
+        else:
+            return 'text'
+
+    @staticmethod
     def _apply_custom_parameter_info(params, metadata):
         for param in params:  # Iterate through each parameter
             if param['name'] in metadata:  # If there is something to override
@@ -135,6 +143,10 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
                 # Handle hiding the parameter
                 if 'hide' in p_meta:
                     param['hide'] = p_meta['hide']
+
+                # Handle specifying the parameter's type
+                if 'type' in p_meta:
+                    param['type'] = GPUIBuilder._safe_type(p_meta['type'])
 
                 # Handle giving the parameter a list of choices
                 if 'choices' in p_meta:
@@ -164,6 +176,22 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
         return default
 
     @staticmethod
+    def _guess_type(val):
+        """Guess the input type of the parameter based off the default value, if unknown use text"""
+        if isinstance(val, bool):
+            return "choice"
+        elif isinstance(val, int):
+            return "number"
+        elif isinstance(val, float):
+            return "number"
+        elif isinstance(val, str):
+            return "text"
+        elif hasattr(val, 'read'):
+            return "file"
+        else:
+            return "text"
+
+    @staticmethod
     def _params(sig):
         """Read params, values and annotations from the signature"""
         params = []
@@ -172,6 +200,7 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
             optional = param.default != inspect.Signature.empty
             default = GPUIBuilder._safe_default(param.default) if param.default != inspect.Signature.empty else ''
             annotation = param.annotation if param.annotation != inspect.Signature.empty else ''
+            type = GPUIBuilder._guess_type(default)
 
             # Create the parameter attribute dict
             p_attr = {
@@ -181,8 +210,18 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
                 "default": default,
                 "description": annotation,
                 "hide": False,
+                "type": type,
                 "choices": []
             }
+
+            # Special choices handling for boolean parameters
+            if isinstance(default, bool):
+                p_attr['choices'] = {
+                    'True': 'True',
+                    'False': 'False'
+                }
+
+            # Append it to the list
             params.append(p_attr)
         return params
 
