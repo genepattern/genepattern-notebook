@@ -431,11 +431,10 @@ define("genepattern/navigation", ["base/js/namespace",
      * @param name - The file name
      * @param href - The URL of the file
      * @param kind - The GenePattern kind of the file
-     * @param indexString - String containing output file index
      * @param fullMenu - Whether this is a full menu or a log file menu
      * @returns {*|jQuery|HTMLElement}
      */
-    slider.buildMenu = function(widget, element, name, href, kind, indexString, fullMenu) {
+    slider.buildMenu = function(widget, element, name, href, kind, fullMenu) {
 
         // Attach simple menu
         if (!fullMenu) {
@@ -468,7 +467,7 @@ define("genepattern/navigation", ["base/js/namespace",
         }
         // Attach advanced menu
         else {
-            var popover = $("<div></div>")
+            const popover = $("<div></div>")
                 .addClass("list-group")
                 .append(
                     $("<label></label>")

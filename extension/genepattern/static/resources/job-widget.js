@@ -967,7 +967,6 @@ define("genepattern/job", ["base/js/namespace",
             if (outputs) {
                 for (var i = 0; i < outputs.length; i++) {
                     var wrapper = $("<div></div>");
-                    var indexString = i.toString();
                     var output = outputs[i];
                     var link = $("<a></a>")
                         .text(output["link"]["name"] + " ")
@@ -986,7 +985,7 @@ define("genepattern/job", ["base/js/namespace",
                         });
 
                     // Build and attach the file menu
-                    GPNotebook.slider.buildMenu(widget, link, output["link"]["name"], output["link"]["href"], output["kind"], indexString, fullMenu);
+                    GPNotebook.slider.buildMenu(widget, link, output["link"]["name"], output["link"]["href"], output["kind"], fullMenu);
 
                     link.appendTo(wrapper);
                     wrapper.appendTo(outputsList);
