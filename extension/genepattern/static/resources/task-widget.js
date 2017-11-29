@@ -738,6 +738,9 @@ define("genepattern/task", ["base/js/namespace",
             // This changes the value from the file name to the uploaded URL
             // Try removing the matching URL
             $.each(this._values, function(i, e) {
+                // If no GP server is available, skip this value
+                if (!widget.options.runTask.options.session) return true;
+
                 var parser = document.createElement('a');
                 parser.href = widget.options.runTask.options.session.server();
 

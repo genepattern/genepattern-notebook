@@ -1001,12 +1001,17 @@ define("genepattern/uibuilder", ["base/js/namespace",
                         const uiParam = $(uiParams[i]);
                         const uiInput = uiParam.find(".gp-widget-task-param-input");
                         let uiValue = widget._getInputValue(uiInput);
-                        let name = uiParam.attr("name");
-                        let quotes = widget.is_string_literal(uiInput.find("input, select").val());
-                        let reference = globals.indexOf(uiValue.trim()) >= 0 && !quotes;
 
                         // Handle leading and trailing whitespace
                         if (typeof uiValue === "string") uiValue = uiValue.trim();
+
+                        let name = uiParam.attr("name");
+                        let quotes = widget.is_string_literal(uiInput.find("input:last, select").val());
+
+                        // Check for variable references
+                        let reference = false;
+                        if (typeof uiValue === "string") reference = globals.indexOf(uiValue) >= 0 && !quotes;          // Handle string values
+                        if (uiValue.constructor === Array) reference = globals.indexOf(uiValue[0]) >= 0 && !quotes;     // Handle array values
 
                         if (uiValue !== null) {
                             // Wrap value in list if not already wrapped
