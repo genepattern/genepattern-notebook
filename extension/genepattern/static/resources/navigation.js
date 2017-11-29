@@ -320,14 +320,14 @@ define("genepattern/navigation", ["base/js/namespace",
      * @param jobNumber
      */
     slider.buildJobCode = function(cell, session, jobNumber) {
-        var code = "job" + jobNumber + " = gp.GPJob(genepattern.get_session(" + session + "), " + jobNumber + ")\n" +
+        const code = "job" + jobNumber + " = gp.GPJob(genepattern.get_session(" + session + "), " + jobNumber + ")\n" +
                    "genepattern.GPJobWidget(job" + jobNumber + ")";
 
         // Add the metadata
         slider.makeGPCell(cell, "job");
 
-        // Add the code to the cell
-        cell.set_text(code);
+        // Add the code to the cell, if not a placeholder cell
+        if (jobNumber !== -1) cell.set_text(code);
     };
 
     /**
@@ -1034,6 +1034,22 @@ define("genepattern/navigation", ["base/js/namespace",
 
         // Set the value
         cell.metadata.genepattern[key] = value;
+    };
+
+    slider.create_placeholder = function() {
+        const cell = Jupyter.notebook.insert_cell_below();
+        const code = "genepattern.GPJobWidget(None)";
+
+        // Add the metadata
+        slider.makeGPCell(cell, "job");
+
+        // Add the code to the cell
+        cell.set_text(code);
+
+        // Render the widget
+        setTimeout(function() {
+            cell.execute();
+        }, 10);
     };
 
     slider.applyColors = function(element, url) {

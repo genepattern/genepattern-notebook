@@ -1519,6 +1519,19 @@ define("genepattern/task", ["base/js/namespace",
                                                 $("<li></li>")
                                                     .append(
                                                         $("<a></a>")
+                                                            .addClass("gp-widget-task-placeholder")
+                                                            .attr("title", "Create Placeholder Cell")
+                                                            .attr("href", "#")
+                                                            .append("Create Placeholder")
+                                                            .click(function() {
+                                                                GPNotebook.slider.create_placeholder();
+                                                            })
+                                                    )
+                                            )
+                                            .append(
+                                                $("<li></li>")
+                                                    .append(
+                                                        $("<a></a>")
                                                             .attr("title", "Toggle Code View")
                                                             .attr("href", "#")
                                                             .append("Toggle Code View")

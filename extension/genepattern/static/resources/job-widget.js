@@ -224,8 +224,11 @@ define("genepattern/job", ["base/js/namespace",
 
             // Check to see if the user is authenticated yet
             if (widget.options.session && widget.options.session.authenticated) {
-                // If authenticated, load job status
-                this._loadJobStatus();
+                // If placeholder cell (job number is -1), display placeholder
+                if (this._is_placeholder()) this._load_placeholder();
+
+                // Otherwise, if authenticated, load job status
+                else this._loadJobStatus();
             }
             else {
                 // If not authenticated, display message
@@ -271,6 +274,72 @@ define("genepattern/job", ["base/js/namespace",
          */
         _setOption: function(key, value) {
             this._super(key, value);
+        },
+
+        /**
+         * Walks the DOM and gets the task name associated with this job cell.
+         * Returns null if no associated task name was found.
+         *
+         * @private
+         */
+        _get_task_from_dom: function() {
+            const prev_cells = $(this.options.cell.element).prevAll(".cell");
+            let task_name = null;
+
+            // For each previous cell, look for a task widget and get the name
+            prev_cells.each(function(i, cell) {
+                const task_element = $(cell).find(".gp-widget-task");
+                if (task_element.length > 0) {
+                    const task_widget = task_element.data("widget");
+                    task_name = task_widget.options.task.name();
+                    return false;
+                }
+            });
+
+            return task_name
+        },
+
+        /**
+         * Load the placeholder cell interface
+         *
+         * @private
+         */
+        _load_placeholder: function() {
+            // Get the task name
+            let task_name = this._get_task_from_dom();
+            if (task_name === null) task_name = "Unknown";
+
+            // Set the job number
+            this.element.attr("name", "-1");
+
+            // Display the task name
+            this.element.find(".gp-widget-job-task:first").text(task_name + " Job");
+
+            // Display the placeholder message
+            this.infoMessage("Job status and results will display here once you begin the " + task_name + " analysis above.")
+        },
+
+        /**
+         * Show an info message to the user
+         *
+         * @param message - String containing the message to show
+         */
+        infoMessage: function(message) {
+            const messageBox = this.element.find(".gp-widget-job-message");
+            messageBox.removeClass("alert-success");
+            messageBox.removeClass("alert-danger");
+            messageBox.addClass("alert-info");
+            messageBox.text(message);
+            messageBox.show("shake", {}, 500);
+        },
+
+        /**
+         * Determine if this cell is a placeholder job cell (job number is -1)
+         *
+         * @private
+         */
+        _is_placeholder: function() {
+            return this.options.jobNumber === -1;
         },
 
         /**
@@ -339,10 +408,29 @@ define("genepattern/job", ["base/js/namespace",
          * @param job
          */
         buildSharingPanel: function() {
-            var widget = this;
-            var job = this.options.job;
-            var optionsPane = $("<div></div>");
-            var permissions = job.permissions();
+            // Display error and exit if not authenticated or a placeholder job
+            if (!this.options.session || !this.options.session.authenticated || this._is_placeholder()) {
+                const dialog = require('base/js/dialog');
+                dialog.modal({
+                    notebook: Jupyter.notebook,
+                    keyboard_manager: this.keyboard_manager,
+                    title : "Sharing Error",
+                    body : "To share you must be authenticated and have successfully launched the job.",
+                    buttons : {
+                        "OK" : {
+                            "click": function() {
+                            }
+                        }
+                    }
+                });
+
+                return;
+            }
+
+            const widget = this;
+            const job = this.options.job;
+            const optionsPane = $("<div></div>");
+            const permissions = job.permissions();
 
             // Make sure that the permissions exist, if not return an error
             if (permissions === undefined || permissions === null) {
@@ -604,11 +692,30 @@ define("genepattern/job", ["base/js/namespace",
          * Reloads the job in a Task widget
          */
         reloadJob: function() {
-            var job = this.options.job;
-            var widget = this;
+            // Display error and exit if not authenticated or a placeholder job
+            if (!this.options.session || !this.options.session.authenticated || this._is_placeholder()) {
+                const dialog = require('base/js/dialog');
+                dialog.modal({
+                    notebook: Jupyter.notebook,
+                    keyboard_manager: this.keyboard_manager,
+                    title : "Duplication Error",
+                    body : "To duplicate an analysis you must be authenticated and have an analysis to duplicate.",
+                    buttons : {
+                        "OK" : {
+                            "click": function() {
+                            }
+                        }
+                    }
+                });
+
+                return;
+            }
+
+            const job = this.options.job;
+            const widget = this;
 
             job.code("Python").done(function(code) {
-                var cell = Jupyter.notebook.insert_cell_below();
+                const cell = Jupyter.notebook.insert_cell_below();
                 widget._stripUnwantedCode(cell, code);
 
                 // Execute the cell
@@ -832,8 +939,9 @@ define("genepattern/job", ["base/js/namespace",
          * @param message - String containing the message to show
          */
         successMessage: function(message) {
-            var messageBox = this.element.find(".gp-widget-job-message");
+            const messageBox = this.element.find(".gp-widget-job-message");
             messageBox.removeClass("alert-danger");
+            messageBox.removeClass("alert-info");
             messageBox.addClass("alert-success");
             messageBox.text(message);
             messageBox.show("shake", {}, 500);
@@ -845,8 +953,9 @@ define("genepattern/job", ["base/js/namespace",
          * @param message - String containing the message to show
          */
         errorMessage: function(message) {
-            var messageBox = this.element.find(".gp-widget-job-message");
+            const messageBox = this.element.find(".gp-widget-job-message");
             messageBox.removeClass("alert-success");
+            messageBox.removeClass("alert-info");
             messageBox.addClass("alert-danger");
             messageBox.text(message);
             messageBox.show("shake", {}, 500);

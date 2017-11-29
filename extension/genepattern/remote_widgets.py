@@ -112,24 +112,26 @@ class GPAuthWidget(gp.GPResource, widgets.DOMWidget):
 
 class GPJobWidget(gp.GPResource, widgets.DOMWidget):
     """
-    A running or completed job on a Gene Pattern server.
+    A running or completed job on a GenePattern server.
 
     Contains methods to get the info of the job, and to wait on a running job by
     polling the server until the job is completed.
     """
     _view_name = Unicode('JobWidgetView').tag(sync=True)
     _view_module = Unicode("genepattern/job").tag(sync=True)
-    job_number = Integer(0).tag(sync=True)
+    job_number = Integer(-1).tag(sync=True)
 
-    def __init__(self, job, **kwargs):
-        super(GPJobWidget, self).__init__(job.uri)
+    def __init__(self, job=None, **kwargs):
+        # Handle None as placeholder job widget
+        super(GPJobWidget, self).__init__(job.uri if hasattr(job, 'uri') else None)
         widgets.DOMWidget.__init__(self, **kwargs)
-        self.job_number = job.job_number
+        if job is not None:
+            self.job_number = job.job_number
 
 
 class GPTaskWidget(gp.GPResource, widgets.DOMWidget):
     """
-    A running or completed job on a Gene Pattern server.
+    A running or completed job on a GenePattern server.
 
     Contains methods to get the info of the job, and to wait on a running job by
     polling the server until the job is completed.
