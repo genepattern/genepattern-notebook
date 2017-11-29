@@ -1,15 +1,10 @@
 /**
- * Define the GenePattern Call widget for Jupyter Notebook
+ * Define the UI Builder widget for Jupyter Notebook
  *
  * @author Thorin Tabor
  * @requires - jQuery, navigation.js
  *
- * Copyright 2016 The Broad Institute, Inc.
- *
- * SOFTWARE COPYRIGHT NOTICE
- * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
- * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not
- * responsible for its use, misuse, or functionality.
+ * Copyright 2017 Regents of the University of California and the Broad Institute
  */
 
 define("genepattern/uibuilder", ["base/js/namespace",
@@ -19,19 +14,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
                             "nbtools"], function (Jupyter, widgets, GPNotebook, tasks, NBToolManager) {
 
     /**
-     * Widget for entering parameters and launching a job from a task.
-     *
-     * Supported Features:
-     *      File Inputs
-     *      Text Inputs
-     *      Choice Inputs
-     *      EULA support
-     *      Reloaded Jobs
-     *      File Lists
-     *
-     * Non-Supported Features:
-     *      Batch Parameters
-     *      Dynamic Dropdowns
+     * Widget for turning any Python function into a interactive forms
      */
     $.widget("gp.buildUI", {
         // Flags for whether events have been called on the widget
@@ -323,6 +306,57 @@ define("genepattern/uibuilder", ["base/js/namespace",
             NBToolManager.instance().register(UIBuilderTool);
         },
 
+        /**
+         * Receives a file of the specified kind and sets the first matching param of that type
+         * Report an error to the console if no matching parameter found.
+         *
+         * @param url
+         * @param kind
+         */
+        receiveFile: function(url, kind) {
+            const uiParams = this.element.find(".gp-widget-task-param");
+            let matched = false;
+            $.each(uiParams, function(i, uiParam) {
+                const paramWidget = $(uiParam).find(".gp-widget-task-param-input").data("widget");
+                const param = paramWidget._param;
+                if (param.kinds !== undefined) {
+                    const kinds = param.kinds();
+                    if (kinds !== undefined && kinds !== null) {
+                        if (kinds.indexOf(kind) !== -1) {
+                            // Found a match!
+                            matched = true;
+                            // Set the value
+                            paramWidget.value(url);
+                            // Update the code
+                            paramWidget._updateCode();
+                            // Return and stop looping
+                            return false;
+                        }
+                    }
+                }
+            });
+
+            // No match was found
+            if (!matched) {
+                const name = this.options.name;
+                console.log("ERROR: No kind match found for " + url + " of kind " + kind + " in " + name);
+            }
+        },
+
+        /**
+         * Returns a list of allkKinds accepted by the function.
+         *
+         * @returns {Array}
+         */
+        acceptedKinds: function() {
+            const kinds = new Set();
+
+            this.options.params.forEach(function(param) {
+                if (param.kinds) for (let k of param.kinds) kinds.add(k)
+            });
+            return Array.from(kinds);
+        },
+
         reset_parameters: function() {
             const widget = this;
 
@@ -334,10 +368,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
                     let default_value = param_widget.options.param.defaultValue().toString();
                     const param_name = param_widget.options.param.name();
 
-                    // Special case for blank default values
-                    if (default_value === "") default_value = " ";
-
-                    param_widget.value(default_value);
+                    param_widget.value(default_value, true);
                     widget._set_parameter_metadata(param_name, default_value);
                 }
                 else {
@@ -559,6 +590,8 @@ define("genepattern/uibuilder", ["base/js/namespace",
                         _hidden: p["hide"],
                         _choices: p["choices"] && Object.keys(p["choices"]).length ? p["choices"] : false,
                         _type: p["type"],
+                        _maxValues: 1,
+                        _kinds: p["kinds"],
 
                         name: function() {return this._name },
                         label: function() {return this._label },
@@ -567,7 +600,9 @@ define("genepattern/uibuilder", ["base/js/namespace",
                         description: function() {return this._description },
                         choices: function() {return this._choices },
                         defaultValue: function() {return this._defaultValue },
-                        hidden: function() { return this._hidden; }
+                        hidden: function() { return this._hidden; },
+                        maxValues: function() { return this._maxValues; },
+                        kinds: function() { return this._kinds; }
                     };
 
                     const pDiv = widget._addParam(param, form);
@@ -710,6 +745,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
             if (param.type() === "java.io.File" || param.type() === "file") {
                 paramBox.find(".gp-widget-task-param-input").fileInput({
                     runTask: this,
+                    allowJobUploads: false,
                     param: param
                 });
             }
@@ -1187,578 +1223,6 @@ define("genepattern/uibuilder", ["base/js/namespace",
                 if (cell.length > 0) {
                     // Protect against the "double render" bug in Jupyter 3.2.1
                     element.parent().find(".gp-widget-call:not(:first-child)").remove();
-
-                    // element.closest(".cell").find(".input")
-                    //     .css("height", "0")
-                    //     .css("overflow", "hidden");
-                }
-                else {
-                    setTimeout(hideCode, 10);
-                }
-            };
-            setTimeout(hideCode, 1);
-        }
-    });
-
-    $.widget("gp.createModule", {
-        // Flags for whether events have been called on the widget
-        _widgetRendered: false,
-        _currentPage: 0,
-
-        options: {
-            name: null,
-            description: null,
-            version_commend: null,
-            author: null,
-            institution: null,
-            categories: null,
-            privacy: null,
-            quality: null,
-            file_format: null,
-            os: null,
-            cpu: null,
-            language: null,
-            user: null,
-            support_files: null,
-            documentation: null,
-            license: null,
-            lsid: null,
-            version: null,
-            lsid_authority: null,
-            command_line: null,
-            parameters: null
-        },
-
-        /**
-         * Constructor
-         *
-         * @private
-         */
-        _create: function () {
-            // Set variables
-            var widget = this;
-
-            // Add data pointer
-            this.element.data("widget", this);
-
-            // Add classes and scaffolding
-            this.element.addClass("panel panel-default gp-widget gp-widget-module");
-            this.element.append( // Attach header
-                $("<div></div>")
-                    .addClass("panel-heading gp-widget-task-header")
-                    .append(
-                        $("<div></div>")
-                            .addClass("widget-float-right")
-                            .append(
-                                $("<button></button>")
-                                    .addClass("btn btn-default btn-sm widget-slide-indicator")
-                                    .css("padding", "2px 7px")
-                                    .attr("title", "Expand or Collapse")
-                                    .attr("data-toggle", "tooltip")
-                                    .attr("data-placement", "bottom")
-                                    .append(
-                                        $("<span></span>")
-                                            .addClass("fa fa-minus")
-                                    )
-                                    .tooltip()
-                                    .click(function () {
-                                        widget.expandCollapse();
-                                    })
-                            )
-                            .append(" ")
-                            .append(
-                                $("<div></div>")
-                                    .addClass("btn-group")
-                                    .append(
-                                        $("<button></button>")
-                                            .addClass("btn btn-default btn-sm")
-                                            .css("padding", "2px 7px")
-                                            .attr("type", "button")
-                                            .attr("data-toggle", "dropdown")
-                                            .attr("aria-haspopup", "true")
-                                            .attr("aria-expanded", "false")
-                                            .append(
-                                                $("<span></span>")
-                                                    .addClass("fa fa-cog")
-                                            )
-                                            .append(" ")
-                                            .append(
-                                                $("<span></span>")
-                                                    .addClass("caret")
-                                            )
-                                    )
-                                    .append(
-                                        $("<ul></ul>")
-                                            .addClass("dropdown-menu")
-                                            .append(
-                                                $("<li></li>")
-                                                    .append(
-                                                        $("<a></a>")
-                                                            .attr("title", "GParc")
-                                                            .attr("href", "#")
-                                                            .append("GParc Repository")
-                                                            .click(function () {
-                                                                window.open("http://gparc.org/");
-                                                            })
-                                                    )
-                                            )
-                                    )
-                            )
-                    )
-                    .append(
-                        $("<img/>")
-                            .addClass("gp-widget-logo")
-                            .attr("src", Jupyter.notebook.base_url + "nbextensions/genepattern/resources/" + "GP_logo_on_black.png")
-                    )
-                    .append(
-                        $("<h3></h3>")
-                            .addClass("panel-title")
-                            .append(
-                                $("<span></span>")
-                                    .addClass("gp-widget-task-name")
-                                    .append("Module Creation Wizard")
-                            )
-                    )
-            );
-            this.element.append( // Attach header
-                $("<div></div>")
-                    .addClass("panel-body")
-                    .css("position", "relative")
-                    .append(
-                        $("<div></div>")
-                            .addClass("widget-code gp-widget-task-code")
-                            .css("display", "none")
-                    )
-                    .append( // Attach message box
-                        $("<div></div>")
-                            .addClass("alert gp-widget-task-message")
-                            .css("display", "none")
-                    )
-                    .append( // Attach subheader
-                        $("<div></div>")
-                            .addClass("gp-widget-task-subheader")
-                            .append(
-                                $("<div></div>")
-                                    .addClass("gp-widget-task-desc")
-                                    .append("Fill out the form below to create a GenePattern module. This will create a zip file, which can be uploaded and excuted on a GenePattern server.")
-                            )
-                            .append(
-                                $("<div></div>")
-                                    .addClass("gp-widget-task-run")
-                                    .append(
-                                        $("<button></button>")
-                                            .addClass("btn btn-primary gp-widget-module-next-button")
-                                            .text("Next")
-                                            .click(function () {
-                                                if (widget.validate()) {
-                                                    widget.next();
-                                                }
-                                            })
-                                    )
-                                    .append(
-                                        $("<button></button>")
-                                            .addClass("btn btn-primary gp-widget-module-previous-button")
-                                            .text("Previous")
-                                            .click(function () {
-                                                widget.previous();
-                                            })
-                                    )
-                                    .append("* Required Field")
-                            )
-                    )
-                    .append(
-                        $("<div></div>") // Attach form placeholder
-                            .addClass("form-horizontal gp-widget-task-form")
-                    )
-                    .append( // Attach footer
-                        $("<div></div>")
-                            .addClass("gp-widget-task-footer")
-                            .append(
-                                $("<div></div>")
-                                    .addClass("gp-widget-task-run")
-                                    .append(
-                                        $("<button></button>")
-                                            .addClass("btn btn-primary gp-widget-module-next-button")
-                                            .text("Next")
-                                            .click(function () {
-                                                if (widget.validate()) {
-                                                    widget.next();
-                                                }
-                                            })
-                                    )
-                                    .append(
-                                        $("<button></button>")
-                                            .addClass("btn btn-primary gp-widget-module-previous-button")
-                                            .text("Previous")
-                                            .click(function () {
-                                                widget.previous();
-                                            })
-                                    )
-                                    .append("* Required Field")
-                            )
-                    )
-            );
-
-            // Build the first page
-            widget._buildPage();
-
-            // Trigger gp.widgetRendered event on cell element
-            setTimeout(function () {
-                widget._widgetRendered = true;
-                widget.element.closest(".cell").trigger("gp.widgetRendered");
-            }, 10);
-
-            return this;
-        },
-
-        /**
-         * Destructor
-         *
-         * @private
-         */
-        _destroy: function () {
-            this.element.removeClass("gp-widget-module");
-            this.element.empty();
-        },
-
-        /**
-         * Update all options
-         *
-         * @param options - Object contain options to update
-         * @private
-         */
-        _setOptions: function (options) {
-            this._superApply(arguments);
-        },
-
-        /**
-         * Update for single options
-         *
-         * @param key - The name of the option
-         * @param value - The new value of the option
-         * @private
-         */
-        _setOption: function (key, value) {
-            this._super(key, value);
-        },
-
-        /**
-         * Gathers and returns metadata which is used when converting the notebook into a GenePattern module
-         */
-        module_metadata: function() {
-            var session = GPNotebook.session_manager.get_session(0);
-
-            var name = Jupyter.notebook.get_notebook_name();
-            var description = this.options.description;
-            var user = session ? session.username : null;
-
-            return {
-                name: name,
-                user: user,
-                description: description
-            };
-        },
-
-        validate: function() {
-            // TODO: Implement
-            return true;
-        },
-
-        savePage: function() {
-            // TODO: Implement
-        },
-
-        previous: function() {
-            this.savePage();
-            this._currentPage--;
-            this._buildPage();
-            this._scroll();
-        },
-
-        next: function() {
-            this.savePage();
-            this._currentPage++;
-            this._buildPage();
-            this._scroll();
-        },
-
-        _cleanPage: function() {
-            this.element.find(".gp-widget-task-form").empty();
-        },
-
-        _updateButtons() {
-            var prevButton = this.element.find(".gp-widget-module-previous-button");
-            var nextButton = this.element.find(".gp-widget-module-next-button");
-
-            // Disable previous on first page
-            if (this._currentPage === 0) {
-                prevButton.attr("disabled", "disabled");
-            }
-            else { // Enable previous on all other pages
-                prevButton.removeAttr("disabled");
-            }
-
-            // Change Next to Finish on the last page
-            if (this._currentPage === (this.pages.length-1)) {
-                nextButton.text("Finish");
-                nextButton.removeClass("btn-primary");
-                nextButton.addClass("btn-warning");
-            }
-            else { // Otherwise change Finish back to Next
-                nextButton.text("Next");
-                nextButton.addClass("btn-primary");
-                nextButton.removeClass("btn-warning");
-            }
-
-        },
-
-        _scroll: function() {
-            $('#site').animate({
-                scrollTop: $(this.element).closest(".cell").position().top - 10
-            }, 500);
-        },
-
-        _buildPage: function() {
-            this._cleanPage();
-            this._updateButtons();
-            this.pages[this._currentPage](this);
-        },
-
-        _addParam: function(param) {
-            var form = this.element.find(".gp-widget-task-form");
-            var required = param.optional() ? "" : "*";
-
-            var paramBox = $("<div></div>")
-                .addClass(" form-group gp-widget-task-param")
-                .attr("name", param.name())
-                .attr("title", param.name())
-                .append(
-                    $("<label></label>")
-                        .addClass("col-sm-3 control-label gp-widget-task-param-name")
-                        .text(GPNotebook.util.display_name(param.name()) + required)
-                )
-                .append(
-                    $("<div></div>")
-                        .addClass("col-sm-9 gp-widget-task-param-wrapper")
-                        .append(
-                            $("<div></div>")
-                                .addClass("gp-widget-task-param-input")
-                        )
-                        .append(
-                            $("<div></div>")
-                                .addClass("gp-widget-task-param-desc")
-                                .text(param.description())
-                        )
-                );
-            if (required) paramBox.addClass("gp-widget-task-required");
-
-            // Add the correct input widget
-            if (param.type() === "java.io.File") {
-                paramBox.find(".gp-widget-task-param-input").fileInput({
-                    runTask: this,
-                    param: param
-                });
-            }
-            else if (param.choices()) {
-                paramBox.find(".gp-widget-task-param-input").choiceInput({
-                    runTask: this,
-                    param: param,
-                    choices: param.choices(),
-                    default: param.defaultValue()
-                });
-            }
-            else if (param.type() === "java.lang.String") {
-                paramBox.find(".gp-widget-task-param-input").textInput({
-                    runTask: this,
-                    param: param,
-                    default: param.defaultValue()
-                });
-            }
-            else if (param.type() === "java.lang.Integer" || param.type() === "java.lang.Float") {
-                paramBox.find(".gp-widget-task-param-input").textInput({
-                    runTask: this,
-                    param: param,
-                    default: param.defaultValue(),
-                    type: "number"
-                });
-            }
-            else {
-                console.log("Unknown input type for Call widget: " + param.name() + " " + param.type());
-                this.errorMessage("Type error in parameter " + param.name() + ", defaulting to text input.");
-
-                paramBox.find(".gp-widget-task-param-input").textInput({
-                    runTask: this,
-                    param: param,
-                    default: param.defaultValue()
-                });
-            }
-
-            form.append(paramBox);
-            return paramBox.find(".gp-widget-task-param-input");
-        },
-
-        pages: [
-            // Page 0
-            function(widget) {
-                widget._addParam({
-                    name: function() { return "Name" },
-                    optional: function() { return false },
-                    type: function() { return "java.lang.String" },
-                    description: function() { return "The name of a GenePattern module should be unique and cannot contain spaces or most other special characters." },
-                    choices: function() { return false },
-                    defaultValue: function() { return "" }
-                });
-                widget._addParam({
-                    name: function() { return "Description" },
-                    optional: function() { return false },
-                    type: function() { return "java.lang.String" },
-                    description: function() { return "This should be a concise and useful description of the module's functionality." },
-                    choices: function() { return false },
-                    defaultValue: function() { return "" }
-                });
-                widget._addParam({
-                    name: function() { return "Authors" },
-                    optional: function() { return true },
-                    type: function() { return "java.lang.String" },
-                    description: function() { return "The authors of the GenePattern module or wrapped method." },
-                    choices: function() { return false },
-                    defaultValue: function() { return "" }
-                });
-                widget._addParam({
-                    name: function() { return "Institution" },
-                    optional: function() { return true },
-                    type: function() { return "java.lang.String" },
-                    description: function() { return "The institutions to which the module authors belong." },
-                    choices: function() { return false },
-                    defaultValue: function() { return "" }
-                });
-            },
-
-            // Page 1
-            function(widget) {
-                // categories
-                // file formats
-                // documentation
-                // license
-                // quality
-            },
-
-            // Page 2
-            function(widget) {
-                widget._addParam({
-                    name: function() { return "OS" },
-                    optional: function() { return false },
-                    type: function() { return "java.lang.String" },
-                    description: function() { return "The operating systems on which the module works." },
-                    choices: function() {
-                        return {
-                            "Any": "any",
-                            "Linux": "linux",
-                            "Mac": "mac",
-                            "Windows": "windows"
-                        }
-                    },
-                    defaultValue: function() { return "any" }
-                });
-                widget._addParam({
-                    name: function() { return "CPU" },
-                    optional: function() { return false },
-                    type: function() { return "java.lang.String" },
-                    description: function() { return "The architecture on which the module works." },
-                    choices: function() {
-                        return {
-                            "Any": "any",
-                            "Alpha": "alpha",
-                            "Intel": "intel",
-                            "PowerPC": "powerpc",
-                            "Sparc": "sparc"
-                        }
-                    },
-                    defaultValue: function() { return "any" }
-                });
-                widget._addParam({
-                    name: function() { return "Language" },
-                    optional: function() { return false },
-                    type: function() { return "java.lang.String" },
-                    description: function() { return "The primary language used by the module." },
-                    choices: function() {
-                        return {
-                            "Any": "any",
-                            "C": "C",
-                            "C++": "C++",
-                            "Java": "Java",
-                            "MATLAB": "MATLAB",
-                            "Perl": "Perl",
-                            "Python": "Python",
-                            "R": "R"
-                        }
-                    },
-                    defaultValue: function() { return "Python" }
-                });
-                widget._addParam({
-                    name: function() { return "Privacy" },
-                    optional: function() { return false },
-                    type: function() { return "java.lang.String" },
-                    description: function() { return "Whether the module is accessible only to you or to all users." },
-                    choices: function() {
-                        return {
-                            "Private": "private",
-                            "Public": "public"
-                        }
-                    },
-                    defaultValue: function() { return "private" }
-                });
-            },
-
-            // Page 3
-            function(widget) {
-                // parameters
-                // support files
-                // version
-                // version comment
-            },
-
-            // Page 4 - confirmation page
-            function(widget) {
-                // AUTOMATIC
-                // user
-                // lsid
-                // command line
-
-                // Create the module zip file
-                // Provide a "module created" message with a link to the file
-            },
-        ]
-    });
-
-    var ModuleWidgetView = widgets.DOMWidgetView.extend({
-        render: function () {
-            let cell = this.options.cell;
-
-            // Ugly hack for getting the Cell object in ipywidgets 7
-            if (!cell) cell = this.options.output.element.closest(".cell").data("cell");
-
-            // Render the view.
-            if (!this.el) this.setElement($('<div></div>'));
-
-            var lsid = this.model.get('lsid');
-
-            // Initialize the widget
-            $(this.$el).createModule({
-                lsid: lsid
-            });
-
-            // Hide the code by default
-            var element = this.$el;
-            var hideCode = function() {
-                var cell = element.closest(".cell");
-                if (cell.length > 0) {
-                    // Protect against the "double render" bug in Jupyter 3.2.1
-                    element.parent().find(".gp-widget-module:not(:first-child)").remove();
-
-                    // element.closest(".cell").find(".input")
-                    //     .css("height", "0")
-                    //     .css("overflow", "hidden");
                 }
                 else {
                     setTimeout(hideCode, 10);
@@ -1769,7 +1233,6 @@ define("genepattern/uibuilder", ["base/js/namespace",
     });
 
     return {
-        UIBuilderView: UIBuilderView,
-        ModuleWidgetView: ModuleWidgetView
+        UIBuilderView: UIBuilderView
     }
 });

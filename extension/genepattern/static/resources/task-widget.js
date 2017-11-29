@@ -95,7 +95,7 @@ define("genepattern/task", ["base/js/namespace",
             }
         },
 
-        _update_menu: function(menu, kind, choices={}) {
+        _update_menu: function(menu, kind, choices={}, markdown={}) {
             // Clear the menu
             menu.empty();
 
@@ -103,7 +103,7 @@ define("genepattern/task", ["base/js/namespace",
             let output_files = GPNotebook.slider.output_files_by_kind(kind);
 
             // Handle the special case of no matching output files
-            if (output_files.length === 0 && Object.keys(choices).length === 0) {
+            if (output_files.length === 0 && Object.keys(choices).length === 0 && Object.keys(markdown).length === 0) {
                 menu.append(this._create_menu_header("No Matching GenePattern Files"));
                 return;
             }
@@ -121,16 +121,18 @@ define("genepattern/task", ["base/js/namespace",
             }
 
             // Add the dynamic choices to the menu, if available
-            if (Object.keys(choices).length > 0) {
-                menu.append(this._create_menu_header("FTP Server Files", "ftp"));
-                for (let key in choices) {
+            if (Object.keys(markdown).length > 0) {
+                menu.append(this._create_menu_header("Notebook Instructions", "markdown"));
+                for (let key in markdown) {
                     const choice = {
                         name: key,
-                        url: choices[key]
+                        url: markdown[key]
                     };
-                    menu.append(this._create_menu_file(choice, "ftp"));
+                    menu.append(this._create_menu_file(choice, "markdown"));
                 }
             }
+
+            // Add markdown file links, if available
         },
 
         /**
@@ -146,6 +148,7 @@ define("genepattern/task", ["base/js/namespace",
             let type_class = "";
             if (type === "job") type_class = "gp-widget-typeahead-job-file";
             if (type === "ftp") type_class = "gp-widget-typeahead-ftp-file";
+            if (type === "markdown") type_class = "gp-widget-typeahead-markdown-file";
 
             return $("<li></li>")
                 .append(
@@ -179,6 +182,7 @@ define("genepattern/task", ["base/js/namespace",
             let type_class = "";
             if (type === "job") type_class = "gp-widget-typeahead-job-header";
             if (type === "ftp") type_class = "gp-widget-typeahead-ftp-header";
+            if (type === "markdown") type_class = "gp-widget-typeahead-markdown-header";
 
            return $("<li></li>")
                .addClass("dropdown-header")
@@ -293,8 +297,11 @@ define("genepattern/task", ["base/js/namespace",
                                 if (widget.options.param) choices = widget.options.param.choices();
                                 if (!choices) choices = {};
 
+                                // Get the list of embedded markdown file links
+                                const markdown = GPNotebook.slider.markdown_files();
+
                                 // Update the menu
-                                twidget._update_menu(menu, kinds, choices);
+                                twidget._update_menu(menu, kinds, choices, markdown);
                             },
                             blur: function(twidget) {
                                 var typeahead_input = twidget.element.find(".gp-widget-typeahead-input");
@@ -358,7 +365,7 @@ define("genepattern/task", ["base/js/namespace",
 
         _kindsListString: function() {
             var kinds = this._param.kinds();
-            if (!kinds) return "anything";
+            if (!kinds || kinds === '*') return "anything";
             else return kinds.join(", ");
         },
 
@@ -784,10 +791,15 @@ define("genepattern/task", ["base/js/namespace",
             if (!this.options.allowJobUploads) {
                 this.element.find(".file-widget-upload-file").hide();
                 this.element.find(".file-widget-drop").hide();
+                this.element.find(".gp-widget-typeahead").css("width", "100%");
+                this.element.css("border", "none");
+                this.element.css("padding", 0);
             }
             else {
                 this.element.find(".file-widget-upload-file").show();
                 this.element.find(".file-widget-drop").show();
+                this.element.find(".gp-widget-typeahead").css("width", "400px");
+                this.element.removeAttr("style");
             }
         },
 
@@ -910,25 +922,28 @@ define("genepattern/task", ["base/js/namespace",
          * This is just a clone of values() for compatibility with other widgets
          *
          * @param val
+         * @param force_setter - optional parameter to force setting an empty value
          * @returns {object|string|null}
          */
-        value: function(val) {
-            return this.values(val);
+        value: function(val, force_setter=false) {
+            return this.values(val, force_setter);
         },
 
         /**
          * Gets or sets the values of this widget
          *
          * @param [val=optional] - String value for file (undefined is getter)
+         * @param force_setter - optional parameter to force setting an empty value
          * @returns {object|string|null} - The value of this widget
          */
-        values: function(val) {
+        values: function(val, force_setter=false) {
             // Do setter
-            if (val) {
+            if (val || force_setter) {
+                // Handle empty string
+                if (val === '') val = [];
+
                 // Handle wrapping lists
-                if (val.constructor !== Array) {
-                    val = [val];
-                }
+                if (val.constructor !== Array) val = [val];
 
                 this._values = val;
                 this._displays = this._valuesToDisplay(val);
@@ -1126,11 +1141,12 @@ define("genepattern/task", ["base/js/namespace",
          * Gets or sets the value of the input
          *
          * @param val - the value for the setter
+         * @param force_setter - optional parameter to force setting an empty value
          * @returns {_value|string}
          */
-        value: function(val) {
+        value: function(val, force_setter=false) {
             // Do setter
-            if (val) {
+            if (val || force_setter) {
                 this._value = val;
                 this.element.find(".text-widget-input").val(val);
             }
@@ -1378,11 +1394,12 @@ define("genepattern/task", ["base/js/namespace",
          * Gets or sets the value of the input
          *
          * @param val - the value for the setter
+         * @param force_setter - optional parameter to force setting an empty value
          * @returns {_value|string}
          */
-        value: function(val) {
+        value: function(val, force_setter=false) {
             // Do setter
-            if (val) {
+            if (val || force_setter) {
                 this._value = val;
                 this.element.find(".choice-widget-select").val(val);
             }

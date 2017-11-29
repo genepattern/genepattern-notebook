@@ -148,6 +148,10 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
                 if 'type' in p_meta:
                     param['type'] = GPUIBuilder._safe_type(p_meta['type'])
 
+                # Handle specifying the parameter's accepted kinds
+                if 'kinds' in p_meta:
+                    param['kinds'] = p_meta['kinds']
+
                 # Handle giving the parameter a list of choices
                 if 'choices' in p_meta:
                     param['choices'] = p_meta['choices']
@@ -211,14 +215,15 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
                 "description": annotation,
                 "hide": False,
                 "type": type,
+                "kinds": None,
                 "choices": []
             }
 
             # Special choices handling for boolean parameters
             if isinstance(default, bool):
                 p_attr['choices'] = {
-                    'True': 'True',
-                    'False': 'False'
+                    'True': 'true',
+                    'False': 'false'
                 }
 
             # Append it to the list

@@ -226,15 +226,15 @@ define("genepattern/navigation", ["base/js/namespace",
      * @returns {Array}
      */
     slider.taskWidgetsForKind = function(kind) {
-        var matches = [];
+        const matches = [];
 
         $(".cell").each(function(index, node) {
-            var widgetNode = $(node).find(".gp-widget-task");
+            const widgetNode = $(node).find(".gp-widget-task, .gp-widget-call");
 
             if (widgetNode.length > 0) {
-                var widget = widgetNode.data("widget");
+                const widget = widgetNode.data("widget");
                 if (widget !== undefined && widget !== null) {
-                    var accepted = widget.acceptedKinds();
+                    const accepted = widget.acceptedKinds();
                     if (accepted !== undefined && accepted !== null) {
                         if (accepted.indexOf(kind) !== -1) {
                             // Found a match!
@@ -421,6 +421,25 @@ define("genepattern/navigation", ["base/js/namespace",
             }
             slider.createAuthCell(cell);
         }
+    };
+
+    /**
+     * Get all files linked from markdown cells with the gp-file class on the <a> tag
+     *
+     * Returns a dict of files with the file linked text as the key and the URL as the value.
+     */
+    slider.markdown_files = function() {
+        const file_dict = {};
+
+        const markdown_cells = $(".cell.text_cell");
+        markdown_cells.each(function(i, cell) {
+            const file_links = $(cell).find("a.gp-file");
+            file_links.each(function(j, link) {
+                file_dict[$(link).text()] = $(link).attr("href");
+            });
+        });
+
+        return file_dict;
     };
 
     /**
@@ -644,7 +663,7 @@ define("genepattern/navigation", ["base/js/namespace",
                 });
 
                 // Dynamically add options to "Send to Downstream Task" dropdown
-                var matchingTasks = slider.taskWidgetsForKind(fixedKind);
+                const matchingTasks = slider.taskWidgetsForKind(fixedKind);
                 sendToExistingTask
                     .empty()
                     .append(
@@ -652,10 +671,10 @@ define("genepattern/navigation", ["base/js/namespace",
                             .text("----")
                     );
                 $.each(matchingTasks, function(i, pairing) {
-                    var cellIndex = pairing[0];
-                    var taskWidget = pairing[1];
-                    var task = widget.options.session.task(taskWidget.options.lsid);
-                    var name = task !== null ? task.name() : null;
+                    const cellIndex = pairing[0];
+                    const taskWidget = pairing[1];
+                    const task = taskWidget.options.lsid ? widget.options.session.task(taskWidget.options.lsid) : null;
+                    let name = task !== null ? task.name() : null;
 
                     // If task is null, extract the task name from the widget
                     if (task === null) name = $(taskWidget.element).find(".gp-widget-task-name").text().trim();
