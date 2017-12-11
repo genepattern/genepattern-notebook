@@ -8,7 +8,8 @@ dist: trusty
 addons:
   firefox: latest
 install:
-  - python extension/setup.py install
+  - cd extension
+  - python setup.py install
 script:
 - pytest
 
