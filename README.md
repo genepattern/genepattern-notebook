@@ -10,43 +10,32 @@ GenePattern Notebook
 The [GenePattern Notebook](http://www.genepattern-notebook.org) 
 environment gives GenePattern users the ability to interleave text, graphics, and code with 
 their GenePattern analyses to create "notebooks" that can be edited, shared, and published. 
-GenePattern Notebooks are built on the [Jupyter Notebook](https://jupyter.org/) system 
-(formerly called IPython Notebook) and extend it so that users can take advantage of its ease 
-of use and ability to encapsulate an entire scientific research narrative, without the need 
-to write code.
+GenePattern Notebooks are built on the [Jupyter](https://jupyter.org/) environment 
+and extend it so that users can take advantage of its ease of use and ability to encapsulate 
+an entire scientific research narrative, without the need to write code.
 
 # Installation
 
 Full installation instructions for casual use are detailed on the 
-[GenePattern Notebook website](http://www.genepattern-notebook.org/install/).
+[GenePattern Notebook website](http://www.genepattern-notebook.org/install/). Users should 
+also consider the [GenePattern Notebook Repository](https://notebook.genepattern.org), which 
+provides an install-free cloud deployment of the GenePattern Notebook environment.
 
 ## Development Install
 
 The installation instructions below are intended for developers who want to install the 
-project from PIP or GitHub for purposes of software development.
+project from PIP or GitHub for the purposes of software development.
 
 ### Install Python
 
 In order to get the GenePattern Notebook working you will first need to install a compatible 
-version of Python. This means you will need either Python 2.7 or Python 3.4+.
-
-**Note for Mac Users:** Mac comes with Python, but - depending on the version OSX you have - 
-you may have to update to a new version. To do this I would recommend using a package manager 
-such as Homebrew or MacPorts.
-
-You may wish to install the Anaconda distribution of Python from Continuum Analytics. This is 
+version of Python. This means you will need Python 3.4+. We recommend using the 
+[Anaconda](https://www.anaconda.com/download/#macos) Python distribution. This is 
 a scientific version of Python that ships with many of the most popular Python packages for 
 science, math and data analysis (ex: NumPy, SciPy, Pandas, Matplotlib, IPython, etc.).
 
-### Install PIP
-
-Install PIP (Python Package Index) if not already installed (PIP may come with Anaconda 
-distribution; see https://pip.pypa.io/en/latest/installing.html). This is Python's preferred 
-package management system.
-
-Now you should choose to either install GenePattern Notebook from GitHub or from PIP. If you
-don't know which method you would prefer, then we recommend doing the PIP installation. Then 
-skip to the appropriate step below.
+**Note for Mac Users:** Mac comes with Python, but you will need to install a newer version, 
+as OSX ships with Python 2.
 
 ### Install GenePattern Notebook from GitHub
 
@@ -98,6 +87,26 @@ If you want to update GenePattern Notebook to a more recent version on PIP, run 
 command:
 
 > pip install -upgrade --no-deps genepattern-notebook
+
+# Related Repositories
+
+The following GitHub repositories contain code or other data related to the GenePattern 
+Notebook environment.
+
+* [genepattern-python](https://github.com/genepattern/genepattern-python): The GenePattern 
+    Library allows for programmatic access to GenePattern from Python, and is used by 
+    GenePattern Notebook behind the scenes.
+* [nbtool-manager](https://github.com/genepattern/nbtool-manager): The Notebook Tool Manager 
+    is a tool-agnostic interface and registry for searching, browsing and launching available 
+    notebook tools in a Jupyter environment.
+* [jupyter-wysiwyg](https://github.com/genepattern/jupyter-wysiwyg): A WYSIWYG editor for 
+    markdown cells.
+* [example-notebooks](https://github.com/genepattern/): A repository of example notebooks that 
+    demonstrate functionality or analysis techniques in the GenePattern Notebook environment. 
+* [notebook-docker](https://github.com/genepattern/notebook-docker): A collection of Dockerfiles 
+    which are used to build containers encapsulating the GenePattern Notebook environment.
+* [notebook-repository](https://github.com/genepattern/notebook-repository): Scripts, services 
+    and other infrastructure used in the operation of the GenePattern Notebook Repository.
 
 # Known Issues
 
