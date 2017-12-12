@@ -16,7 +16,6 @@ before_install:
   - sh -e /etc/init.d/xvfb start || true
 install:
   - pip install genepattern-python nbtools jupyter notebook ipywidgets
-  - cd extension
   - python setup.py install
 script:
 - cd ..
