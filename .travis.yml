@@ -15,6 +15,7 @@ before_install:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start || true
 install:
+  - pip install genepattern-python nbtools jupyter notebook ipywidgets
   - cd extension
   - python setup.py install
 script:
@@ -22,12 +23,9 @@ script:
 - pytest
 
 # JUPYTERLAB CHECKS
-#language: python
-
 #cache:
 #  directories:
 #    - $HOME/.npm
-
 #install:
 #- wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
 #- bash miniconda.sh -b -p $HOME/miniconda
