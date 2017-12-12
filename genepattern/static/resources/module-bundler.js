@@ -49,7 +49,7 @@ define("genepattern/modulebundler", ["base/js/namespace",
          */
         _create: function () {
             // Set variables
-            var widget = this;
+            const widget = this;
 
             // Add data pointer
             this.element.data("widget", this);
@@ -259,11 +259,11 @@ define("genepattern/modulebundler", ["base/js/namespace",
          * Gathers and returns metadata which is used when converting the notebook into a GenePattern module
          */
         module_metadata: function() {
-            var session = GPNotebook.session_manager.get_session(0);
+            const session = GPNotebook.session_manager.get_session(0);
 
-            var name = Jupyter.notebook.get_notebook_name();
-            var description = this.options.description;
-            var user = session ? session.username : null;
+            const name = Jupyter.notebook.get_notebook_name();
+            const description = this.options.description;
+            const user = session ? session.username : null;
 
             return {
                 name: name,
@@ -300,8 +300,8 @@ define("genepattern/modulebundler", ["base/js/namespace",
         },
 
         _updateButtons() {
-            var prevButton = this.element.find(".gp-widget-module-previous-button");
-            var nextButton = this.element.find(".gp-widget-module-next-button");
+            const prevButton = this.element.find(".gp-widget-module-previous-button");
+            const nextButton = this.element.find(".gp-widget-module-next-button");
 
             // Disable previous on first page
             if (this._currentPage === 0) {
@@ -338,10 +338,10 @@ define("genepattern/modulebundler", ["base/js/namespace",
         },
 
         _addParam: function(param) {
-            var form = this.element.find(".gp-widget-task-form");
-            var required = param.optional() ? "" : "*";
+            const form = this.element.find(".gp-widget-task-form");
+            const required = param.optional() ? "" : "*";
 
-            var paramBox = $("<div></div>")
+            const paramBox = $("<div></div>")
                 .addClass(" form-group gp-widget-task-param")
                 .attr("name", param.name())
                 .attr("title", param.name())
@@ -544,7 +544,7 @@ define("genepattern/modulebundler", ["base/js/namespace",
         ]
     });
 
-    var ModuleWidgetView = widgets.DOMWidgetView.extend({
+    const ModuleWidgetView = widgets.DOMWidgetView.extend({
         render: function () {
             let cell = this.options.cell;
 
@@ -554,7 +554,7 @@ define("genepattern/modulebundler", ["base/js/namespace",
             // Render the view.
             if (!this.el) this.setElement($('<div></div>'));
 
-            var lsid = this.model.get('lsid');
+            const lsid = this.model.get('lsid');
 
             // Initialize the widget
             $(this.$el).createModule({
@@ -562,9 +562,9 @@ define("genepattern/modulebundler", ["base/js/namespace",
             });
 
             // Hide the code by default
-            var element = this.$el;
-            var hideCode = function() {
-                var cell = element.closest(".cell");
+            const element = this.$el;
+            const hideCode = function() {
+                const cell = element.closest(".cell");
                 if (cell.length > 0) {
                     // Protect against the "double render" bug in Jupyter 3.2.1
                     element.parent().find(".gp-widget-module:not(:first-child)").remove();

@@ -19,7 +19,7 @@ define([
     "nbextensions/genepattern/resources/ui-builder"], function(Jupyter, events, $) {
 
     function load_ipython_extension() {
-        var STATIC_PATH = Jupyter.notebook.base_url + "nbextensions/genepattern/resources/";
+        const STATIC_PATH = Jupyter.notebook.base_url + "nbextensions/genepattern/resources/";
 
         $('head')
             // Import styles used by GenePattern navigation
@@ -39,7 +39,7 @@ define([
 
         // Wait for the kernel to be ready and then initialize the widgets
         require(["genepattern/navigation"], function(GPNotebook) {
-            var interval = setInterval(function() {
+            const interval = setInterval(function() {
                 GPNotebook.init.wait_for_kernel(interval);
             }, 500);
         });

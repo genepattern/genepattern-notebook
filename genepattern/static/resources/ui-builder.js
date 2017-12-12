@@ -37,8 +37,8 @@ define("genepattern/uibuilder", ["base/js/namespace",
          */
         _create: function() {
             // Set variables
-            var widget = this;
-            var identifier = this.options.name;
+            const widget = this;
+            const identifier = this.options.name;
 
             // Add data pointer
             this.element.data("widget", this);
@@ -243,7 +243,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
          */
         _setOptions: function(options) {
             this._superApply(arguments);
-            var widget = this;
+            const widget = this;
             widget._buildHeader();
             widget._buildForm();
             widget._buildFooter();
@@ -451,7 +451,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
         },
 
         module_dialog: function() {
-            var dialog = require('base/js/dialog');
+            const dialog = require('base/js/dialog');
             dialog.modal({
                 notebook: Jupyter.notebook,
                 keyboard_manager: this.keyboard_manager,
@@ -500,9 +500,9 @@ define("genepattern/uibuilder", ["base/js/namespace",
          *         leave undefined to toggle back and forth
          */
         expandCollapse: function(expand) {
-            var toSlide = this.element.find(".panel-body");
-            var indicator = this.element.find(".widget-slide-indicator").find("span");
-            var isHidden = toSlide.is(":hidden");
+            const toSlide = this.element.find(".panel-body");
+            const indicator = this.element.find(".widget-slide-indicator").find("span");
+            const isHidden = toSlide.is(":hidden");
 
             if (isHidden || expand) {
                 toSlide.slideDown();
@@ -536,9 +536,6 @@ define("genepattern/uibuilder", ["base/js/namespace",
          * @private
          */
         _showUninstalledMessage: function() {
-            // Mark the module as not installed
-            this._installed = false;
-
             // Show the message
             this.element.find(".gp-widget-task-name").empty().text("Module Not Installed");
             this.errorMessage("This module is not installed on this GenePattern server.");
@@ -552,15 +549,15 @@ define("genepattern/uibuilder", ["base/js/namespace",
          * @private
          */
         _buildHeader: function() {
-            var widget = this;
+            const widget = this;
 
             // Trim lengthy docstrings
-            var lines = widget.options.description.split('\n');
+            let lines = widget.options.description.split('\n');
             if (lines.length > 10) {
                 lines = lines.slice(0,10);
                 lines.push("...");
             }
-            var description = lines.join("\n");
+            const description = lines.join("\n");
 
             widget.element.find(".gp-widget-task-subheader").show();
             widget.element.find(".gp-widget-task-footer").show();
@@ -715,9 +712,9 @@ define("genepattern/uibuilder", ["base/js/namespace",
          * @private
          */
         _addParam: function(param, addTo) {
-            var required = param.optional() ? "" : "*";
+            const required = param.optional() ? "" : "*";
 
-            var paramBox = $("<div></div>")
+            const paramBox = $("<div></div>")
                 .addClass(" form-group gp-widget-task-param")
                 .attr("name", param.name())
                 .attr("title", param.name())
@@ -829,7 +826,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
          * @param message - String containing the message to show
          */
         successMessage: function(message) {
-            var messageBox = this.element.find(".gp-widget-task-message");
+            const messageBox = this.element.find(".gp-widget-task-message");
             messageBox.removeClass("alert-danger");
             messageBox.addClass("alert-success");
             messageBox.text(message);
@@ -842,7 +839,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
          * @param message - String containing the message to show
          */
         errorMessage: function(message) {
-            var messageBox = this.element.find(".gp-widget-task-message");
+            const messageBox = this.element.find(".gp-widget-task-message");
             messageBox.removeClass("alert-success");
             messageBox.addClass("alert-danger");
             messageBox.text(message);
@@ -853,14 +850,14 @@ define("genepattern/uibuilder", ["base/js/namespace",
          * Validate the current Call form
          */
         validate: function() {
-            var validated = true;
-            var missing = [];
-            var params = this.element.find(".gp-widget-task-param");
+            let validated = true;
+            const missing = [];
+            const params = this.element.find(".gp-widget-task-param");
 
             // Validate each required parameter
-            for (var i = 0; i < params.length; i++) {
-                var param = $(params[i]);
-                var required = param.hasClass("gp-widget-task-required");
+            for (let i = 0; i < params.length; i++) {
+                const param = $(params[i]);
+                const required = param.hasClass("gp-widget-task-required");
                 if (required) {
                     const input = param.find(".gp-widget-task-param-input");
                     let value = this._getInputValue(input);
@@ -1195,7 +1192,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
         }
     });
 
-    var UIBuilderView = widgets.DOMWidgetView.extend({
+    const UIBuilderView = widgets.DOMWidgetView.extend({
         render: function () {
             let cell = this.options.cell;
 
@@ -1205,11 +1202,11 @@ define("genepattern/uibuilder", ["base/js/namespace",
             // Render the view.
             if (!this.el) this.setElement($('<div></div>'));
 
-            var name = this.model.get('name');
-            var description = this.model.get('description');
-            var output_var = this.model.get('output_var');
-            var params = this.model.get('params');
-            var function_import = this.model.get('function_import');
+            const name = this.model.get('name');
+            const description = this.model.get('description');
+            const output_var = this.model.get('output_var');
+            const params = this.model.get('params');
+            const function_import = this.model.get('function_import');
 
             // Initialize the widget
             $(this.$el).buildUI({
@@ -1222,9 +1219,9 @@ define("genepattern/uibuilder", ["base/js/namespace",
             });
 
             // Hide the code by default
-            var element = this.$el;
-            var hideCode = function() {
-                var cell = element.closest(".cell");
+            const element = this.$el;
+            const hideCode = function() {
+                const cell = element.closest(".cell");
                 if (cell.length > 0) {
                     // Protect against the "double render" bug in Jupyter 3.2.1
                     element.parent().find(".gp-widget-call:not(:first-child)").remove();

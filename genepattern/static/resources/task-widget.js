@@ -23,7 +23,7 @@ define("genepattern/task", ["base/js/namespace",
         },
 
         _create: function() {
-            var widget = this;
+            const widget = this;
 
             this.element
                 .addClass("gp-widget-typeahead")
@@ -56,9 +56,9 @@ define("genepattern/task", ["base/js/namespace",
         _setOption: function(key, value) {},
 
         _click: function(event) {
-            var typeahead_input = $(event.target);
-            var widget = typeahead_input.closest(".gp-widget-typeahead").data("widget");
-            var menu = widget.element.find(".gp-widget-typeahead-list");
+            const typeahead_input = $(event.target);
+            const widget = typeahead_input.closest(".gp-widget-typeahead").data("widget");
+            const menu = widget.element.find(".gp-widget-typeahead-list");
 
             // Make the click callback if one is defined
             if (widget.options.click) {
@@ -186,10 +186,10 @@ define("genepattern/task", ["base/js/namespace",
         },
 
         _files_by_job: function(output_files) {
-            var by_job = {};
+            const by_job = {};
 
-            for (var i in output_files) {
-                var file = output_files[i];
+            for (let i in output_files) {
+                const file = output_files[i];
 
                 if (!(file.job in by_job)) {
                     by_job[file.job] = [];
@@ -238,7 +238,7 @@ define("genepattern/task", ["base/js/namespace",
             this._setPointers();
 
             // Set variables
-            var widget = this;
+            const widget = this;
             this._values = null;
             this._displays = null;
 
@@ -263,9 +263,9 @@ define("genepattern/task", ["base/js/namespace",
                             .addClass("file-widget-input-file")
                             .attr("type", "file")
                             .change(function () {
-                                var files = widget.element.find(".file-widget-input-file")[0].files;
-                                var list = [];
-                                for (var i = 0; i < files.length; i++) {
+                                const files = widget.element.find(".file-widget-input-file")[0].files;
+                                const list = [];
+                                for (let i = 0; i < files.length; i++) {
                                     list.push(files[i]);
                                 }
 
@@ -299,8 +299,8 @@ define("genepattern/task", ["base/js/namespace",
                                 twidget._update_menu(menu, kinds, choices, markdown);
                             },
                             blur: function(twidget) {
-                                var typeahead_input = twidget.element.find(".gp-widget-typeahead-input");
-                                var typeahead_value = typeahead_input.val();
+                                const typeahead_input = twidget.element.find(".gp-widget-typeahead-input");
+                                const typeahead_value = typeahead_input.val();
 
                                 // Clear the input
                                 twidget.element.find(".gp-widget-typeahead-input").val("");
@@ -359,7 +359,7 @@ define("genepattern/task", ["base/js/namespace",
         },
 
         _kindsListString: function() {
-            var kinds = this._param.kinds();
+            const kinds = this._param.kinds();
             if (!kinds || kinds === '*') return "anything";
             else return kinds.join(", ");
         },
@@ -370,8 +370,8 @@ define("genepattern/task", ["base/js/namespace",
          * @private
          */
         _initDragDrop: function() {
-            var widget = this;
-            var dropTarget = this.element[0];
+            const widget = this;
+            const dropTarget = this.element[0];
 
             dropTarget.addEventListener("dragenter", function(event) {
                 widget.element.css("background-color", "#dfeffc");
@@ -390,9 +390,9 @@ define("genepattern/task", ["base/js/namespace",
             dropTarget.addEventListener("drop", function(event) {
                 // If there is are files assume this is a file drop
                 if (event['dataTransfer'].files.length > 0) {
-                    var files = event['dataTransfer'].files;
-                    var list = [];
-                    for (var i = 0; i < files.length; i++) {
+                    const files = event['dataTransfer'].files;
+                    const list = [];
+                    for (let i = 0; i < files.length; i++) {
                         list.push(files[i]);
                     }
 
@@ -410,16 +410,16 @@ define("genepattern/task", ["base/js/namespace",
                 }
                 // If not, assume this is a text drop
                 else {
-                    var html = event['dataTransfer'].getData('text/html');
-                    var htmlList = $(html);
+                    const html = event['dataTransfer'].getData('text/html');
+                    let htmlList = $(html);
 
                     // Path for Firefox
                     if (htmlList.length === 1) {
-                        var tag = $(htmlList).prop("tagName");
+                        const tag = $(htmlList).prop("tagName");
                         if (tag.toLowerCase() !== "a") {
                             htmlList = $(htmlList).find("a");
                         }
-                        var text = $(htmlList).attr("href");
+                        const text = $(htmlList).attr("href");
                         if (text !== undefined && text !== null) {
 
                             // Throw an error if this would overflow max values
@@ -440,7 +440,7 @@ define("genepattern/task", ["base/js/namespace",
                     // Path for Chrome
                     else if (htmlList.length > 1) {
                         $.each(htmlList, function(i, e) {
-                            var text = $(e).attr("href");
+                            const text = $(e).attr("href");
                             if (text !== undefined && text !== null) {
 
                                 // Throw an error if this would overflow max values
@@ -501,9 +501,9 @@ define("genepattern/task", ["base/js/namespace",
                 newVals = [newVals];
             }
 
-            var maxVals = this._param.maxValues();
-            var currentVals = this._values ? this._values.length : 0;
-            var addVals = newVals.length;
+            const maxVals = this._param.maxValues();
+            const currentVals = this._values ? this._values.length : 0;
+            const addVals = newVals.length;
 
             // Handle case of unlimited max
             if (maxVals === -1) return true;
@@ -519,7 +519,7 @@ define("genepattern/task", ["base/js/namespace",
          */
         _fileBox: function(files) {
             if (files) {
-                var widget = this;
+                const widget = this;
                 $.each(files, function (i, e) {
                     widget.element.find(".file-widget-listing").append(widget._createFileBox(e));
                 });
@@ -529,8 +529,8 @@ define("genepattern/task", ["base/js/namespace",
                 this._setFileWarning(files);
 
                 // Hide upload stuff if at max
-                var maxVals = this._param.maxValues();
-                var currentVals = this._values ? this._values.length : 0;
+                const maxVals = this._param.maxValues();
+                const currentVals = this._values ? this._values.length : 0;
                 if (maxVals === currentVals) {
                     this.element.find(".file-widget-upload").hide();
                 }
@@ -589,18 +589,18 @@ define("genepattern/task", ["base/js/namespace",
          * @private
          */
         _needTypeWarning: function(files) {
-            var foundWarning = false;
-            var accepts = this._param.kinds();
+            let foundWarning = false;
+            const accepts = this._param.kinds();
 
             // Special case for empty kind lists
             if (!accepts) return false;
 
-            for (var i in files) {
-                var file = files[i];
-                var match = false;
+            for (let i in files) {
+                const file = files[i];
+                let match = false;
 
-                for (var j in accepts) {
-                    var kind = accepts[j];
+                for (let j in accepts) {
+                    const kind = accepts[j];
                     if (file.endsWith(kind)) {
                         match = true;
                     }
@@ -646,7 +646,7 @@ define("genepattern/task", ["base/js/namespace",
          * @private
          */
         _createFileBox: function(file) {
-            var widget = this;
+            const widget = this;
             return $("<div></div>")
                 .addClass("file-widget-value")
                 .attr("name", file)
@@ -680,10 +680,10 @@ define("genepattern/task", ["base/js/namespace",
          * @private
          */
          _valuesToDisplay: function(values) {
-            var displays = [];
-            var that = this;
+            const displays = [];
+            const that = this;
             $.each(values, function(index, val) {
-                var aDisplay = that._singleDisplay(val);
+                const aDisplay = that._singleDisplay(val);
                 displays.push(aDisplay);
             });
             return displays;
@@ -712,17 +712,17 @@ define("genepattern/task", ["base/js/namespace",
          * @private
          */
         _removeValue: function(value) {
-            var widget = this;
+            const widget = this;
 
             // Handle special case of Python variables
-            if (VariableManager.getVariableList(value).length > 0) {
+            if (variableManager.getVariableList(value).length > 0) {
                 // Assume the first value matches the variable and remove it
                 widget._values.splice(0, 1);
                 return;
             }
 
             $.each(this._values, function(i, e) {
-                var display = widget._singleDisplay(e);
+                const display = widget._singleDisplay(e);
                 if (display === value) {
                     widget._values.splice(i, 1);
                     return false;
@@ -736,11 +736,11 @@ define("genepattern/task", ["base/js/namespace",
                 // If no GP server is available, skip this value
                 if (!widget.options.runTask.options.session) return true;
 
-                var parser = document.createElement('a');
+                const parser = document.createElement('a');
                 parser.href = widget.options.runTask.options.session.server();
 
-                var display = widget._singleDisplay(e);
-                var foundHost = display.indexOf(parser.host) === 7 || display.indexOf(parser.host) === 8;
+                const display = widget._singleDisplay(e);
+                const foundHost = display.indexOf(parser.host) === 7 || display.indexOf(parser.host) === 8;
 
                 if (foundHost && display.endsWith(value)) {
                     widget._values.splice(i, 1);
@@ -757,9 +757,9 @@ define("genepattern/task", ["base/js/namespace",
          * @private
          */
         _replaceValue: function(value, replacement) {
-            var widget = this;
+            const widget = this;
             $.each(this._values, function(i, e) {
-                var display = widget._singleDisplay(e);
+                const display = widget._singleDisplay(e);
                 if (display === value) {
                     widget._values[i] = replacement;
                     return false;
@@ -839,9 +839,9 @@ define("genepattern/task", ["base/js/namespace",
          *      uploaded, returns null if no file upload was initiated
          */
         upload: function(pObj) {
-            var file = pObj.file;
-            var currentlyUploading = null;
-            var widget = this;
+            const file = pObj.file;
+            let currentlyUploading = null;
+            const widget = this;
 
             // Value is a File object
             if (typeof file === 'object' && file) {
@@ -849,7 +849,7 @@ define("genepattern/task", ["base/js/namespace",
                     file: file,
                     success: function(response, url) {
                         // Mark the file as uploaded
-                        var display = widget._singleDisplay(file);
+                        const display = widget._singleDisplay(file);
                         widget._replaceValue(display, url);
                         widget._updateCode();
 
@@ -976,20 +976,11 @@ define("genepattern/task", ["base/js/namespace",
             }
 
             // Display list
-            var displayList = this._valuesToDisplay(val);
+            const displayList = this._valuesToDisplay(val);
 
             this._values = this._values.concat(val);
             this._displays = this._displays.concat(displayList);
             this._fileBox(displayList);
-        },
-
-        /**
-         * Clears the current value of the widget and hides file box
-         * @private
-         */
-        clear: function() {
-            this._values = null;
-            this._fileBox(null);
         }
     });
 
@@ -1026,7 +1017,7 @@ define("genepattern/task", ["base/js/namespace",
             this._setPointers();
 
             // Set variables
-            var widget = this;
+            const widget = this;
             //noinspection JSValidateTypes
             this._value = this.options.default;
 
@@ -1187,7 +1178,7 @@ define("genepattern/task", ["base/js/namespace",
             this._setPointers();
 
             // Set variables
-            var widget = this;
+            const widget = this;
 
             // Add data pointer
             this.element.data("widget", this);
@@ -1199,8 +1190,8 @@ define("genepattern/task", ["base/js/namespace",
                     .addClass("form-control choice-widget-select")
                     .change(function() {
                         // Special case for a custom value
-                        var selected = $(this).find("option:selected");
-                        if (selected.text() == "Custom Value (developer)") {
+                        const selected = $(this).find("option:selected");
+                        if (selected.text() === "Custom Value (developer)") {
                             widget.customValueDialog(selected);
                             return;
                         }
@@ -1281,12 +1272,12 @@ define("genepattern/task", ["base/js/namespace",
                 return;
             }
 
-            var select = this.element.find(".choice-widget-select");
+            const select = this.element.find(".choice-widget-select");
             select.empty();
 
-            for (var key in this.options.choices) {
+            for (let key in this.options.choices) {
                 if (this.options.choices.hasOwnProperty(key)) {
-                    var value = this.options.choices[key];
+                    const value = this.options.choices[key];
 
                     select.append(
                         $("<option></option>")
@@ -1334,10 +1325,10 @@ define("genepattern/task", ["base/js/namespace",
          * @param option - the option element in the dropdown
          */
         customValueDialog: function(option) {
-            var dialog = require('base/js/dialog');
+            const dialog = require('base/js/dialog');
 
             // Get Current Custom Value
-            var currentValue = $(option).val();
+            const currentValue = $(option).val();
 
             dialog.modal({
                 notebook: Jupyter.notebook,
@@ -1377,9 +1368,9 @@ define("genepattern/task", ["base/js/namespace",
                     "Set Value" : {
                         "class" : "btn-warning",
                         "click" : function() {
-                            var customValue = $(".modal-dialog").find("[name=gp-task-custom-value]").val();
+                            const customValue = $(".modal-dialog").find("[name=gp-task-custom-value]").val();
                             $(option).val(customValue);
-                            var widget = $(option).closest(".choice-widget").data("widget");
+                            const widget = $(option).closest(".choice-widget").data("widget");
                             widget.value(customValue);
                             widget._updateCode();
                         }
@@ -1445,8 +1436,8 @@ define("genepattern/task", ["base/js/namespace",
          */
         _create: function() {
             // Set variables
-            var widget = this;
-            var identifier = this._getIdentifier();
+            const widget = this;
+            const identifier = this._getIdentifier();
 
             // Add data pointer
             this.element.data("widget", this);
@@ -1456,9 +1447,6 @@ define("genepattern/task", ["base/js/namespace",
                 this.options.session_index = this._session_index_from_code();
                 this.options.session = this._session_from_index(this.options.session_index);
             }
-
-            // By default assume the module is installed
-            this._installed = true;
 
             // By default the list of accepted kinds is null
             this._kinds = null;
@@ -1525,7 +1513,7 @@ define("genepattern/task", ["base/js/namespace",
                                                             .attr("href", "#")
                                                             .append("Documentation")
                                                             .click(function() {
-                                                                var url = $(event.target).attr("data-href");
+                                                                const url = $(event.target).attr("data-href");
                                                                 window.open(url,'_blank');
                                                             })
                                                     )
@@ -1658,10 +1646,10 @@ define("genepattern/task", ["base/js/namespace",
                                             .addClass("btn btn-warning btn-lg gp-widget-task-eula-accept")
                                             .text("Accept")
                                             .click(function() {
-                                                var success = function() {
+                                                const success = function() {
                                                     widget.element.find(".gp-widget-task-eula").hide();
                                                 };
-                                                var error = function(xhr, error) {
+                                                const error = function(xhr, error) {
                                                     widget.errorMessage(error);
                                                 };
 
@@ -1729,8 +1717,8 @@ define("genepattern/task", ["base/js/namespace",
          */
         _setOptions: function(options) {
             this._superApply(arguments);
-            var widget = this;
-            var identifier = this._getIdentifier();
+            const widget = this;
+            const identifier = this._getIdentifier();
 
             this.getTask(function(task) {
                 if (task !== null) {
@@ -1765,14 +1753,14 @@ define("genepattern/task", ["base/js/namespace",
          */
         getTask: function(done) {
             // First check for the associated task, return if found
-            var task = this.options.task;
+            let task = this.options.task;
             if (task !== null) {
                 done(task);
                 return task;
             }
 
             // Otherwise check the general GenePattern cache
-            var identifier = this._getIdentifier();
+            const identifier = this._getIdentifier();
             task = this.options.session.task(identifier);
             if (task !== null) {
                 this.options.task = task; // Associate this task with the widget
@@ -1781,7 +1769,7 @@ define("genepattern/task", ["base/js/namespace",
             }
 
             // Otherwise call back to the server
-            var widget = this;
+            const widget = this;
             this.options.session.taskQuery({
                 lsid: identifier,
                 success: function(newTask) {
@@ -1805,17 +1793,17 @@ define("genepattern/task", ["base/js/namespace",
          * If no such widget can be found, returns null.
          */
         getJobWidget: function() {
-            var all_cells = Jupyter.notebook.get_cells();
-            var this_cell = this.element.closest(".cell").data("cell");
-            var this_cell_found = false;
-            var output_cell = null;
+            const all_cells = Jupyter.notebook.get_cells();
+            const this_cell = this.element.closest(".cell").data("cell");
+            let this_cell_found = false;
+            let output_cell = null;
 
             // Iterate over all cells
-            for (var i in all_cells) {
-                var cell = all_cells[i];
+            for (let i in all_cells) {
+                const cell = all_cells[i];
 
                 // Break loop if the next task cell is found
-                var is_task_cell = cell.element.find(".gp-widget-task").length > 0;
+                const is_task_cell = cell.element.find(".gp-widget-task").length > 0;
                 if (this_cell_found && is_task_cell) break;
 
                 // Locate the current task cell
@@ -1825,11 +1813,11 @@ define("genepattern/task", ["base/js/namespace",
                 }
 
                 // Locate the next matching job cell
-                var is_job_cell = cell.element.find(".gp-widget-job").length > 0;
+                const is_job_cell = cell.element.find(".gp-widget-job").length > 0;
                 if (this_cell_found && is_job_cell) {
-                    var task_lsid = this.options.task.lsid();
-                    var job_widget = cell.element.find(".gp-widget-job").data("widget");
-                    var job_ref = job_widget.options.job;
+                    const task_lsid = this.options.task.lsid();
+                    const job_widget = cell.element.find(".gp-widget-job").data("widget");
+                    const job_ref = job_widget.options.job;
 
                     // If the job object is null, this is a purged job, assume it matches
                     if (job_ref === null) {
@@ -1837,8 +1825,8 @@ define("genepattern/task", ["base/js/namespace",
                         break;
                     }
 
-                    var job_task = job_ref.task();
-                    var job_lsid = job_task.lsid();
+                    const job_task = job_ref.task();
+                    const job_lsid = job_task.lsid();
                     if (job_lsid === task_lsid) {
                         output_cell = cell;
                         break;
@@ -1856,9 +1844,9 @@ define("genepattern/task", ["base/js/namespace",
          *         leave undefined to toggle back and forth
          */
         expandCollapse: function(expand) {
-            var toSlide = this.element.find(".panel-body:first");
-            var indicator = this.element.find(".widget-slide-indicator").find("span");
-            var isHidden = toSlide.is(":hidden");
+            const toSlide = this.element.find(".panel-body:first");
+            const indicator = this.element.find(".widget-slide-indicator").find("span");
+            const isHidden = toSlide.is(":hidden");
 
             if (isHidden || expand) {
                 toSlide.slideDown();
@@ -1893,8 +1881,8 @@ define("genepattern/task", ["base/js/namespace",
                 return 0;
             }
 
-            var code = this.options.cell.get_text();
-            var index = 0;
+            const code = this.options.cell.get_text();
+            let index = 0;
             try {
                 index = Number.parseInt(code.split("genepattern.get_session(")[1].split(")")[0]);
             }
@@ -1914,9 +1902,6 @@ define("genepattern/task", ["base/js/namespace",
          * @private
          */
         _showUninstalledMessage: function() {
-            // Mark the module as not installed
-            this._installed = false;
-
             // Show the message
             this.element.find(".gp-widget-task-name").empty().text("Module Not Installed");
             this.errorMessage("This module is not installed on this GenePattern server.");
@@ -1947,7 +1932,7 @@ define("genepattern/task", ["base/js/namespace",
          * @private
          */
         _pollForAuth: function() {
-            var widget = this;
+            const widget = this;
             setTimeout(function() {
                 // Try to grab the session again
                 widget.options.session = widget._session_from_index(widget.options.session_index);
@@ -1955,9 +1940,9 @@ define("genepattern/task", ["base/js/namespace",
                 // Check to see if the user is authenticated yet
                 if (widget.options.session && widget.options.session.authenticated) {
                     // If authenticated, execute cell again
-                    var cellElement = widget.element.closest(".cell");
+                    const cellElement = widget.element.closest(".cell");
                     if (cellElement.length > 0) {
-                        var cellObject = cellElement.data("cell");
+                        const cellObject = cellElement.data("cell");
                         if (cellObject) {
                             cellObject.execute();
                         }
@@ -1976,7 +1961,7 @@ define("genepattern/task", ["base/js/namespace",
          * @private
          */
         _buildEula: function() {
-            var widget = this;
+            const widget = this;
             this.getTask(function(task) {
                 // Handle error
                 if (task === null) {
@@ -1984,15 +1969,15 @@ define("genepattern/task", ["base/js/namespace",
                     return
                 }
 
-                var eula = task.eula();   // Get the EULAs
+                const eula = task.eula();   // Get the EULAs
                 // Only build the EULA display if necessary
                 if (eula !== undefined && eula !== null && eula['pendingEulas'] !== undefined && eula['pendingEulas'].length > 0) {
-                    var box = widget.element.find(".gp-widget-task-eula-box");
+                    const box = widget.element.find(".gp-widget-task-eula-box");
 
                     // Attach each of the EULAs
-                    for (var i = 0; i < eula['pendingEulas'].length; i++) {
-                        var license = eula['pendingEulas'][i];
-                        var licenseBox = $("<pre></pre>")
+                    for (let i = 0; i < eula['pendingEulas'].length; i++) {
+                        const license = eula['pendingEulas'][i];
+                        const licenseBox = $("<pre></pre>")
                             .addClass("gp-widget-task-eula-license")
                             .text(license['content']);
                         box.append(licenseBox);
@@ -2009,7 +1994,7 @@ define("genepattern/task", ["base/js/namespace",
          * @private
          */
         _buildHeader: function() {
-            var widget = this;
+            const widget = this;
             this.getTask(function(task) {
                 // Handle error
                 if (task === null) {
@@ -2026,7 +2011,7 @@ define("genepattern/task", ["base/js/namespace",
                 widget.element.find(".gp-widget-task-desc").empty().text(task.description());
 
                 // Display error if Java visualizer
-                var categories = task.categories();
+                const categories = task.categories();
                 if (categories.indexOf("Visualizer") !== -1) {
                     widget.errorMessage("This job appears to be a deprecated Java-based visualizer. These visualizers are not supported in the GenePattern Notebook.");
                 }
@@ -2039,17 +2024,17 @@ define("genepattern/task", ["base/js/namespace",
          * @private
          */
         _parseJobSpec: function() {
-            var dict = {};
-            var code = this.options.cell.code_mirror.getValue();
-            var lines = code.split("\n");
+            const dict = {};
+            const code = this.options.cell.code_mirror.getValue();
+            const lines = code.split("\n");
 
-            for (var i = 0; i < lines.length; i++) {
-                var line = lines[i];
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
 
                 // Here is a line to parse
                 if (line.indexOf(".set_parameter") !== -1) {
-                    var key = this._parseKeyFromLine(line);
-                    var value = this._parseValueFromLine(line);
+                    const key = this._parseKeyFromLine(line);
+                    const value = this._parseValueFromLine(line);
                     dict[key] = value;
                 }
             }
@@ -2066,9 +2051,9 @@ define("genepattern/task", ["base/js/namespace",
          */
         _parseValueFromLine: function(line) {
             // Pull the text out of the parentheses
-            var pullFromParen = /\(([^)]+)\)/;
-            var match = line.match(pullFromParen);
-            var insideParen = match && match[1];
+            const pullFromParen = /\(([^)]+)\)/;
+            const match = line.match(pullFromParen);
+            const insideParen = match && match[1];
 
             // If it couldn't find the correct text, abort
             if (insideParen === null) {
@@ -2077,23 +2062,23 @@ define("genepattern/task", ["base/js/namespace",
             }
 
             // Pull out the value substring
-            var commaIndex = insideParen.indexOf(",");
-            var valueStr = insideParen.substring(commaIndex+1).trim();
+            const commaIndex = insideParen.indexOf(",");
+            const valueStr = insideParen.substring(commaIndex+1).trim();
 
             // Determine whether this represents a list or not
-            var firstChar = valueStr.charAt(0);
-            var isList = firstChar === "[";
+            const firstChar = valueStr.charAt(0);
+            const isList = firstChar === "[";
 
             // If not, trim the quotes and return the unescaped string
             if (!isList) {
-                var withoutQuotes = valueStr.substring(1, valueStr.length-1);
+                const withoutQuotes = valueStr.substring(1, valueStr.length-1);
                 return this._unescapeQuotes(withoutQuotes);
             }
 
             // If this is a list, parse into constituent strings
             if (isList) {
                 try {
-                    var valueList = eval(valueStr);
+                    const valueList = eval(valueStr);
                     return valueList;
                 }
                 catch (e) {
@@ -2111,8 +2096,8 @@ define("genepattern/task", ["base/js/namespace",
          * @private
          */
         _parseKeyFromLine: function(line) {
-            var parts = line.split(",");
-            var first = parts[0].split("\"");
+            const parts = line.split(",");
+            const first = parts[0].split("\"");
             return first[1];
         },
 
@@ -2140,9 +2125,9 @@ define("genepattern/task", ["base/js/namespace",
                                                 .addClass(group.hidden ? "fa fa-plus" : "fa fa-minus")
                                         )
                                         .click(function() {
-                                            var toSlide = $(this).closest(".gp-widget-task-group").find(".gp-widget-task-group-params");
-                                            var indicator = $(this).find("span");
-                                            var isHidden = toSlide.is(":hidden");
+                                            const toSlide = $(this).closest(".gp-widget-task-group").find(".gp-widget-task-group-params");
+                                            const indicator = $(this).find("span");
+                                            const isHidden = toSlide.is(":hidden");
 
                                             if (isHidden) {
                                                 toSlide.slideDown();
@@ -2174,7 +2159,7 @@ define("genepattern/task", ["base/js/namespace",
 
         _addParamGroup: function(group, allParams, reloadVals) {
             function getParam(name) {
-                for (var i = 0; i < allParams.length; i++) {
+                for (let i = 0; i < allParams.length; i++) {
                     if (allParams[i].name() === name) return allParams[i];
                 }
                 throw "no matching param name found: " + name;
@@ -2184,15 +2169,15 @@ define("genepattern/task", ["base/js/namespace",
             if (!group.parameters) return;
 
             // Add the parameter header
-            var form = this.element.find(".gp-widget-task-form");
-            var groupDiv = this._buildParamGroupHeader(group);
+            const form = this.element.find(".gp-widget-task-form");
+            const groupDiv = this._buildParamGroupHeader(group);
             form.append(groupDiv);
 
             // Add widgets for all parameters in the group
-            for (var i = 0; i < group.parameters.length; i++) {
+            for (let i = 0; i < group.parameters.length; i++) {
                 try {
                     // Get the Param object
-                    var param = null;
+                    let param = null;
                     if (typeof group.parameters[i] !== "string") {
                         param = group.parameters[i];
                     }
@@ -2201,10 +2186,10 @@ define("genepattern/task", ["base/js/namespace",
                     }
 
                     // Add the parameter widget
-                    var pDiv = this._addParam(param, groupDiv.find(".gp-widget-task-group-params"));
+                    const pDiv = this._addParam(param, groupDiv.find(".gp-widget-task-group-params"));
 
                     if (reloadVals[param.name()] !== undefined) {
-                        var pWidget = pDiv.data("widget");
+                        const pWidget = pDiv.data("widget");
                         pWidget.value(reloadVals[param.name()]);
                     }
                 }
@@ -2220,7 +2205,7 @@ define("genepattern/task", ["base/js/namespace",
          * @private
          */
         _buildForm: function() {
-            var widget = this;
+            const widget = this;
             this.getTask(function(task) {
                 // Handle error
                 if (task === null) {
@@ -2232,13 +2217,13 @@ define("genepattern/task", ["base/js/namespace",
 
                 task.params({
                     success: function(response, params) {
-                        var reloadVals = widget._parseJobSpec();
+                        const reloadVals = widget._parseJobSpec();
 
                         // Iterate over parameter groups
                         if (task.paramGroups()) {
                             // Iterate over groups and add params
-                            var groups = task.paramGroups();
-                            for (var i = 0; i < groups.length; i++) {
+                            const groups = task.paramGroups();
+                            for (let i = 0; i < groups.length; i++) {
                                 widget._addParamGroup(groups[i], params, reloadVals);
                             }
                         }
@@ -2300,15 +2285,15 @@ define("genepattern/task", ["base/js/namespace",
          * @private
          */
         _addJobSpec: function(params) {
-            var code = this.options.cell.code_mirror.getValue();
-            var lines = code.split("\n");
-            var jobSpecName = null;
-            var insertAfter = null;
+            let code = this.options.cell.code_mirror.getValue();
+            const lines = code.split("\n");
+            let jobSpecName = null;
+            let insertAfter = null;
 
             // Get the job_spec name and _task name
-            for (var i = 0; i < lines.length; i++) {
-                var line = lines[i];
-                var parts = null;
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                let parts = null;
 
                 // Obtain the variable name of the job_spec
                 if (line.indexOf("_job_spec = ") !== -1) {
@@ -2326,10 +2311,10 @@ define("genepattern/task", ["base/js/namespace",
             }
 
             // Generate the .set_parameter code
-            var newLines = [];
-            for (var i = 0; i < params.length; i++) {
-                var param = params[i];
-                var newLine = jobSpecName + '.set_parameter("' + param.name() + '", "' + this._escapeQuotes(param.defaultValue()) + '")';
+            const newLines = [];
+            for (let i = 0; i < params.length; i++) {
+                const param = params[i];
+                const newLine = jobSpecName + '.set_parameter("' + param.name() + '", "' + this._escapeQuotes(param.defaultValue()) + '")';
                 newLines.unshift(newLine);
             }
 
@@ -2352,19 +2337,19 @@ define("genepattern/task", ["base/js/namespace",
          * @param value
          */
         updateCode: function(paramName, value) {
-            var code = this.options.cell.code_mirror.getValue();
-            var lines = code.split("\n");
-            var jobSpecName = null;
-            var codeToLookFor = '.set_parameter("' + paramName + '"';
-            var lineToSwap = null;
+            let code = this.options.cell.code_mirror.getValue();
+            const lines = code.split("\n");
+            let jobSpecName = null;
+            const codeToLookFor = '.set_parameter("' + paramName + '"';
+            let lineToSwap = null;
 
             // Get the job_spec name
-            for (var i = 0; i < lines.length; i++) {
-                var line = lines[i];
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
 
                 // Obtain the variable name of the job_spec
                 if (line.indexOf("_job_spec = ") !== -1) {
-                    var parts = line.split(" ");
+                    const parts = line.split(" ");
                     jobSpecName = parts[0];
                     break;
                 }
@@ -2377,8 +2362,8 @@ define("genepattern/task", ["base/js/namespace",
             }
 
             // Find correct line to replace
-            for (var i = 0; i < lines.length; i++) {
-                var line = lines[i];
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
 
                 // Found the line!
                 if (line.indexOf(codeToLookFor) !== -1) {
@@ -2393,12 +2378,12 @@ define("genepattern/task", ["base/js/namespace",
             }
 
             // Convert values to a string for inclusion
-            var valueString = null;
+            let valueString = null;
             if (value.constructor === Array && value.length > 1) {
-                var escapedStrings = [];
+                const escapedStrings = [];
                 valueString = '[';
-                for (var i = 0; i < value.length; i++) {
-                    var aValue = value[i];
+                for (let i = 0; i < value.length; i++) {
+                    const aValue = value[i];
                     escapedStrings.push('"' + this._escapeQuotes(aValue) + '"');
                 }
                 valueString += escapedStrings.join(", ") + ']';
@@ -2408,7 +2393,7 @@ define("genepattern/task", ["base/js/namespace",
             }
 
             // Generate new code line
-            var newLine = jobSpecName + '.set_parameter("' + paramName + '", ' + valueString + ')';
+            const newLine = jobSpecName + '.set_parameter("' + paramName + '", ' + valueString + ')';
 
             // Add new code to lines
             lines.splice(lineToSwap, 1, newLine);
@@ -2448,9 +2433,9 @@ define("genepattern/task", ["base/js/namespace",
          * @private
          */
         _addParam: function(param, form) {
-            var required = param.optional() ? "" : "*";
+            const required = param.optional() ? "" : "*";
 
-            var paramBox = $("<div></div>")
+            const paramBox = $("<div></div>")
                 .addClass(" form-group gp-widget-task-param")
                 .attr("name", param.name())
                 .attr("title", param.name())
@@ -2556,7 +2541,7 @@ define("genepattern/task", ["base/js/namespace",
          * @param message - String containing the message to show
          */
         successMessage: function(message) {
-            var messageBox = this.element.find(".gp-widget-task-message");
+            const messageBox = this.element.find(".gp-widget-task-message");
             messageBox.removeClass("alert-danger");
             messageBox.addClass("alert-success");
             messageBox.text(message);
@@ -2569,7 +2554,7 @@ define("genepattern/task", ["base/js/namespace",
          * @param message - String containing the message to show
          */
         errorMessage: function(message) {
-            var messageBox = this.element.find(".gp-widget-task-message");
+            const messageBox = this.element.find(".gp-widget-task-message");
             messageBox.removeClass("alert-success");
             messageBox.addClass("alert-danger");
             messageBox.text(message);
@@ -2580,17 +2565,17 @@ define("genepattern/task", ["base/js/namespace",
          * Validate the current Run Task form
          */
         validate: function() {
-            var validated = true;
-            var missing = [];
-            var params = this.element.find(".gp-widget-task-param");
+            let validated = true;
+            const missing = [];
+            const params = this.element.find(".gp-widget-task-param");
 
             // Validate each required parameter
-            for (var i = 0; i < params.length; i++) {
-                var param = $(params[i]);
-                var required = param.hasClass("gp-widget-task-required");
+            for (let i = 0; i < params.length; i++) {
+                const param = $(params[i]);
+                const required = param.hasClass("gp-widget-task-required");
                 if (required) {
-                    var input = param.find(".gp-widget-task-param-input");
-                    var value = this._getInputValue(input);
+                    const input = param.find(".gp-widget-task-param-input");
+                    const value = this._getInputValue(input);
                     if (value === null || value === "" || value.length === 0) {
                         param.addClass("gp-widget-task-param-missing");
                         missing.push(param.attr("name"));
@@ -2620,13 +2605,13 @@ define("genepattern/task", ["base/js/namespace",
          * @private
          */
         _createKindsList: function(params) {
-            var kindsSet = new Set();
+            const kindsSet = new Set();
 
             // Protect against null and undefined
             if (params === undefined || params === null) return [];
 
             $.each(params, function(index, param) {
-                var kinds = param.kinds();
+                const kinds = param.kinds();
                 if (kinds !== null && kinds !== undefined) {
                     kinds.forEach(function(kind) {
                         kindsSet.add(kind);
@@ -2635,7 +2620,7 @@ define("genepattern/task", ["base/js/namespace",
             });
 
             // Transform Set() to Array() in way that is browser compatible
-            var kindsArray = [];
+            const kindsArray = [];
             kindsSet.forEach(function(i) {
                 kindsArray.push(i);
             });
@@ -2661,13 +2646,13 @@ define("genepattern/task", ["base/js/namespace",
          * @param kind
          */
         receiveFile: function(url, kind) {
-            var uiParams = this.element.find(".gp-widget-task-param");
-            var matched = false;
+            const uiParams = this.element.find(".gp-widget-task-param");
+            let matched = false;
             $.each(uiParams, function(i, uiParam) {
-                var paramWidget = $(uiParam).find(".gp-widget-task-param-input").data("widget");
-                var param = paramWidget._param;
+                const paramWidget = $(uiParam).find(".gp-widget-task-param-input").data("widget");
+                const param = paramWidget._param;
                 if (param.kinds !== undefined) {
-                    var kinds = param.kinds();
+                    const kinds = param.kinds();
                     if (kinds !== undefined && kinds !== null) {
                         if (kinds.indexOf(kind) !== -1) {
                             // Found a match!
@@ -2685,7 +2670,7 @@ define("genepattern/task", ["base/js/namespace",
 
             // No match was found
             if (!matched) {
-                var task = this.options.session.task(this.options.lsid);
+                const task = this.options.session.task(this.options.lsid);
                 console.log("ERROR: No kind match found for " + url + " of kind " + kind + " in " + task.name());
             }
         },
@@ -2703,23 +2688,23 @@ define("genepattern/task", ["base/js/namespace",
          * Submit the Run Task form to the server
          */
         submit: function() {
-            var widget = this;
+            const widget = this;
 
             // Create the job input
             widget.getTask(function(task) {
-                var jobInput = task.jobInput();
+                const jobInput = task.jobInput();
 
                 widget.uploadAll({
                     success: function() {
                         widget.evaluateAllVars({
                             success: function() {
                                 // Assign values from the inputs to the job input
-                                var uiParams = widget.element.find(".gp-widget-task-param");
-                                for (var i = 0; i < uiParams.length; i++) {
-                                    var uiParam = $(uiParams[i]);
-                                    var uiInput = uiParam.find(".gp-widget-task-param-input");
-                                    var uiValue = widget._getInputValue(uiInput);
-                                    var uiName = widget._getParamName(uiParam);
+                                const uiParams = widget.element.find(".gp-widget-task-param");
+                                for (let i = 0; i < uiParams.length; i++) {
+                                    const uiParam = $(uiParams[i]);
+                                    const uiInput = uiParam.find(".gp-widget-task-param-input");
+                                    let uiValue = widget._getInputValue(uiInput);
+                                    const uiName = widget._getParamName(uiParam);
 
                                     if (uiValue !== null) {
                                         // Wrap value in list if not already wrapped
@@ -2741,7 +2726,7 @@ define("genepattern/task", ["base/js/namespace",
                                         widget.expandCollapse();
 
                                         // Find the associated job widget
-                                        var cell = widget.getJobWidget();
+                                        let cell = widget.getJobWidget();
 
                                         // Create a new cell for the job widget, if necessay
                                         if (!cell) cell = Jupyter.notebook.insert_cell_below();
@@ -2784,20 +2769,20 @@ define("genepattern/task", ["base/js/namespace",
          *                  error: Callback on error, expects exception
          */
         evaluateAllVars: function(pObj) {
-            var inputWidgets = this.element.find(".gp-widget-task-param-input");
-            var evalCallsFinished = false;
-            var evalsNeeded = 0;
-            var evalsFinished = 0;
+            const inputWidgets = this.element.find(".gp-widget-task-param-input");
+            let evalCallsFinished = false;
+            let evalsNeeded = 0;
+            let evalsFinished = 0;
 
             // Iterate over each widget
-            for (var i = 0; i < inputWidgets.length; i++) {
-                var iWidget = $(inputWidgets[i]).data("widget");
-                var value = iWidget.value();
+            for (let i = 0; i < inputWidgets.length; i++) {
+                const iWidget = $(inputWidgets[i]).data("widget");
+                let value = iWidget.value();
 
                 // Protect against nulls
                 if (value === null || value === undefined) value = [];
 
-                var makeCall = function(iWidget, value, valueIndex) {
+                const makeCall = function(iWidget, value, valueIndex) {
                     VariableManager.evaluateVariables(value, function(evalValue) {
                         if (valueIndex === undefined) iWidget._value = evalValue;
                         else iWidget._values[valueIndex] = evalValue;
@@ -2821,9 +2806,9 @@ define("genepattern/task", ["base/js/namespace",
                 else {
                     evalsNeeded += value.length;
 
-                    for (var j = 0; j < value.length; j++) {
-                        var valueIndex = j;
-                        var innerValue = value[j];
+                    for (let j = 0; j < value.length; j++) {
+                        const valueIndex = j;
+                        const innerValue = value[j];
 
                         makeCall(iWidget, innerValue, valueIndex);
                     }
@@ -2846,15 +2831,15 @@ define("genepattern/task", ["base/js/namespace",
          * @returns {boolean} - Whether an upload was just initiated or not
          */
         uploadAll: function(pObj) {
-            var fileWidgets = this.element.find(".file-widget");
-            var widget = this;
-            var uploadList = [];
-            var error = false;
+            const fileWidgets = this.element.find(".file-widget");
+            const widget = this;
+            const uploadList = [];
+            let error = false;
 
             // Create upload list
-            for (var i = 0; i < fileWidgets.length; i++) {
-                var fileWidget = $(fileWidgets[i]).data("widget");
-                var values = fileWidget.values();
+            for (let i = 0; i < fileWidgets.length; i++) {
+                const fileWidget = $(fileWidgets[i]).data("widget");
+                let values = fileWidget.values();
 
                 // Protect against nulls
                 if (values === null || values === undefined) values = [];
@@ -2870,7 +2855,7 @@ define("genepattern/task", ["base/js/namespace",
             }
 
             // Declare finalizeUploads()
-            var finalizeUploads = function() {
+            const finalizeUploads = function() {
                 if (error) {
                     pObj.error(error);
                 }
@@ -2880,9 +2865,9 @@ define("genepattern/task", ["base/js/namespace",
             };
 
             // Declare grabNextUpload()
-            var grabNextUpload = function() {
+            const grabNextUpload = function() {
                 // Pop the upload off the list
-                var upload = uploadList.shift();
+                const upload = uploadList.shift();
 
                 // If it's not undefined, upload
                 if (upload !== undefined) {
@@ -2917,7 +2902,7 @@ define("genepattern/task", ["base/js/namespace",
      *
      * @type {{cleanVariableText: VariableManager.cleanVariableText, getKernelValue: VariableManager.getKernelValue, getVariableList: VariableManager.getVariableList, replaceVariables: VariableManager.replaceVariables, evaluateList: VariableManager.evaluateList, evaluateVariables: VariableManager.evaluateVariables}}
      */
-    var VariableManager = {
+    const VariableManager = {
 
         /**
          * Remove surrounding single quotes from Python strings
@@ -2944,7 +2929,7 @@ define("genepattern/task", ["base/js/namespace",
                         output: function(response) {
                             // See if there is any output
                             if (response.content.data) {
-                                var return_text = response.content.data["text/plain"];
+                                let return_text = response.content.data["text/plain"];
                                 return_text = VariableManager.cleanVariableText(return_text);
                                 callback(return_text);
                             }
@@ -2989,13 +2974,13 @@ define("genepattern/task", ["base/js/namespace",
             function interpolate(str) {
                 return function interpolate(o) {
                     return str.replace(/{{([^{}]*)}}/g, function (a, b) {
-                        var r = o[b.trim()];
+                        const r = o[b.trim()];
                         return typeof r === 'string' || typeof r === 'number' ? r : a;
                     });
                 }
             }
 
-            var terped = interpolate(raw_string)(replace_map);
+            const terped = interpolate(raw_string)(replace_map);
             return terped;
         },
 
@@ -3008,11 +2993,11 @@ define("genepattern/task", ["base/js/namespace",
          */
         evaluateList: function(var_list, final_callback) {
             // Initialize the callback counter
-            var callbacks_needed = var_list.length;
-            var current_callbacks = 0;
+            const callbacks_needed = var_list.length;
+            let current_callbacks = 0;
 
             // Declare and populate map with undefined values
-            var return_map = {};
+            const return_map = {};
             var_list.forEach(function(e) {
                 return_map[e] = undefined;
                 VariableManager.getKernelValue(e, function(value) {
@@ -3040,28 +3025,28 @@ define("genepattern/task", ["base/js/namespace",
          * @param callback
          */
         evaluateVariables: function(raw_string, callback) {
-            var var_list = VariableManager.getVariableList(raw_string);
+            const var_list = VariableManager.getVariableList(raw_string);
             VariableManager.evaluateList(var_list, function(value_map) {
-                var final_string = VariableManager.replaceVariables(raw_string, value_map);
+                const final_string = VariableManager.replaceVariables(raw_string, value_map);
                 callback(final_string);
             });
         }
     };
 
-    var TaskWidgetView = widgets.DOMWidgetView.extend({
+    const TaskWidgetView = widgets.DOMWidgetView.extend({
         render: function () {
             let cell = this.options.cell;
 
             // Ugly hack for getting the Cell object in ipywidgets 7
             if (!cell) cell = this.options.output.element.closest(".cell").data("cell");
 
-            var code = null;
+            let code = null;
 
             // Protect against double-rendering
             if (cell.element.find(".gp-widget").length > 0) return;
 
-            var lsid = this.model.get('lsid');
-            var name = this.model.get('name');
+            const lsid = this.model.get('lsid');
+            const name = this.model.get('name');
 
             // Check to see if this is a legacy task widget, if so update the code
             if (!('genepattern' in cell.metadata) || cell.get_text().indexOf("gp.GPTask(gpserver") > -1) {
@@ -3094,9 +3079,9 @@ define("genepattern/task", ["base/js/namespace",
             }
 
             // Hide the code by default
-            var element = this.$el;
-            var hideCode = function() {
-                var cell = element.closest(".cell");
+            const element = this.$el;
+            const hideCode = function() {
+                const cell = element.closest(".cell");
                 if (cell.length > 0) {
                     // Protect against the "double render" bug in Jupyter 3.2.1
                     element.parent().find(".gp-widget-task:not(:first-child)").remove();
