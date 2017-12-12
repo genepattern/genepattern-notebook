@@ -3,12 +3,7 @@
  *
  * Library for interfacing with GenePattern REST API from JavaScript.
  *
- * Copyright 2015 The Broad Institute, Inc.
- *
- * SOFTWARE COPYRIGHT NOTICE
- * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
- * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not
- * responsible for its use, misuse, or functionality.
+ * Copyright 2015-2017 Regents of the University of California & The Broad Institute
  */
 
 define("genepattern", ["jquery", "jqueryui"], function ($) {
@@ -18,9 +13,9 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
      *
      * @required - jQuery 1.5+ library
      */
-    // var GenePattern = GenePattern || {};
-    var GenePattern = function() {
-        var gp = this;
+    // const GenePattern = GenePattern || {};
+    const GenePattern = function() {
+        const gp = this;
 
         gp._server = null;
         gp._tasks = [];
@@ -38,7 +33,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
          * @returns {boolean} - true if the server has been set, else false
          */
         gp.isServerSet = function () {
-            return gp._server ? true : false;
+            return !!gp._server;
         };
 
 
@@ -82,14 +77,14 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
          * @returns {Array|*}
          */
         gp.linkKinds = function (kindMap) {
-            var returnMap = {};
+            const returnMap = {};
 
             $.each(kindMap, function (key, taskArray) {
-                var returnArray = [];
+                const returnArray = [];
 
-                for (var i = 0; i < taskArray.length; i++) {
-                    var lsid = taskArray[i];
-                    var task = gp.task(lsid);
+                for (let i = 0; i < taskArray.length; i++) {
+                    const lsid = taskArray[i];
+                    const task = gp.task(lsid);
                     if (task === null) {
                         console.log("Error finding Task() for LSID: " + lsid + " skipping...")
                     }
@@ -125,9 +120,9 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
          *      See http://api.jquery.com/jquery.deferred/ for details.
          */
         gp.tasks = function (pObj) {
-            var forceRefresh = pObj && ((typeof pObj.force === 'boolean' && pObj.force) ||
+            const forceRefresh = pObj && ((typeof pObj.force === 'boolean' && pObj.force) ||
                 (typeof pObj.force === 'string' && pObj.force.toLowerCase() === 'true'));
-            var useCache = gp._tasks && !forceRefresh;
+            const useCache = gp._tasks && !forceRefresh;
 
             if (useCache) {
                 return new $.Deferred()
@@ -139,8 +134,8 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
                     .resolve();
             }
             else {
-                var REST_ENDPOINT = "/rest/v1/tasks/all.json";
-                var includeHidden = pObj && pObj.hidden && pObj.hidden.toLowerCase() === 'true' ? '?includeHidden=true' : '';
+                const REST_ENDPOINT = "/rest/v1/tasks/all.json";
+                const includeHidden = pObj && pObj.hidden && pObj.hidden.toLowerCase() === 'true' ? '?includeHidden=true' : '';
 
                 return $.ajax({
                     url: gp.server() + REST_ENDPOINT + includeHidden,
@@ -154,10 +149,10 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
                     .done(function (response) {
                         // Create the new _tasks list and iterate over returned JSON list, creating Task objects
                         gp._tasks = [];
-                        var modules = response['all_modules'];
+                        const modules = response['all_modules'];
                         if (modules) {
-                            for (var i = 0; i < modules.length; i++) {
-                                var json = modules[i];
+                            for (let i = 0; i < modules.length; i++) {
+                                const json = modules[i];
                                 gp._tasks.push(new gp.Task(json));
                             }
                         }
@@ -192,12 +187,12 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
             if (typeof pObj !== 'string' && typeof pObj !== 'object') throw "GenePattern.task() parameter must be either object or string";
             if (gp._tasks === null) throw "gp task list has not been initialized";
 
-            var identifier = typeof pObj === 'string' ? pObj : null;
-            var isLsid = identifier.indexOf(':') > -1;
-            var isBaseLsid = (identifier.split(":").length - 1) === 4;
+            const identifier = typeof pObj === 'string' ? pObj : null;
+            const isLsid = identifier.indexOf(':') > -1;
+            const isBaseLsid = (identifier.split(":").length - 1) === 4;
 
-            for (var i = 0; i < gp._tasks.length; i++) {
-                var task = gp._tasks[i];
+            for (let i = 0; i < gp._tasks.length; i++) {
+                const task = gp._tasks[i];
                 if (isLsid && (task.lsid() === pObj.lsid || task.lsid() === identifier)) return task;
                 if (isBaseLsid && (task.baseLsid() === pObj.lsid || task.baseLsid() === identifier)) return task;
                 if (!isBaseLsid && (task.name() === pObj.name || task.name() === identifier)) return task;
@@ -230,8 +225,8 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
             if (typeof pObj === 'object' && !pObj.lsid && !pObj.name) throw "GenePattern.taskQuery() parameter does not contain lsid or name";
             if (typeof pObj !== 'object') throw "GenePattern.taskQuery() parameter must be object";
 
-            var identifier = pObj.lsid ? pObj.lsid : pObj.name;
-            var REST_ENDPOINT = "/rest/v1/tasks/";
+            const identifier = pObj.lsid ? pObj.lsid : pObj.name;
+            const REST_ENDPOINT = "/rest/v1/tasks/";
 
             return $.ajax({
                 url: gp.server() + REST_ENDPOINT + encodeURIComponent(identifier),
@@ -243,14 +238,14 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
                 },
                 success: function (response) {
                     // Create the Task object
-                    var task = new gp.Task(response);
+                    const task = new gp.Task(response);
 
                     // Add params to Task object
-                    var params = response['params'];
+                    const params = response['params'];
                     if (params) {
                         task._params = [];
-                        for (var i = 0; i < params.length; i++) {
-                            var param = params[i];
+                        for (let i = 0; i < params.length; i++) {
+                            const param = params[i];
                             task._params.push(new gp.Param(param));
                         }
                     }
@@ -292,8 +287,8 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
          *      See http://api.jquery.com/jquery.deferred/ for details.
          */
         gp.jobs = function (pObj) {
-            var forceRefresh = pObj && pObj.force && pObj.force.toLowerCase() === 'true';
-            var useCache = gp._jobs && !forceRefresh;
+            const forceRefresh = pObj && pObj.force && pObj.force.toLowerCase() === 'true';
+            const useCache = gp._jobs && !forceRefresh;
 
             if (useCache) {
                 return new $.Deferred()
@@ -305,16 +300,16 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
                     .resolve();
             }
             else {
-                var REST_ENDPOINT = "/rest/v1/jobs/?";
+                let REST_ENDPOINT = "/rest/v1/jobs/?";
 
-                var userId = pObj && pObj['userId'] ? pObj['userId'] : null;
-                var groupId = pObj && pObj['groupId'] ? pObj['groupId'] : null;
-                var batchId = pObj && pObj['batchId'] ? pObj['batchId'] : null;
-                var pageSize = pObj && pObj['pageSize'] ? pObj['pageSize'] : null;
-                var page = pObj && pObj['page'] ? pObj['page'] : null;
-                var includeChildren = pObj && pObj['includeChildren'] ? pObj['includeChildren'] : null;
-                var includeOutputFiles = pObj && pObj['includeOutputFiles'] ? pObj['includeOutputFiles'] : null;
-                var includePermissions = pObj && pObj['includePermissions'] ? pObj['includePermissions'] : null;
+                const userId = pObj && pObj['userId'] ? pObj['userId'] : null;
+                const groupId = pObj && pObj['groupId'] ? pObj['groupId'] : null;
+                const batchId = pObj && pObj['batchId'] ? pObj['batchId'] : null;
+                const pageSize = pObj && pObj['pageSize'] ? pObj['pageSize'] : null;
+                const page = pObj && pObj['page'] ? pObj['page'] : null;
+                const includeChildren = pObj && pObj['includeChildren'] ? pObj['includeChildren'] : null;
+                const includeOutputFiles = pObj && pObj['includeOutputFiles'] ? pObj['includeOutputFiles'] : null;
+                const includePermissions = pObj && pObj['includePermissions'] ? pObj['includePermissions'] : null;
 
                 if (userId) REST_ENDPOINT += "&userId=" + encodeURIComponent(userId);
                 if (groupId) REST_ENDPOINT += "&groupId=" + encodeURIComponent(groupId);
@@ -337,10 +332,10 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
                     .done(function (response) {
                         // Create the new _jobs list and iterate over returned JSON list, creating Job objects
                         gp._jobs = [];
-                        var jobs = response['items'];
+                        const jobs = response['items'];
                         if (jobs) {
-                            for (var i = 0; i < jobs.length; i++) {
-                                var json = jobs[i];
+                            for (let i = 0; i < jobs.length; i++) {
+                                const json = jobs[i];
                                 gp._jobs.push(new gp.Job(json));
                             }
                         }
@@ -373,16 +368,16 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
          *      See http://api.jquery.com/jquery.deferred/ for details.
          */
         gp.job = function (pObj) {
-            var forceRefresh = pObj && ((typeof pObj.force === 'boolean' && pObj.force) ||
+            const forceRefresh = pObj && ((typeof pObj.force === 'boolean' && pObj.force) ||
                 (typeof pObj.force === 'string' && pObj.force.toLowerCase() === 'true'));
-            var getPermissions = pObj && ((typeof pObj.permissions === 'boolean' && pObj.permissions) ||
+            const getPermissions = pObj && ((typeof pObj.permissions === 'boolean' && pObj.permissions) ||
                 (typeof pObj.permissions === 'string' && pObj.permissions.toLowerCase() === 'true'));
-            var jobNumber = pObj.jobNumber;
+            const jobNumber = pObj.jobNumber;
 
             // Try to find the job in the cache
             if (!forceRefresh && gp._jobs) {
-                for (var i = 0; i < gp._jobs.length; i++) {
-                    var job = gp._jobs[i];
+                for (let i = 0; i < gp._jobs.length; i++) {
+                    const job = gp._jobs[i];
                     if (job.jobNumber() === jobNumber) {
                         return new $.Deferred()
                             .done(function () {
@@ -396,8 +391,8 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
             }
 
             // Otherwise, if not cached or refreshed forced
-            var permissionsParam = getPermissions ? "?includePermissions=true" : "";
-            var REST_ENDPOINT = "/rest/v1/jobs/";
+            const permissionsParam = getPermissions ? "?includePermissions=true" : "";
+            const REST_ENDPOINT = "/rest/v1/jobs/";
 
             return $.ajax({
                 url: gp.server() + REST_ENDPOINT + jobNumber + permissionsParam,
@@ -410,7 +405,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
             })
                 .done(function (response) {
                     // Create the new _jobs list and iterate over returned JSON list, creating Job objects
-                    var loadedJob = new gp.Job(response);
+                    const loadedJob = new gp.Job(response);
 
                     if (pObj && pObj.success) {
                         pObj.success(response, loadedJob);
@@ -439,8 +434,8 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
             if (!pObj) throw "GenePattern.upload() parameter either null or undefined";
             if (typeof pObj === 'object' && typeof pObj.file !== 'object') throw "GenePattern.upload() parameter does not contain a File object";
 
-            var REST_ENDPOINT = "/rest/v1/data/upload/job_input";
-            var nameParam = "?name=" + pObj.file.name;
+            const REST_ENDPOINT = "/rest/v1/data/upload/job_input";
+            const nameParam = "?name=" + pObj.file.name;
 
             return $.ajax({
                 url: gp.server() + REST_ENDPOINT + nameParam,
@@ -509,7 +504,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
 
             /**
              * Returns a JobInput object for submitting a job for this task
-             * @returns {gp.JobInput}
+             * @returns {GenePattern.JobInput}
              */
             this.jobInput = function () {
                 return new gp.JobInput(this);
@@ -530,7 +525,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
             this.param = function(pObj) {
                 this.params({
                     "success": function(response, params) {
-                        var found = false;
+                        let found = false;
                         params.forEach(function(i) {
                             if (pObj.name === i.name()) {
                                 pObj.success(response, i);
@@ -561,10 +556,10 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
              *      See http://api.jquery.com/jquery.deferred/ for details.
              */
             this.params = function (pObj) {
-                var task = this;
-                var forceRefresh = pObj && ((typeof pObj.force === 'boolean' && pObj.force) ||
+                const task = this;
+                const forceRefresh = pObj && ((typeof pObj.force === 'boolean' && pObj.force) ||
                     (typeof pObj.force === 'string' && pObj.force.toLowerCase() === 'true'));
-                var inCache = forceRefresh ? false : task._params !== null;
+                const inCache = forceRefresh ? false : task._params !== null;
 
                 if (inCache) {
                     return new $.Deferred()
@@ -576,7 +571,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
                         .resolve();
                 }
                 else {
-                    var REST_ENDPOINT = "/rest/v1/tasks/";
+                    const REST_ENDPOINT = "/rest/v1/tasks/";
 
                     return $.ajax({
                         url: gp.server() + REST_ENDPOINT + encodeURIComponent(task.lsid()),
@@ -589,11 +584,11 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
                     })
                         .done(function (response) {
                             // Add params to Task object
-                            var params = response['params'];
+                            const params = response['params'];
                             if (params) {
                                 task._params = [];
-                                for (var i = 0; i < params.length; i++) {
-                                    var param = params[i];
+                                for (let i = 0; i < params.length; i++) {
+                                    const param = params[i];
                                     task._params.push(new gp.Param(param));
                                 }
                             }
@@ -696,7 +691,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
              * @returns {null}
              */
             this.baseLsid = function () {
-                var parts = this._lsid.split(':');
+                const parts = this._lsid.split(':');
                 if (parts.length === 6) {
                     parts.pop();
                     return parts.join(':');
@@ -734,22 +729,22 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
              * @param error - function to execute upon error
              */
             this.acceptEula = function (success, error) {
-                var eula = this.eula();
+                const eula = this.eula();
 
                 // Execute error if no eula object
-                if (eula == undefined || eula == null) {
+                if (eula === undefined || eula === null) {
                     error(null, "no EULA object defined");
                 }
 
                 // Execute error if no pending EULAs to accept
-                if (eula['pendingEulas'] == undefined || eula['pendingEulas'] == null || eula['pendingEulas'].length < 1) {
+                if (eula['pendingEulas'] === undefined || eula['pendingEulas'] === null || eula['pendingEulas'].length < 1) {
                     error(null, "no pending EULAs to accept");
                 }
 
                 // Call the accept endpoint
-                var lsid = eula.acceptData.lsid;
-                var url = eula.acceptUrl;
-                var method = eula.acceptType;
+                const lsid = eula.acceptData.lsid;
+                const url = eula.acceptUrl;
+                const method = eula.acceptType;
 
                 $.ajax({
                     url: url + "?lsid=" + encodeURIComponent(lsid),
@@ -821,8 +816,8 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
              *      See http://api.jquery.com/jquery.deferred/ for details.
              */
             this.update = function (pObj) {
-                var REST_ENDPOINT = "/rest/v1/jobs/" + this.jobNumber() + "/status.json";
-                var job = this;
+                const REST_ENDPOINT = "/rest/v1/jobs/" + this.jobNumber() + "/status.json";
+                const job = this;
 
                 return $.ajax({
                     url: gp.server() + REST_ENDPOINT,
@@ -835,7 +830,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
                 })
                     .done(function (response) {
                         // Add params to Job object
-                        var status = response;
+                        const status = response;
                         if (status) {
                             job._status = status;
                         }
@@ -863,7 +858,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
              */
             this.code = function (pObj) {
                 // Validate language
-                var language = null;
+                let language = null;
 
                 if (typeof pObj === "string") {
                     language = pObj;
@@ -876,7 +871,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
                     console.log("Unknown language, defaulting to Python: " + language);
                 }
 
-                var REST_ENDPOINT = "/rest/v1/jobs/" + this.jobNumber() + "/code?language=" + language;
+                const REST_ENDPOINT = "/rest/v1/jobs/" + this.jobNumber() + "/code?language=" + language;
 
                 return $.ajax({
                     url: gp.server() + REST_ENDPOINT,
@@ -905,7 +900,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
 
             /**
              * Returns the name of the job's associated task
-             * @returns {string}
+             * @returns {string | null}
              */
             this.taskName = function () {
                 return this._taskName;
@@ -914,7 +909,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
             /**
              * Returns the LSID of the job's associated task
              *
-             * @returns {string}
+             * @returns {string | null}
              */
             this.taskLsid = function () {
                 return this._taskLsid;
@@ -923,7 +918,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
             /**
              * Returns the user ID of the job's owner
              *
-             * @returns {string}
+             * @returns {string | null}
              */
             this.userId = function () {
                 return this._userId;
@@ -947,13 +942,13 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
             this.children = function () {
                 // Lazily initialize Job._children
                 if (this._children === null) {
-                    var childList = [];
+                    const childList = [];
 
                     // If the job has children
                     if (jobJson['children'] !== undefined) {
-                        var rawChildren = jobJson['children']['items'];
+                        const rawChildren = jobJson['children']['items'];
                         rawChildren.forEach(function (child) {
-                            var childJob = new gp.Job(child);
+                            const childJob = new gp.Job(child);
                             childList.push(childJob);
                         });
                     }
@@ -986,7 +981,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
              * @returns {*}
              */
             this.savePermissions = function (pObj) {
-                var REST_ENDPOINT = "/rest/v1/jobs/" + this.jobNumber() + "/permissions";
+                const REST_ENDPOINT = "/rest/v1/jobs/" + this.jobNumber() + "/permissions";
 
                 return $.ajax({
                     url: gp.server() + REST_ENDPOINT,
@@ -1001,7 +996,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
                 })
                     .done(function (response) {
                         // Create Job object from JSON response
-                        var jobNumber = response['jobId'];
+                        const jobNumber = response['jobId'];
 
                         if (pObj && pObj.success) {
                             pObj.success(response, jobNumber);
@@ -1017,7 +1012,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
             /**
              * Returns the job number
              *
-             * @returns {number}
+             * @returns {number|null}
              */
             this.jobNumber = function () {
                 return this._jobNumber;
@@ -1101,8 +1096,8 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
                 if (task) {
                     this._lsid = task.lsid();
                     this._params = [];
-                    for (var i = 0; i < task._params.length; i++) {
-                        var param = task._params[i];
+                    for (let i = 0; i < task._params.length; i++) {
+                        const param = task._params[i];
                         this._params.push(param.clone());
                     }
                 }
@@ -1112,7 +1107,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
             /**
              * Getter for Task LSID
              *
-             * @returns {string}
+             * @returns {string|null}
              */
             this.lsid = function () {
                 return this._lsid;
@@ -1135,9 +1130,9 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
              * @returns {gp.Param|null} - The matching Param object
              */
             this.param = function (name) {
-                for (var i = 0; i < this._params.length; i++) {
-                    var param = this._params[i];
-                    if (param.name() == name) return param;
+                for (let i = 0; i < this._params.length; i++) {
+                    const param = this._params[i];
+                    if (param.name() === name) return param;
                 }
                 return null;
             };
@@ -1149,10 +1144,10 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
              * @private
              */
             this._submitJson_ = function () {
-                var lsid = this.lsid();
-                var params = [];
-                for (var i = 0; i < this.params().length; i++) {
-                    var param = this.params()[i];
+                const lsid = this.lsid();
+                const params = [];
+                for (let i = 0; i < this.params().length; i++) {
+                    const param = this.params()[i];
                     params.push({
                         name: param.name(),
                         values: param.values() === null ? (param.defaultValue() ? [param.defaultValue()] : []) : param.values(),
@@ -1179,7 +1174,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
              *      See http://api.jquery.com/jquery.deferred/ for details.
              */
             this.submit = function (pObj) {
-                var REST_ENDPOINT = "/rest/v1/jobs/";
+                const REST_ENDPOINT = "/rest/v1/jobs/";
 
                 return $.ajax({
                     url: gp.server() + REST_ENDPOINT,
@@ -1194,7 +1189,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
                 })
                     .done(function (response) {
                         // Create Job object from JSON response
-                        var jobNumber = response['jobId'];
+                        const jobNumber = response['jobId'];
 
                         if (pObj && pObj.success) {
                             pObj.success(response, jobNumber);
@@ -1271,9 +1266,9 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
              */
             this._parseChoices = function (choiceInfo) {
                 if (choiceInfo['choices']) {
-                    var choices = {};
-                    for (var i = 0; i < choiceInfo['choices'].length; i++) {
-                        var choice = choiceInfo['choices'][i];
+                    const choices = {};
+                    for (let i = 0; i < choiceInfo['choices'].length; i++) {
+                        const choice = choiceInfo['choices'][i];
                         choices[choice['label']] = choice['value'];
                     }
                     return choices;
@@ -1287,10 +1282,10 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
             /**
              * Return a clone of this param
              *
-             * @returns {gp.Param}
+             * @returns {GenePattern.Param}
              */
             this.clone = function () {
-                var param = new gp.Param();
+                const param = new gp.Param();
                 param.name(this.name());
                 param.values(this.values());
                 param.defaultValue(this.defaultValue());
@@ -1350,7 +1345,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
              * Returns or sets the name of the parameter
              *
              * @param [name=optional] - The name of the parameter
-             * @returns {string}
+             * @returns {string|null}
              */
             this.name = function (name) {
                 if (name !== undefined) {
@@ -1365,7 +1360,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
              * Returns or sets the description of the parameter
              *
              * @param [description=optional] - The description of the parameter
-             * @returns {string}
+             * @returns {string|null}
              */
             this.description = function (description) {
                 if (description !== undefined) {
@@ -1381,7 +1376,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
              *
              * @param [choices=optional] - The choices for the parameter.
              *              Assumes a object of key : value pairings.
-             * @returns {string}
+             * @returns {string|null}
              */
             this.choices = function (choices) {
                 if (choices !== undefined) {
@@ -1396,7 +1391,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
              * Returns or sets the default value of the parameter
              *
              * @param [defaultValue=optional] - The default value for the parameter
-             * @returns {string}
+             * @returns {string|null}
              */
             this.defaultValue = function (defaultValue) {
                 if (defaultValue !== undefined) {
@@ -1411,7 +1406,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
              * Returns or sets whether the parameter is optional or not
              *
              * @param [optional=optional] - Is this parameter optional?
-             * @returns {boolean}
+             * @returns {boolean|null}
              */
             this.optional = function (optional) {
                 if (optional !== undefined) {
@@ -1426,7 +1421,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
              * Returns or sets the prefix when specified value
              *
              * @param [prefixWhenSpecified=optional] - What is the prefix?
-             * @returns {string}
+             * @returns {string|null}
              */
             this.prefixWhenSpecified = function (prefixWhenSpecified) {
                 if (prefixWhenSpecified !== undefined) {
@@ -1441,7 +1436,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
              * Returns or sets the type of the parameter
              *
              * @param [type=optional] - The type of this parameter
-             * @returns {string}
+             * @returns {string|null}
              */
             this.type = function (type) {
                 if (type !== undefined) {
@@ -1478,7 +1473,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
              *                              n..m - A list of n to m files
              *                              1+ - Required value, unlimited files
              *                              0+ - Optional value, unlimited files
-             * @returns {string}
+             * @returns {string|null}
              */
             this.numValues = function (numVal) {
                 if (numVal !== undefined) {
@@ -1497,25 +1492,25 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
              * @returns {number}
              */
             this.maxValues = function () {
-                var numVal = this.numValues();
+                let numVal = this.numValues();
 
                 // If not defined, assume 1
                 if (numVal === undefined || numVal === null) return 1;
 
                 // If numValues is unlimited
-                var unlimited = numVal.indexOf("+") > 0;
+                const unlimited = numVal.indexOf("+") > 0;
                 if (unlimited) return -1;
 
                 // If numValues is a range
-                var range = numVal.indexOf("..") > 0;
+                const range = numVal.indexOf("..") > 0;
                 if (range) {
-                    var parts = numVal.split("..");
+                    const parts = numVal.split("..");
                     if (parts.length > 1) numVal = parts[1];
                 }
 
                 // If numValues is a single number
                 try {
-                    var actualNum = parseInt(numVal);
+                    const actualNum = parseInt(numVal);
                     if (isNaN(actualNum)) throw "numValues is not a number: " + numVal;
                     else return actualNum;
                 }

@@ -4,12 +4,7 @@
  * @author Thorin Tabor
  * @requires - jQuery, navigation.js
  *
- * Copyright 2015 The Broad Institute, Inc.
- *
- * SOFTWARE COPYRIGHT NOTICE
- * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
- * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not
- * responsible for its use, misuse, or functionality.
+ * Copyright 2015-2017 Regents of the University of California & The Broad Institute
  */
 
 define("genepattern/job", ["base/js/namespace",
@@ -48,8 +43,8 @@ define("genepattern/job", ["base/js/namespace",
          * @private
          */
         _create: function() {
-            var widget = this;
-            var cell = this.options.cell;
+            const widget = this;
+            const cell = this.options.cell;
 
             // Ensure the job number is defined
             if ((isNaN(this.options.jobNumber) || this.options.jobNumber === null) && !this.options.json) {
@@ -353,14 +348,14 @@ define("genepattern/job", ["base/js/namespace",
          */
         getTask: function(done) {
             // First check for the associated task, return if found
-            var task = this.options.job.task();
+            let task = this.options.job.task();
             if (task !== null) {
                 done(task);
                 return task;
             }
 
             // Otherwise check the general GenePattern cache
-            var identifier = this.options.job.taskLsid();
+            const identifier = this.options.job.taskLsid();
             task = this.options.session.task(identifier);
             if (task !== null) {
                 this.options.job._task = task; // Associate this task with the widget
@@ -369,7 +364,7 @@ define("genepattern/job", ["base/js/namespace",
             }
 
             // Otherwise call back to the server
-            var widget = this;
+            const widget = this;
             this.options.session.taskQuery({
                 lsid: identifier,
                 success: function(newTask) {
@@ -388,8 +383,8 @@ define("genepattern/job", ["base/js/namespace",
          * Expand or collapse the job widget
          */
         expandCollapse: function() {
-            var toSlide = this.element.find("> .panel-body");
-            var indicator = this.element.find(".widget-slide-indicator").find("span");
+            const toSlide = this.element.find("> .panel-body");
+            const indicator = this.element.find(".widget-slide-indicator").find("span");
             if (toSlide.is(":hidden")) {
                 toSlide.slideDown();
                 indicator.removeClass("fa-plus");
@@ -404,8 +399,6 @@ define("genepattern/job", ["base/js/namespace",
 
         /**
          * Construct the sharing panel from the job permissions
-         *
-         * @param job
          */
         buildSharingPanel: function() {
             // Display error and exit if not authenticated or a placeholder job
@@ -446,7 +439,7 @@ define("genepattern/job", ["base/js/namespace",
             );
 
             // Build the permissions table
-            var table = $("<table></table>")
+            const table = $("<table></table>")
                 .addClass("gp-widget-job-share-table");
             table.append(
                 $("<tr></tr>")
@@ -460,13 +453,13 @@ define("genepattern/job", ["base/js/namespace",
                     )
             );
 
-            var groups = permissions['groups'];
+            const groups = permissions['groups'];
             $.each(groups, function(i, e) {
-                var groupDisplayName = e['id'];
+                let groupDisplayName = e['id'];
                 if (groupDisplayName === "*") {
                     groupDisplayName = "Public";
                 }
-                var row = $("<tr></tr>")
+                const row = $("<tr></tr>")
                     .attr('name', e['id']);
                 row.append(
                     $("<td></td>")
@@ -529,7 +522,7 @@ define("genepattern/job", ["base/js/namespace",
             });
             optionsPane.append(table);
 
-            var dialog = require('base/js/dialog');
+            const dialog = require('base/js/dialog');
             dialog.modal({
                 notebook: Jupyter.notebook,
                 keyboard_manager: this.keyboard_manager,
@@ -544,7 +537,7 @@ define("genepattern/job", ["base/js/namespace",
                         "class" : "btn-primary",
                         "click" : function() {
                             // Bundle up permissions to save
-                            var bundle = widget._bundlePermissions();
+                            const bundle = widget._bundlePermissions();
 
                             // Call to save permissions
                             widget._savePermissions(bundle,
@@ -591,17 +584,17 @@ define("genepattern/job", ["base/js/namespace",
          * @private
          */
         _bundlePermissions: function() {
-            var rawGroups = $(".gp-widget-job-share-table").find("tr");
-            var toReturn = [];
+            const rawGroups = $(".gp-widget-job-share-table").find("tr");
+            const toReturn = [];
             $.each(rawGroups, function(i, e) {
-                var name = $(e).attr("name");
+                const name = $(e).attr("name");
                 // Skip the header row
                 if (name === undefined || name === null || name === "") {
                     return;
                 }
                 // Get the radio value
-                var group = {"id": name};
-                var value = $(e).find("input:radio:checked").val();
+                const group = {"id": name};
+                const value = $(e).find("input:radio:checked").val();
                 if (value === "Read") {
                     group["read"] = true;
                     group["write"] = false;
@@ -625,14 +618,14 @@ define("genepattern/job", ["base/js/namespace",
          * @private
          */
         _stripUnwantedCode: function(cell, code) {
-            var lines = code.split("\n");
-            var newCode = "";
-            var taskVar = null;
+            const lines = code.split("\n");
+            let newCode = "";
+            let taskVar = null;
 
             // Iterate over each line
-            for (var i = 0; i < lines.length; i++) {
-                var line = lines[i];
-                var skip = false;
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i];
+                let skip = false;
 
                 // Determine if this is a skipped line
                 if (line.trim().indexOf("import gp") === 0) { skip = true; }
@@ -666,26 +659,6 @@ define("genepattern/job", ["base/js/namespace",
 
             // Put the code in the cell
             cell.code_mirror.setValue(newCode);
-        },
-
-        /**
-         * Makes a duplicate of the job widget
-         */
-        cloneJob: function() {
-            // Get the cell to clone
-            var cell = this.element.closest(".cell").data("cell");
-
-            // Get the job widget code
-            var code = cell.code_mirror.getValue();
-
-            // Create a new cell for the cloned job widget
-            var clone = Jupyter.notebook.insert_cell_below();
-
-            // Set the code for the job widget
-            clone.code_mirror.setValue(code);
-
-            // Execute cell
-            clone.execute();
         },
 
         /**
@@ -756,8 +729,8 @@ define("genepattern/job", ["base/js/namespace",
          * @private
          */
         _initPoll: function(statusObj) {
-            var running = !statusObj["hasError"] && !statusObj["completedInGp"];
-            var widget = this;
+            const running = !statusObj["hasError"] && !statusObj["completedInGp"];
+            const widget = this;
 
             // If polling is turned on, attach the event
             if (this.options.poll && running) {
@@ -773,7 +746,7 @@ define("genepattern/job", ["base/js/namespace",
          * @private
          */
         _pollForAuth: function() {
-            var widget = this;
+            const widget = this;
             setTimeout(function() {
                 // Try to grab the session again
                 widget.options.session = widget._session_from_index(widget.options.session_index);
@@ -781,9 +754,9 @@ define("genepattern/job", ["base/js/namespace",
                 // Check to see if the user is authenticated yet
                 if (widget.options.session && widget.options.session.authenticated) {
                     // If authenticated, execute cell again
-                    var cellElement = widget.element.closest(".cell");
+                    const cellElement = widget.element.closest(".cell");
                     if (cellElement.length > 0) {
-                        var cellObject = cellElement.data("cell");
+                        const cellObject = cellElement.data("cell");
                         if (cellObject) {
                             cellObject.execute();
                         }
@@ -869,7 +842,7 @@ define("genepattern/job", ["base/js/namespace",
          * @private
          */
         _displayJob: function(job) {
-            var widget = this;
+            const widget = this;
 
             // Clean the old data
             this._clean();
@@ -878,27 +851,27 @@ define("genepattern/job", ["base/js/namespace",
             this.element.attr("name", job.jobNumber());
 
             // Display the job number and task name
-            var taskText = " " + job.jobNumber() + ". " + job.taskName();
+            const taskText = " " + job.jobNumber() + ". " + job.taskName();
             this.element.find(".gp-widget-job-task:first").text(taskText);
 
             // Display the user and date submitted
-            var submittedText = "Submitted by " + job.userId() + " on " + job.dateSubmitted();
+            const submittedText = "Submitted by " + job.userId() + " on " + job.dateSubmitted();
             this.element.find(".gp-widget-job-submitted:first").text(submittedText);
 
             // Display the status
-            var statusText = this._statusText(job.status());
+            const statusText = this._statusText(job.status());
             this.element.find(".gp-widget-job-status:first").text(statusText);
 
             // Display the job results
-            var outputsList = this._outputsList(job.outputFiles(), true);
+            const outputsList = this._outputsList(job.outputFiles(), true);
             this.element.find(".gp-widget-job-outputs:first").append(outputsList);
 
             // Display the log files
-            var logList = this._outputsList(job.logFiles(), false);
+            const logList = this._outputsList(job.logFiles(), false);
             this.element.find(".gp-widget-job-outputs:first").append(logList);
 
             // Enable sharing button, if necessary
-            var permissions = job.permissions();
+            const permissions = job.permissions();
             if (permissions !== undefined && permissions !== null && permissions['canSetPermissions']) {
                 this.element.find(".gp-widget-job-share:first").removeAttr("disabled");
             }
@@ -906,7 +879,7 @@ define("genepattern/job", ["base/js/namespace",
             // Display error if Java visualizer
             this.getTask(function(task) {
                 if (task !== null && task !== undefined) {
-                    var categories = task.categories();
+                    const categories = task.categories();
                     if (categories.indexOf("Visualizer") !== -1) {
                         widget.errorMessage("This job appears to be a deprecated Java-based visualizer. These visualizers are not supported in the GenePattern Notebook.");
                         widget.element.find(".gp-widget-job-submitted").hide();
@@ -916,13 +889,13 @@ define("genepattern/job", ["base/js/namespace",
             });
 
             // Build the visualizer display, if necessary
-            var launchUrl = job.launchUrl();
+            const launchUrl = job.launchUrl();
             if (launchUrl !== undefined && launchUrl !== null) {
                 this._displayVisualizer(launchUrl);
             }
 
             // Build the display of child jobs, if necessary
-            var children = job.children();
+            const children = job.children();
             if (children !== undefined && children !== null && children.length > 0) {
                 this._displayChildren(children);
             }
@@ -968,10 +941,10 @@ define("genepattern/job", ["base/js/namespace",
          * @private
          */
         _displayVisualizer: function(launchUrl) {
-            var viewerDiv = this.element.find(".gp-widget-job-visualize:first");
+            const viewerDiv = this.element.find(".gp-widget-job-visualize:first");
 
             // Check if the visualizer has already been displayed
-            var displayed = viewerDiv.find("iframe").length > 0;
+            const displayed = viewerDiv.find("iframe").length > 0;
 
             // Check whether the launchUrl is relative
             if (launchUrl.indexOf("/") === 0) {
@@ -984,7 +957,7 @@ define("genepattern/job", ["base/js/namespace",
 
             // Display the visualizer if not already displayed
             if (!displayed) {
-                var urlWithToken = launchUrl + "#" + this.options.session.token;
+                const urlWithToken = launchUrl + "#" + this.options.session.token;
 
                 viewerDiv.append(
                     $("<iframe/>")
@@ -997,7 +970,7 @@ define("genepattern/job", ["base/js/namespace",
                 );
 
                 // Add the pop out button
-                var gearMenu = this.element.find(".gear-menu");
+                const gearMenu = this.element.find(".gear-menu");
                 gearMenu.prepend(
                     $("<li></li>")
                         .append(
@@ -1020,14 +993,14 @@ define("genepattern/job", ["base/js/namespace",
          * @private
          */
         _displayChildren: function(children) {
-            var widget = this;
-            var childrenDiv = this.element.find(".gp-widget-job-children:first");
+            const widget = this;
+            const childrenDiv = this.element.find(".gp-widget-job-children:first");
             childrenDiv.css("margin-top", "10px");
             childrenDiv.empty();
 
             // For each child, append a widget
             children.forEach(function(child) {
-                var childWidget = $("<div></div>")
+                const childWidget = $("<div></div>")
                     .addClass("gp-widget-job-child")
                     .jobResults({
                         jobNumber: child.jobNumber(),
@@ -1069,15 +1042,15 @@ define("genepattern/job", ["base/js/namespace",
          * @private
          */
         _outputsList: function(outputs, fullMenu) {
-            var widget = this;
-            var outputsList = $("<div></div>")
+            const widget = this;
+            const outputsList = $("<div></div>")
                 .addClass("gp-widget-job-outputs-list");
 
             if (outputs) {
-                for (var i = 0; i < outputs.length; i++) {
-                    var wrapper = $("<div></div>");
-                    var output = outputs[i];
-                    var link = $("<a></a>")
+                for (let i = 0; i < outputs.length; i++) {
+                    const wrapper = $("<div></div>");
+                    const output = outputs[i];
+                    const link = $("<a></a>")
                         .text(output["link"]["name"] + " ")
                         .addClass("gp-widget-job-output-file")
                         .attr("data-kind", output["kind"])
@@ -1114,11 +1087,11 @@ define("genepattern/job", ["base/js/namespace",
          * @param fileName
          */
         codeCell: function(job, fileName) {
-            var var_name = fileName.toLowerCase().replace(/\./g, '_') + "_" + job.jobNumber();
-            var code = "# More documentation can be obtained at the GenePattern website, or by calling help(job" + job.jobNumber() + ").\n" +
+            const var_name = fileName.toLowerCase().replace(/\./g, '_') + "_" + job.jobNumber();
+            const code = "# More documentation can be obtained at the GenePattern website, or by calling help(job" + job.jobNumber() + ").\n" +
                        var_name + " = " + "job" + job.jobNumber() + ".get_file(\"" + fileName + "\")\n" +
                        var_name;
-            var cell = Jupyter.notebook.insert_cell_below();
+            const cell = Jupyter.notebook.insert_cell_below();
             cell.code_mirror.setValue(code);
 
             // Select and run the cell
@@ -1129,13 +1102,13 @@ define("genepattern/job", ["base/js/namespace",
         },
 
         dataFrameCell: function(job, fileName, kind) {
-            var var_name = fileName.toLowerCase().replace(/\./g, '_') + "_" + job.jobNumber();
-            var kind_import = kind === "gct" ? "gct" : "odf";
-            var code = "# The code below will only run if pandas is installed: http://pandas.pydata.org\n" +
+            const var_name = fileName.toLowerCase().replace(/\./g, '_') + "_" + job.jobNumber();
+            const kind_import = kind === "gct" ? "gct" : "odf";
+            const code = "# The code below will only run if pandas is installed: http://pandas.pydata.org\n" +
                        "from gp.data import " + kind_import.toUpperCase() + "\n" +
                        var_name + " = " + kind_import.toUpperCase() + "(job" + job.jobNumber() + ".get_file(\"" + fileName + "\"))\n" +
                        var_name;
-            var cell = Jupyter.notebook.insert_cell_below();
+            const cell = Jupyter.notebook.insert_cell_below();
             cell.code_mirror.setValue(code);
 
             // Select and run the cell
@@ -1181,8 +1154,8 @@ define("genepattern/job", ["base/js/namespace",
                 return 0;
             }
 
-            var code = this.options.cell.get_text();
-            var index = 0;
+            const code = this.options.cell.get_text();
+            let index = 0;
             try {
                 index = Number.parseInt(code.split("genepattern.get_session(")[1].split(")")[0]);
             }
@@ -1197,7 +1170,7 @@ define("genepattern/job", ["base/js/namespace",
         }
     });
 
-    var JobWidgetView = widgets.DOMWidgetView.extend({
+    const JobWidgetView = widgets.DOMWidgetView.extend({
         render: function () {
             let cell = this.options.cell;
 
@@ -1205,7 +1178,7 @@ define("genepattern/job", ["base/js/namespace",
             if (!cell) cell = this.options.output.element.closest(".cell").data("cell");
 
             // Get the job number
-            var jobNumber = this.model.get('job_number');
+            const jobNumber = this.model.get('job_number');
 
             // Check to see if this is a legacy job widget, if so replace with full code
             if (!('genepattern' in cell.metadata)) {
@@ -1221,9 +1194,9 @@ define("genepattern/job", ["base/js/namespace",
             });
 
             // Hide the code by default
-            var element = this.$el;
-            var hideCode = function() {
-                var cell = element.closest(".cell");
+            const element = this.$el;
+            const hideCode = function() {
+                const cell = element.closest(".cell");
                 if (cell.length > 0) {
                     // Protect against the "double render" bug in Jupyter 3.2.1
                     element.parent().find(".gp-widget-job:not(:first-child)").remove();

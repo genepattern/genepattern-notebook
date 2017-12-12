@@ -1,15 +1,10 @@
 /**
- * Define the IPython GenePattern Task widget
+ * Define the Jupyter GenePattern Task widget
  *
  * @author Thorin Tabor
  * @requires - jQuery, navigation.js
  *
- * Copyright 2015 The Broad Institute, Inc.
- *
- * SOFTWARE COPYRIGHT NOTICE
- * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
- * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not
- * responsible for its use, misuse, or functionality.
+ * Copyright 2015-2017 Regents of the University of California & The Broad Institute
  */
 
 define("genepattern/task", ["base/js/namespace",
@@ -1540,7 +1535,7 @@ define("genepattern/task", ["base/js/namespace",
                                                     .append(
                                                         $("<a></a>")
                                                             .addClass("gp-widget-task-placeholder")
-                                                            .attr("title", "Create Placeholder Cell")
+                                                            .attr("title", "Create Result Cell")
                                                             .attr("href", "#")
                                                             .append("Create Placeholder")
                                                             .click(function() {

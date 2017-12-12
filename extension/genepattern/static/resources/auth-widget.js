@@ -1,15 +1,10 @@
 /**
- * Define the Jupyter GenePattern Authentication widget
+ * Define the GenePattern Authentication widget
  *
  * @author Thorin Tabor
  * @requires - jQuery, navigation.js
  *
- * Copyright 2015-2016 The Broad Institute, Inc.
- *
- * SOFTWARE COPYRIGHT NOTICE
- * This software and its documentation are the copyright of the Broad Institute, Inc. All rights are reserved.
- * This software is supplied without any warranty or guaranteed support whatsoever. The Broad Institute is not
- * responsible for its use, misuse, or functionality.
+ * Copyright 2015-2017 Regents of the University of California & The Broad Institute
  */
 
 /**
@@ -18,7 +13,7 @@
  *  The top option is the default for the server
  *  Remove the 'Custom GenePattern Server' option to disallow custom servers
  */
-var GENEPATTERN_SERVERS = [
+const GENEPATTERN_SERVERS = [
     ['Broad Institute', 'https://genepattern.broadinstitute.org/gp'],
     ['Indiana University', 'https://gp.indiana.edu/gp'],
     ['GenePattern AWS Beta', 'https://gp-beta-ami.genepattern.org/gp'],
@@ -51,7 +46,7 @@ define("genepattern/authentication", ["base/js/namespace",
          * @private
          */
         _create: function() {
-            var widget = this;
+            const widget = this;
 
             // Add data pointer
             this.element.data("widget", this);
@@ -211,7 +206,7 @@ define("genepattern/authentication", ["base/js/namespace",
                                                 .attr("placeholder", "Username")
                                                 .attr("required", "required")
                                                 .keyup(function (e) {
-                                                    if (e.keyCode == 13) {
+                                                    if (e.keyCode === 13) {
                                                         widget._enterPressed();
                                                     }
                                                 })
@@ -233,7 +228,7 @@ define("genepattern/authentication", ["base/js/namespace",
                                                 .attr("placeholder", "Password")
                                                 .val("")
                                                 .keyup(function (e) {
-                                                    if (e.keyCode == 13) {
+                                                    if (e.keyCode === 13) {
                                                         widget._enterPressed();
                                                     }
                                                 })
@@ -244,9 +239,9 @@ define("genepattern/authentication", ["base/js/namespace",
                                         .addClass("btn btn-primary gp-auth-button")
                                         .text("Log into GenePattern")
                                         .click(function() {
-                                            var server = widget.element.find("[name=server]").val();
-                                            var username = widget.element.find("[name=username]").val();
-                                            var password = widget.element.find("[name=password]").val();
+                                            const server = widget.element.find("[name=server]").val();
+                                            const username = widget.element.find("[name=username]").val();
+                                            const password = widget.element.find("[name=password]").val();
 
                                             // Display the loading animation
                                             widget._displayLoading();
@@ -265,8 +260,8 @@ define("genepattern/authentication", ["base/js/namespace",
                                         .addClass("btn btn-default")
                                         .text("Register an Account")
                                         .click(function() {
-                                            var server = widget.element.find("[name=server]").val();
-                                            var registerURL = server + "/pages/registerUser.jsf";
+                                            const server = widget.element.find("[name=server]").val();
+                                            const registerURL = server + "/pages/registerUser.jsf";
                                             window.open(registerURL,'_blank');
                                         })
                                 )
@@ -274,9 +269,9 @@ define("genepattern/authentication", ["base/js/namespace",
             );
 
             // Add servers to select
-            var serverSelect = this.element.find("[name=server]");
+            const serverSelect = this.element.find("[name=server]");
             $.each(this.options.servers, function(i, e) {
-                var disable = GPNotebook.session_manager.get_session(e[1]) !== null;
+                const disable = GPNotebook.session_manager.get_session(e[1]) !== null;
                 serverSelect.append(
                     $("<option></option>")
                         .attr("value", e[1])
@@ -286,7 +281,7 @@ define("genepattern/authentication", ["base/js/namespace",
             });
 
             // If a custom URL is specified in the code, add to server dropdown
-            var serverURL = widget._getCodeServerURL();
+            const serverURL = widget._getCodeServerURL();
             if (serverURL !== null && widget._isURLCustom(serverURL)) {
                 widget._setCustomURL(serverURL);
             }
@@ -296,14 +291,14 @@ define("genepattern/authentication", ["base/js/namespace",
 
             // Call dialog if Custom Server selected
             serverSelect.change(function() {
-                var selected = serverSelect.val();
+                const selected = serverSelect.val();
                 if (selected === "Custom") widget._selectCustomServer();
             });
 
             // Hide the code by default
-            var element = this.element;
-            var hideCode = function() {
-                var cell = element.closest(".cell");
+            const element = this.element;
+            const hideCode = function() {
+                const cell = element.closest(".cell");
                 if (cell.length > 0) {
                     element.closest(".cell").find(".input").hide();
                 }
@@ -316,7 +311,7 @@ define("genepattern/authentication", ["base/js/namespace",
             // Make calls that need run after the element has been inserted into the DOM
             setTimeout(function() {
                 // Get the server URL from the code
-                var server_url = widget._getCodeServerURL();
+                const server_url = widget._getCodeServerURL();
 
                 // Grab matching session, if one is available and session is not set
                 if (!widget.options.session) {
@@ -324,14 +319,11 @@ define("genepattern/authentication", ["base/js/namespace",
                 }
 
                 // Hide the login form if already authenticated and no other matching login
-                var authenticated = widget.options.session !== null && widget.options.session.authenticated;
-                var only_matching_login = $(".widget-server-label:contains('" + server_url + "')").length === 0;
+                const authenticated = widget.options.session !== null && widget.options.session.authenticated;
+                const only_matching_login = $(".widget-server-label:contains('" + server_url + "')").length === 0;
                 if (authenticated && only_matching_login) {
                     element.find(".panel-body").hide();
-                    var indicator = element.find(".widget-slide-indicator").find("span");
-
-                    // Display the logged in message
-                    // widget._displayLoggedIn();
+                    const indicator = element.find(".widget-slide-indicator").find("span");
 
                     // Hide the login form
                     widget.hideLoginForm();
@@ -352,15 +344,15 @@ define("genepattern/authentication", ["base/js/namespace",
                 }
 
                 // Try reading GenePattern cookie and prompt, if cookie present and not authenticated
-                var genepatternCookie = widget._getCookie("GenePattern");
-                var public_server_selected = serverSelect.val() === GENEPATTERN_SERVERS[0][1];
+                const genepatternCookie = widget._getCookie("GenePattern");
+                const public_server_selected = serverSelect.val() === GENEPATTERN_SERVERS[0][1];
                 if (genepatternCookie && widget.options.session === null && public_server_selected) {
-                    var username = widget._usernameFromCookie(genepatternCookie);
-                    var password = widget._passwordFromCookie(genepatternCookie);
+                    const username = widget._usernameFromCookie(genepatternCookie);
+                    const password = widget._passwordFromCookie(genepatternCookie);
 
                     if (username !== null && password !== null) {
-                        var toCover = widget.element.find(".widget-view");
-                        var autoLogin = $("<div></div>")
+                        const toCover = widget.element.find(".widget-view");
+                        const autoLogin = $("<div></div>")
                             .addClass("widget-auto-login")
                             .append(
                                 $("<div></div>")
@@ -382,11 +374,11 @@ define("genepattern/authentication", ["base/js/namespace",
                                                             .addClass("btn btn-primary")
                                                             .append("Login as " + username)
                                                             .click(function () {
-                                                                var serverInput = toCover.find("[name=server]");
-                                                                var usernameInput = toCover.find("[name=username]");
-                                                                var passwordInput = toCover.find("[name=password]");
-                                                                var loginButton = toCover.find(".gp-auth-button");
-                                                                var defaultServer = GENEPATTERN_SERVERS[0][1];
+                                                                const serverInput = toCover.find("[name=server]");
+                                                                const usernameInput = toCover.find("[name=username]");
+                                                                const passwordInput = toCover.find("[name=password]");
+                                                                const loginButton = toCover.find(".gp-auth-button");
+                                                                const defaultServer = GENEPATTERN_SERVERS[0][1];
 
                                                                 serverInput.val(defaultServer);
                                                                 usernameInput.val(username);
@@ -464,10 +456,10 @@ define("genepattern/authentication", ["base/js/namespace",
          * @private
          */
         _tokenCountdown: function(server, username, password) {
-            var widget = this;
+            const widget = this;
 
             // Set time of successful login
-            var tokenExpiration = new Date();
+            let tokenExpiration = new Date();
             tokenExpiration.setDate(tokenExpiration.getDate() + 1);
 
             // Wake up every minute and check to see if the token is going to expire
@@ -495,7 +487,7 @@ define("genepattern/authentication", ["base/js/namespace",
             if (!cookie) return null;
 
             // Parse the cookie
-            var parts = cookie.split("|");
+            const parts = cookie.split("|");
             if (parts.length > 1) {
                 return atob(decodeURIComponent(parts[1]));
             }
@@ -517,7 +509,7 @@ define("genepattern/authentication", ["base/js/namespace",
             if (!cookie) return null;
 
             // Parse the cookie
-            var parts = cookie.split("|");
+            const parts = cookie.split("|");
             if (parts.length > 1) return parts[0];
 
             // Cookie not in the expected format
@@ -532,12 +524,12 @@ define("genepattern/authentication", ["base/js/namespace",
          * @private
          */
         _getCookie: function(name) {
-            var nameEQ = name + "=";
-            var ca = document.cookie.split(';');
-            for (var i = 0; i < ca.length; i++) {
-                var c = ca[i];
-                while (c.charAt(0) == ' ') c = c.substring(1, c.length);
-                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
             }
             return null;
         },
@@ -548,9 +540,9 @@ define("genepattern/authentication", ["base/js/namespace",
          * @private
          */
         _selectCustomServer: function() {
-            var widget = this;
-            var dialog = require('base/js/dialog');
-            var urlTextBox = $("<input class='form-control gp-custom-url' type='text' value='http://127.0.0.1:8080/gp'/>");
+            const widget = this;
+            const dialog = require('base/js/dialog');
+            const urlTextBox = $("<input class='form-control gp-custom-url' type='text' value='http://127.0.0.1:8080/gp'/>");
             dialog.modal({
                 notebook: Jupyter.notebook,
                 keyboard_manager: Jupyter.keyboard_manager,
@@ -567,7 +559,7 @@ define("genepattern/authentication", ["base/js/namespace",
                     "OK" : {
                         "class" : "btn-primary",
                         "click" : function() {
-                            var url = urlTextBox.val();
+                            let url = urlTextBox.val();
                             url = widget._validateCustomURL(url);
                             widget._setCustomURL(url);
                         }
@@ -588,17 +580,17 @@ define("genepattern/authentication", ["base/js/namespace",
          * @private
          */
         _validateCustomURL: function(url) {
-            var returnURL = url;
+            let returnURL = url;
             // Check for http:// or https://
-            var protocolTest = new RegExp("(^http\:\/\/)|(https\:\/\/)");
+            const protocolTest = new RegExp("(^http\:\/\/)|(https\:\/\/)");
             if (!protocolTest.test(returnURL)) returnURL = "http://" + returnURL;
 
             // Check for trailing slash
-            var slashTest = new RegExp("\/$");
+            const slashTest = new RegExp("\/$");
             if (slashTest.test(returnURL)) returnURL = returnURL.slice(0, -1);
 
             // Check for /gp
-            var gpTest = new RegExp("\/gp$");
+            const gpTest = new RegExp("\/gp$");
             if (!gpTest.test(returnURL)) returnURL += "/gp";
 
             return returnURL;
@@ -610,8 +602,8 @@ define("genepattern/authentication", ["base/js/namespace",
          * @private
          */
         _setCustomURL: function(url) {
-            var widget = this;
-            var serverSelect = widget.element.find("[name=server]");
+            const widget = this;
+            const serverSelect = widget.element.find("[name=server]");
 
             // Add custom option
             $("<option></option>")
@@ -629,9 +621,9 @@ define("genepattern/authentication", ["base/js/namespace",
          * @private
          */
         _getCodeServerURL: function() {
-            var code = this.options.cell.code_mirror.getValue();
-            var lines = code.split("\n");
-            var serverLine = null;
+            const code = this.options.cell.code_mirror.getValue();
+            const lines = code.split("\n");
+            let serverLine = null;
             lines.forEach(function(line) {
                 if (line.indexOf("genepattern.register_session") >= 0) {
                     serverLine = line;
@@ -640,7 +632,7 @@ define("genepattern/authentication", ["base/js/namespace",
 
             // Found the line
             if (serverLine !== null) {
-                var parts = serverLine.split("\"");
+                const parts = serverLine.split("\"");
                 return parts[1];
             }
             // Didn't find the line, return null
@@ -659,8 +651,8 @@ define("genepattern/authentication", ["base/js/namespace",
             // Hack for pointing the old http URL of the public server at the new https URL
             if (url === "http://genepattern.broadinstitute.org/gp") return false;
 
-            var widget = this;
-            var serverSelect = widget.element.find("[name=server]");
+            const widget = this;
+            const serverSelect = widget.element.find("[name=server]");
             return serverSelect.find("option[value='" + url + "']").length === 0;
         },
 
@@ -672,11 +664,6 @@ define("genepattern/authentication", ["base/js/namespace",
         _displayLoading: function() {
             this.hideMessage();
             this.element.find(".gp-widget-loading").show();
-        },
-
-        _displayLoggedIn: function() {
-            this.element.find(".gp-widget-loading").hide();
-            this.element.find(".gp-widget-logged-in").show();
         },
 
         /**
@@ -757,8 +744,8 @@ define("genepattern/authentication", ["base/js/namespace",
         },
 
         expandCollapse: function() {
-            var toSlide = this.element.find(".panel-body.widget-view");
-            var indicator = this.element.find(".widget-slide-indicator").find("span");
+            const toSlide = this.element.find(".panel-body.widget-view");
+            const indicator = this.element.find(".widget-slide-indicator").find("span");
             if (toSlide.is(":hidden")) {
                 toSlide.slideDown();
                 indicator.removeClass("fa-plus");
@@ -790,7 +777,7 @@ define("genepattern/authentication", ["base/js/namespace",
         },
 
         buildCode: function(server, username, password) {
-            var cell = this.options.cell;
+            const cell = this.options.cell;
             GPNotebook.init.buildCode(cell, server, username, password);
         },
 
@@ -808,7 +795,7 @@ define("genepattern/authentication", ["base/js/namespace",
          * @param done
          */
         authenticate: function(server, username, password, callAfterAuthenticate, done) {
-            var widget = this;
+            const widget = this;
             $.ajax({
                 type: "POST",
                 url: server + "/rest/v1/oauth2/token?grant_type=password&username=" + encodeURIComponent(username) +
@@ -818,10 +805,10 @@ define("genepattern/authentication", ["base/js/namespace",
                     withCredentials: true
                 },
                 success: function(data) {
-                    var token = data['access_token'];
+                    const token = data['access_token'];
 
                     // Register the session
-                    var session = GPNotebook.session_manager.register_session(server, username, password);
+                    const session = GPNotebook.session_manager.register_session(server, username, password);
                     widget.options.session = session;
                     session.token = token;
 
@@ -846,7 +833,7 @@ define("genepattern/authentication", ["base/js/namespace",
          * @param done
          */
         afterAuthenticate: function(server, username, password, token, done) {
-            var widget = this;
+            const widget = this;
             $.ajax({
                 type: "GET",
                 url: server + "/rest/v1/tasks/all.json",
@@ -879,7 +866,7 @@ define("genepattern/authentication", ["base/js/namespace",
                     }
 
                     // Populate the GenePattern._kinds map
-                    var kindMap = widget.options.session.linkKinds(data['kindToModules']);
+                    const kindMap = widget.options.session.linkKinds(data['kindToModules']);
                     GPNotebook.slider.removeKindVisualizers(kindMap);
                     widget.options.session.kinds(kindMap);
 
@@ -926,7 +913,7 @@ define("genepattern/authentication", ["base/js/namespace",
          * @param done
          */
         checkSystemMessage: function(done) {
-            var widget = this;
+            const widget = this;
             $.ajax({
                 type: "GET",
                 url: widget.options.session.server() + "/rest/v1/config/system-message",
@@ -940,9 +927,9 @@ define("genepattern/authentication", ["base/js/namespace",
                     // Display if the system message is not blank
                     if (data !== "") {
                         // Strip data of HTML
-                        var cleanMessage = $("<div></div>").html(data).text().trim();
+                        const cleanMessage = $("<div></div>").html(data).text().trim();
 
-                        var messageBlock = $("<div></div>");
+                        const messageBlock = $("<div></div>");
 
                         // If there is a message
                         if (cleanMessage !== "") {
@@ -969,7 +956,7 @@ define("genepattern/authentication", ["base/js/namespace",
                     // Assume that the server is not a version that supports the system message call
 
                     // Attach the feedback messafe
-                    var message = widget.createFeedbackMessage("http://software.broadinstitute.org/cancer/software/genepattern/contact");
+                    const message = widget.createFeedbackMessage("http://software.broadinstitute.org/cancer/software/genepattern/contact");
                     widget.infoMessage(message);
 
                     // If a function to execute when done has been passed in, execute it
@@ -1040,13 +1027,13 @@ define("genepattern/authentication", ["base/js/namespace",
         }
 
         // Toggle
-        var devOn = $(".gp-widget-auth-form").find("[name=server]").hasClass("gp-widget-dev-on");
-        var devWord = devOn ? "off" : "on";
+        const devOn = $(".gp-widget-auth-form").find("[name=server]").hasClass("gp-widget-dev-on");
+        const devWord = devOn ? "off" : "on";
         if (devOn) removeOptions();
         else addOptions();
 
         // Show dialog
-        var dialog = require('base/js/dialog');
+        const dialog = require('base/js/dialog');
         dialog.modal({
             notebook: Jupyter.notebook,
             keyboard_manager: this.keyboard_manager,
@@ -1058,7 +1045,7 @@ define("genepattern/authentication", ["base/js/namespace",
         });
     };
 
-    var AuthWidgetView = widgets.DOMWidgetView.extend({
+    const AuthWidgetView = widgets.DOMWidgetView.extend({
         render: function () {
             let cell = this.options.cell;
 
@@ -1081,7 +1068,7 @@ define("genepattern/authentication", ["base/js/namespace",
             });
 
             // Hide the code by default
-            var element = this.$el;
+            const element = this.$el;
             setTimeout(function() {
                 // Protect against the "double render" bug in Jupyter 3.2.1
                 element.parent().find(".gp-widget-auth:not(:first-child)").remove();
@@ -1091,7 +1078,7 @@ define("genepattern/authentication", ["base/js/namespace",
         }
     });
 
-    var AuthWidgetTool = new NBToolManager.NBTool({
+    const AuthWidgetTool = new NBToolManager.NBTool({
         origin: "+",
         id: "authentication",
         name: "GenePattern Login",
@@ -1099,8 +1086,8 @@ define("genepattern/authentication", ["base/js/namespace",
         description: "Sign into a GenePattern Server",
         load: function() { return true; },
         render: function() {
-            var cell = Jupyter.notebook.get_selected_cell();
-            var is_empty = cell.get_text().trim() == "";
+            let cell = Jupyter.notebook.get_selected_cell();
+            const is_empty = cell.get_text().trim() === "";
 
             // If this cell is not empty, insert a new cell and use that
             // Otherwise just use this cell

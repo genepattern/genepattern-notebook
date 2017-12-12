@@ -1,9 +1,10 @@
 /**
- * Navigation widgets
+ * Navigation functionality
  *
  * @author Thorin Tabor
  * @requires - jQuery
  *
+ * Copyright 2015-2017 Regents of the University of California & The Broad Institute
  */
 
 // Add shim to support Jupyter 3.x and 4.x

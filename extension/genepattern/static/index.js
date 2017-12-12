@@ -1,7 +1,7 @@
 /**
  * @author Thorin Tabor
  *
- * Loads the GenePattern Notebook extension for Jupyter Notebook
+ * Loads the GenePattern Notebook extension for Jupyter
  *
  * Copyright 2015-2017, Regents of the University of California & Broad Institute
  */
