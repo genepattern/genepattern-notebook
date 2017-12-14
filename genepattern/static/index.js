@@ -1,7 +1,8 @@
 /**
  * @author Thorin Tabor
  *
- * Loads the GenePattern Notebook extension for Jupyter
+ * Asynchronous RequireJS-style loader, necessary for bootstrapping the
+ * GenePattern Notebook extension in the legacy Jupyter Notebook environment
  *
  * Copyright 2015-2017, Regents of the University of California & Broad Institute
  */
