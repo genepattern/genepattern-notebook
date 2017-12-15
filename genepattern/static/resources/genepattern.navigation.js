@@ -24,7 +24,7 @@ define("genepattern/navigation", ["base/js/namespace",
      *
      * @returns {*|jQuery}
      */
-    slider.sliderTab = function() {
+    slider.slider_tab = function() {
         const auth_view = session_manager.sessions.length > 0 ? "inline-block" : "none";
         return $("<span></span>")
                 .addClass("fa fa-th sidebar-button sidebar-button-main")
@@ -35,7 +35,13 @@ define("genepattern/navigation", ["base/js/namespace",
                 });
     };
 
-    util.getDomain = function(url) {
+    /**
+     * Extract the domain from the provided URL
+     *
+     * @param url
+     * @returns {string}
+     */
+    util.get_domain = function(url) {
         const a = document.createElement('a');
         a.href = url;
         return a.hostname;
@@ -84,6 +90,11 @@ define("genepattern/navigation", ["base/js/namespace",
         }
     };
 
+    /**
+     * Select the specified cell in the notebook
+     *
+     * @param cell
+     */
     util.select_cell = function(cell) {
         // Unselect existing selected cells
         Jupyter.notebook.get_selected_cells().forEach(function(c) {
@@ -94,18 +105,30 @@ define("genepattern/navigation", ["base/js/namespace",
         cell.select();
     };
 
+    /**
+     * Get the index of the specified cell
+     *
+     * @param cell
+     * @returns {*}
+     */
     util.cell_index = function(cell) {
         return Jupyter.notebook.get_cell_elements().index(cell.element);
     };
 
-    slider.registerModule = function(session, module) {
+    /**
+     * Register the GenePattern module with the Notebook Tool Manager
+     *
+     * @param session
+     * @param module
+     */
+    slider.register_module = function(session, module) {
         // Prepare the origin
         let origin = null;
         const gp_url = session.server();
         if (gp_url === "https://genepattern.broadinstitute.org/gp") origin = "GenePattern Public";
         else if (gp_url === "https://gp.indiana.edu/gp") origin = "GenePattern Indiana";
         else if (gp_url === "https://gpbroad.broadinstitute.org/gp") origin = "GenePattern Broad";
-        else origin = util.getDomain(gp_url);
+        else origin = util.get_domain(gp_url);
 
         // Prepare tags
         const tags = module['categories'];
@@ -136,7 +159,7 @@ define("genepattern/navigation", ["base/js/namespace",
                     Jupyter.notebook.select_next();
                 }
 
-                slider.buildModuleCode(cell, index, module);
+                slider.build_module_code(cell, index, module);
                 setTimeout(function() {
                     cell.execute();
                 }, 10);
@@ -148,11 +171,17 @@ define("genepattern/navigation", ["base/js/namespace",
         NBToolManager.instance().register(ModuleTool);
     };
 
-    slider.registerAllModules = function(session, modules) {
+    /**
+     * Register all modules on this server with the Notebook Tool Manager
+     *
+     * @param session
+     * @param modules
+     */
+    slider.register_all_modules = function(session, modules) {
         modules.forEach(function(module) {
             // Only add module if it is not a Java visualizer
             if (module['categories'].indexOf("Visualizer") !== -1) return;
-            slider.registerModule(session, module);
+            slider.register_module(session, module);
         });
     };
 
@@ -182,10 +211,16 @@ define("genepattern/navigation", ["base/js/namespace",
 
         // Register all modules with the tool manager
         if (data['all_modules']) {
-            slider.registerAllModules(GenePattern, data['all_modules']);
+            slider.register_all_modules(GenePattern, data['all_modules']);
         }
     };
 
+    /**
+     * Return a list of GenePattern output files that match the indicated kind
+     *
+     * @param kinds
+     * @returns {Array}
+     */
     slider.output_files_by_kind = function(kinds) {
         const matches = [];
         let kind_list = kinds;
@@ -222,7 +257,7 @@ define("genepattern/navigation", ["base/js/namespace",
      * @param kind
      * @returns {Array}
      */
-    slider.taskWidgetsForKind = function(kind) {
+    slider.task_widgets_for_kind = function(kind) {
         const matches = [];
 
         $(".cell").each(function(index, node) {
@@ -251,7 +286,7 @@ define("genepattern/navigation", ["base/js/namespace",
      *
      * @param kindMap
      */
-    slider.removeKindVisualizers = function(kindMap) {
+    slider.remove_kind_visualizers = function(kindMap) {
         $.each(kindMap, function(kind, taskList) {
             let currentLength = taskList.length;
             for (let i = 0; i < currentLength; i++) {
@@ -272,7 +307,7 @@ define("genepattern/navigation", ["base/js/namespace",
      *
      * @param lsid
      */
-    util.stripVersion = function(lsid) {
+    util.strip_version = function(lsid) {
         const parts = lsid.split(':');
         if (parts.length === 6) {
             parts.pop();
@@ -291,11 +326,11 @@ define("genepattern/navigation", ["base/js/namespace",
      * @param session
      * @param module
      */
-    slider.buildModuleCode = function(cell, session, module) {
+    slider.build_module_code = function(cell, session, module) {
         const baseName = module["name"].toLowerCase().replace(/\./g, '_');
         const taskName = baseName + "_task";
         const specName = baseName + "_job_spec";
-        const baseLsid = util.stripVersion(module["lsid"]);
+        const baseLsid = util.strip_version(module["lsid"]);
 
         // Build the code
         const code = taskName + " = gp.GPTask(genepattern.get_session(" + session + "), '" + baseLsid + "')\n" +
@@ -303,7 +338,7 @@ define("genepattern/navigation", ["base/js/namespace",
                    "genepattern.GPTaskWidget(" + taskName + ")";
 
         // Add the metadata
-        slider.makeGPCell(cell, "task");
+        slider.make_genepattern_cell(cell, "task");
 
         // Add the code to the cell
         cell.set_text(code);
@@ -316,12 +351,12 @@ define("genepattern/navigation", ["base/js/namespace",
      * @param session
      * @param jobNumber
      */
-    slider.buildJobCode = function(cell, session, jobNumber) {
+    slider.build_job_code = function(cell, session, jobNumber) {
         const code = "job" + jobNumber + " = gp.GPJob(genepattern.get_session(" + session + "), " + jobNumber + ")\n" +
                    "genepattern.GPJobWidget(job" + jobNumber + ")";
 
         // Add the metadata
-        slider.makeGPCell(cell, "job");
+        slider.make_genepattern_cell(cell, "job");
 
         // Add the code to the cell, if not a placeholder cell
         if (jobNumber !== -1) cell.set_text(code);
@@ -333,7 +368,7 @@ define("genepattern/navigation", ["base/js/namespace",
      * @param url
      * @returns {string}
      */
-    util.nameFromUrl = function(url) {
+    util.name_from_url = function(url) {
         const parts = url.split("/");
         return decodeURIComponent(parts[parts.length - 1]);
     };
@@ -344,11 +379,14 @@ define("genepattern/navigation", ["base/js/namespace",
      * @param text
      * @returns {string}
      */
-    util.htmlEncode = function(text) {
+    util.html_encode = function(text) {
         return text.replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
     };
 
-    slider.detectKernelDisconnect = function() {
+    /**
+     * Begin checking every minute to see if the kernel has disconnected and display a dialog informing the user if a disconnect has happened.
+     */
+    slider.detect_kernel_disconnect = function() {
         let disconnectCurrentlyDetected = false;
 
         // Run check every minute
@@ -377,9 +415,14 @@ define("genepattern/navigation", ["base/js/namespace",
         }, 60 * 1000);
     };
 
-    slider.createAuthCell = function(cell) {
+    /**
+     * Create a new GenePattern authentication widget in the indicated cell
+     *
+     * @param cell
+     */
+    slider.create_authentication_cell = function(cell) {
         // Get the auth widget code
-        init.buildCode(cell, "https://genepattern.broadinstitute.org/gp", "", "");
+        init.build_code(cell, "https://genepattern.broadinstitute.org/gp", "", "");
 
         function isWidgetPresent() { return cell.element.find(".gp-widget").length > 0; }
         function isRunning() { return cell.element.hasClass("running") }
@@ -403,7 +446,11 @@ define("genepattern/navigation", ["base/js/namespace",
         ensure_widget();
     };
 
-    slider.toGenePatternCell = function() {
+    /**
+     * In unauthenticated, change the currently selected cell to a GenePattern authentication cell.
+     * If authenticated, open the Notebook Tool Manager to prompt the user to select a module.
+     */
+    slider.to_genepattern_cell = function() {
         if (session_manager.sessions.length > 0) {
             $("#nbtools-toolbar").trigger("click");
         }
@@ -416,7 +463,7 @@ define("genepattern/navigation", ["base/js/namespace",
                 cell = Jupyter.notebook.insert_cell_below();
                 Jupyter.notebook.select_next();
             }
-            slider.createAuthCell(cell);
+            slider.create_authentication_cell(cell);
         }
     };
 
@@ -450,8 +497,7 @@ define("genepattern/navigation", ["base/js/namespace",
      * @param fullMenu - Whether this is a full menu or a log file menu
      * @returns {*|jQuery|HTMLElement}
      */
-    slider.buildMenu = function(widget, element, name, href, kind, fullMenu) {
-
+    slider.build_menu = function(widget, element, name, href, kind, fullMenu) {
         // Attach simple menu
         if (!fullMenu) {
             element.popover({
@@ -617,7 +663,7 @@ define("genepattern/navigation", ["base/js/namespace",
                     if (lsid === undefined || lsid === null) return;
                     const name = option.text();
                     const cell = Jupyter.notebook.insert_cell_at_bottom();
-                    slider.buildModuleCode(cell, widget.options.session_index, {"lsid":lsid, "name": name});
+                    slider.build_module_code(cell, widget.options.session_index, {"lsid":lsid, "name": name});
 
                     // Execute the cell
                     setTimeout(function() {
@@ -659,7 +705,7 @@ define("genepattern/navigation", ["base/js/namespace",
                 });
 
                 // Dynamically add options to "Send to Downstream Task" dropdown
-                const matchingTasks = slider.taskWidgetsForKind(fixedKind);
+                const matchingTasks = slider.task_widgets_for_kind(fixedKind);
                 sendToExistingTask
                     .empty()
                     .append(
@@ -752,7 +798,7 @@ define("genepattern/navigation", ["base/js/namespace",
                         help: 'to GenePattern',
                         help_index: 'cc',
                         handler: function () {
-                            slider.toGenePatternCell();
+                            slider.to_genepattern_cell();
                             return false;
                         }
                     }
@@ -771,7 +817,7 @@ define("genepattern/navigation", ["base/js/namespace",
                 add_help_link();
 
                 // Start kernel disconnect detection
-                slider.detectKernelDisconnect();
+                slider.detect_kernel_disconnect();
 
                 // Set event for hiding popovers & slider when user clicks away
                 $(document).on("click", function (e) {
@@ -815,7 +861,7 @@ define("genepattern/navigation", ["base/js/namespace",
      * @param username
      * @param password
      */
-    init.buildCode = function(cell, server, username, password) {
+    init.build_code = function(cell, server, username, password) {
         const code = '# Requires GenePattern Notebook: pip install genepattern-notebook\n' +
                    'import gp\n' +
                    'import genepattern\n' +
@@ -824,16 +870,16 @@ define("genepattern/navigation", ["base/js/namespace",
                    'genepattern.GPAuthWidget(genepattern.register_session("' + server + '", "' + username + '", "' + password + '"))';
 
         if (cell.cell_type === 'markdown') {
-            console.log("ERROR: Attempting to turn markdown cell into widget in authWidget.buildCode()")
+            console.log("ERROR: Attempting to turn markdown cell into widget in authWidget.build_code()")
         }
         else if (cell.cell_type === 'code') {
-            slider.makeGPCell(cell, "auth", {
+            slider.make_genepattern_cell(cell, "auth", {
                 "server": server
             });
             cell.code_mirror.setValue(code);
         }
         else {
-            console.log("ERROR: Unknown cell type sent to authWidget.buildCode()");
+            console.log("ERROR: Unknown cell type sent to authWidget.build_code()");
         }
     };
 
@@ -858,6 +904,12 @@ define("genepattern/navigation", ["base/js/namespace",
             });
     };
 
+    /**
+     * Check the cell metadata to determine if this cell is a GenePattern cell
+     *
+     * @param cell
+     * @returns {boolean}
+     */
     init.is_gp_cell = function (cell) {
         // Check for valid input
         if (typeof cell !== 'object' || cell.metadata === undefined) {
@@ -915,7 +967,7 @@ define("genepattern/navigation", ["base/js/namespace",
         });
 
         // Add the sidebar
-        $("body").append(slider.sliderTab());
+        $("body").append(slider.slider_tab());
 
         // Hide or show the slider tab if a GenePattern cell is highlighted
         $([Jupyter.events]).on('select.Cell', function() {
@@ -955,7 +1007,7 @@ define("genepattern/navigation", ["base/js/namespace",
                 const type = $(event.target).find(":selected").text();
                 if (type === "GenePattern") {
                     const former_type = Jupyter.notebook.get_selected_cell().cell_type;
-                    slider.toGenePatternCell(former_type);
+                    slider.to_genepattern_cell(former_type);
                 }
             });
 
@@ -970,7 +1022,7 @@ define("genepattern/navigation", ["base/js/namespace",
                 .append(
                     $("<li id='to_genepattern' title='Insert a GenePattern widget cell'><a href='#'>GenePattern</a></option>")
                         .click(function() {
-                            slider.toGenePatternCell();
+                            slider.to_genepattern_cell();
                         })
                 );
         }
@@ -995,7 +1047,7 @@ define("genepattern/navigation", ["base/js/namespace",
      * @param type
      * @param options
      */
-    slider.makeGPCell = function(cell, type, options) {
+    slider.make_genepattern_cell = function(cell, type, options) {
         // Check for valid input
         if (typeof cell !== 'object') {
             console.log('ERROR applying metadata to cell');
@@ -1019,6 +1071,13 @@ define("genepattern/navigation", ["base/js/namespace",
         }
     };
 
+    /**
+     * Return the value matching the provided key from the GenePattern cell metadata
+     *
+     * @param cell
+     * @param key
+     * @returns {*}
+     */
     slider.get_metadata = function(cell, key) {
         // Check for valid input
         if (typeof cell !== 'object') {
@@ -1035,6 +1094,13 @@ define("genepattern/navigation", ["base/js/namespace",
         return cell.metadata.genepattern[key];
     };
 
+    /**
+     * Set the value matching the provided key in the GenePattern cell metadata
+     *
+     * @param cell
+     * @param key
+     * @param value
+     */
     slider.set_metadata = function(cell, key, value) {
         // Check for valid input
         if (typeof cell !== 'object') {
@@ -1051,12 +1117,15 @@ define("genepattern/navigation", ["base/js/namespace",
         cell.metadata.genepattern[key] = value;
     };
 
+    /**
+     * Create a placeholder job cell below the current cell
+     */
     slider.create_placeholder = function() {
         const cell = Jupyter.notebook.insert_cell_below();
         const code = "genepattern.GPJobWidget(None)";
 
         // Add the metadata
-        slider.makeGPCell(cell, "job");
+        slider.make_genepattern_cell(cell, "job");
 
         // Add the code to the cell
         cell.set_text(code);
@@ -1067,7 +1136,13 @@ define("genepattern/navigation", ["base/js/namespace",
         }, 10);
     };
 
-    slider.applyColors = function(element, url) {
+    /**
+     * Set the GenePattern widget theme based on the authenticated server
+     *
+     * @param element
+     * @param url
+     */
+    slider.apply_colors = function(element, url) {
         let theme = "gp-server-custom";
 
         // GenePattern Public
@@ -1088,6 +1163,14 @@ define("genepattern/navigation", ["base/js/namespace",
         element.addClass(theme);
     };
 
+    /**
+     * Register the GenePattern session with the session manager
+     *
+     * @param server
+     * @param username
+     * @param password
+     * @returns {GenePattern}
+     */
     session_manager.register_session = function(server, username, password) {
         // Create the session
         const session = new gp.GenePattern();
@@ -1152,6 +1235,9 @@ define("genepattern/navigation", ["base/js/namespace",
         return -1;
     };
 
+    /**
+     * Expose these properties in the AMD module
+     */
     return {
         slider: slider,
         init: init,

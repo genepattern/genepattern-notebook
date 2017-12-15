@@ -246,10 +246,10 @@ define("genepattern/authentication", ["base/js/namespace",
                                             // Display the loading animation
                                             widget._displayLoading();
 
-                                            widget.buildCode(server, username, password);
+                                            widget.build_code(server, username, password);
                                             widget.authenticate(server, username, password, true, function() {
                                                 widget.executeCell();
-                                                widget.buildCode(server, "", "");
+                                                widget.build_code(server, "", "");
                                                 widget._tokenCountdown(server, username, password);
                                             });
                                         })
@@ -340,7 +340,7 @@ define("genepattern/authentication", ["base/js/namespace",
 
                 // Apply server color scheme if authenticated
                 if (widget.options.session !== null && widget.options.session.authenticated) {
-                    GPNotebook.slider.applyColors(widget.element, widget.options.session.server());
+                    GPNotebook.slider.apply_colors(widget.element, widget.options.session.server());
                 }
 
                 // Try reading GenePattern cookie and prompt, if cookie present and not authenticated
@@ -776,9 +776,9 @@ define("genepattern/authentication", ["base/js/namespace",
             }
         },
 
-        buildCode: function(server, username, password) {
+        build_code: function(server, username, password) {
             const cell = this.options.cell;
-            GPNotebook.init.buildCode(cell, server, username, password);
+            GPNotebook.init.build_code(cell, server, username, password);
         },
 
         executeCell: function() {
@@ -816,7 +816,7 @@ define("genepattern/authentication", ["base/js/namespace",
                     else done(token);
                 },
                 error: function() {
-                    widget.buildCode(server, "", "");
+                    widget.build_code(server, "", "");
                     widget.errorMessage("Error authenticating");
                 }
             });
@@ -867,7 +867,7 @@ define("genepattern/authentication", ["base/js/namespace",
 
                     // Populate the GenePattern._kinds map
                     const kindMap = widget.options.session.linkKinds(data['kindToModules']);
-                    GPNotebook.slider.removeKindVisualizers(kindMap);
+                    GPNotebook.slider.remove_kind_visualizers(kindMap);
                     widget.options.session.kinds(kindMap);
 
                     // If a function to execute when done has been passed in, execute it
@@ -1057,7 +1057,7 @@ define("genepattern/authentication", ["base/js/namespace",
 
             // Check to see if this auth widget was manually created, if so replace with full code
             if (!('genepattern' in cell.metadata) && cell.code_mirror.getValue().trim() !== "") {
-                GPNotebook.init.buildCode(cell, GENEPATTERN_SERVERS[0][1], "", "");
+                GPNotebook.init.build_code(cell, GENEPATTERN_SERVERS[0][1], "", "");
             }
 
             // Render the view.
@@ -1096,7 +1096,7 @@ define("genepattern/authentication", ["base/js/namespace",
                 Jupyter.notebook.select_next();
             }
 
-            GPNotebook.slider.createAuthCell(cell);
+            GPNotebook.slider.create_authentication_cell(cell);
             return cell;
         }
     });

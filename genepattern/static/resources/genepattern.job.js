@@ -214,7 +214,7 @@ define("genepattern/job", ["base/js/namespace",
 
             // Apply server color scheme if authenticated
             if (widget.options.session !== null && widget.options.session.authenticated) {
-                GPNotebook.slider.applyColors(widget.element, widget.options.session.server());
+                GPNotebook.slider.apply_colors(widget.element, widget.options.session.server());
             }
 
             // Check to see if the user is authenticated yet
@@ -655,7 +655,7 @@ define("genepattern/job", ["base/js/namespace",
             newCode += "\ngenepattern.GPTaskWidget(" + taskVar + ")";
 
             // Add the metadata
-            GPNotebook.slider.makeGPCell(cell, "task");
+            GPNotebook.slider.make_genepattern_cell(cell, "task");
 
             // Put the code in the cell
             cell.code_mirror.setValue(newCode);
@@ -1067,7 +1067,7 @@ define("genepattern/job", ["base/js/namespace",
                         });
 
                     // Build and attach the file menu
-                    GPNotebook.slider.buildMenu(widget, link, output["link"]["name"], output["link"]["href"], output["kind"], fullMenu);
+                    GPNotebook.slider.build_menu(widget, link, output["link"]["name"], output["link"]["href"], output["kind"], fullMenu);
 
                     link.appendTo(wrapper);
                     wrapper.appendTo(outputsList);
@@ -1182,7 +1182,7 @@ define("genepattern/job", ["base/js/namespace",
 
             // Check to see if this is a legacy job widget, if so replace with full code
             if (!('genepattern' in cell.metadata)) {
-                GPNotebook.slider.buildJobCode(cell, 0, jobNumber);
+                GPNotebook.slider.build_job_code(cell, 0, jobNumber);
             }
 
             // Render the view.

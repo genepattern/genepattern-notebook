@@ -400,7 +400,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
 
             // If the metadata has not been set, set it
             if (!GPNotebook.init.is_gp_cell(cell)) {
-                GPNotebook.slider.makeGPCell(cell, "uibuilder", {
+                GPNotebook.slider.make_genepattern_cell(cell, "uibuilder", {
                     show_code: false
                 });
             }

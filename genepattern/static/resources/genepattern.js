@@ -927,7 +927,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
             /**
              * Returns the launch URL of a JavaScript Visualizer
              *
-             * @returns {string}
+             * @returns {string|null}
              */
             this.launchUrl = function () {
                 return this._launchUrl;
@@ -963,7 +963,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
             /**
              * Returns the permissions object for the job
              *
-             * @returns {string}
+             * @returns {string|null}
              */
             this.permissions = function () {
                 return this._permissions;

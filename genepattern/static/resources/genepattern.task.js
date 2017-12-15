@@ -1669,7 +1669,7 @@ define("genepattern/task", ["base/js/namespace",
 
             // Apply server color scheme if authenticated
             if (widget.options.session !== null && widget.options.session.authenticated) {
-                GPNotebook.slider.applyColors(widget.element, widget.options.session.server());
+                GPNotebook.slider.apply_colors(widget.element, widget.options.session.server());
             }
 
             // Check to see if the user is authenticated yet
@@ -2732,7 +2732,7 @@ define("genepattern/task", ["base/js/namespace",
                                         if (!cell) cell = Jupyter.notebook.insert_cell_below();
 
                                         // Set the code for the job widget
-                                        GPNotebook.slider.buildJobCode(cell, widget.options.session_index, jobNumber);
+                                        GPNotebook.slider.build_job_code(cell, widget.options.session_index, jobNumber);
 
                                         // Execute cell.
                                         cell.execute();
@@ -2900,7 +2900,7 @@ define("genepattern/task", ["base/js/namespace",
     /**
      * Singleton for managing kernel variables and their evaluation
      *
-     * @type {{cleanVariableText: VariableManager.cleanVariableText, getKernelValue: VariableManager.getKernelValue, getVariableList: VariableManager.getVariableList, replaceVariables: VariableManager.replaceVariables, evaluateList: VariableManager.evaluateList, evaluateVariables: VariableManager.evaluateVariables}}
+     * @type {{cleanVariableText: cleanVariableText, getKernelValue: getKernelValue, getVariableList: getVariableList, replaceVariables: replaceVariables, evaluateList: evaluateList, evaluateVariables: evaluateVariables}}
      */
     const VariableManager = {
 
@@ -3055,7 +3055,7 @@ define("genepattern/task", ["base/js/namespace",
                 code = code.replace("# !AUTOEXEC\n\n", "");
 
                 // Add the metadata
-                GPNotebook.slider.makeGPCell(cell, "task");
+                GPNotebook.slider.make_genepattern_cell(cell, "task");
 
                 // Add the code to the cell
                 cell.set_text(code);
