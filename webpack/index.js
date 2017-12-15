@@ -8,16 +8,15 @@
  */
 
 // Import GenePattern Notebook Javascript assets
-import './gp';
-import './navigation';
-import './auth-widget';
-// import './job-widget';
-// import './task-widget';
-// import './ui-builder';
+import './genepattern';
+import './genepattern.navigation';
+import './genepattern.authentication';
+import './genepattern.job';
+import './genepattern.task';
+import './genepattern.uibuilder';
 
 // Import GenePattern Notebook CSS assets
-import '../css/navigation.css';
-import '../css/widget.css';
+import '../css/genepattern.css';
 
 // Import GenePattern Notebook image assets
 import '../img/background.png'
