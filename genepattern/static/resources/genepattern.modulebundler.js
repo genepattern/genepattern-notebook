@@ -121,7 +121,7 @@ define("genepattern/modulebundler", ["base/js/namespace",
                     .append(
                         $("<img/>")
                             .addClass("gp-widget-logo")
-                            .attr("src", Jupyter.notebook.base_url + "nbextensions/genepattern/resources/" + "GP_logo_on_black.png")
+                            .attr("src", Jupyter.notebook.base_url + "nbextensions/genepattern/resources/" + "gp-logo.png")
                     )
                     .append(
                         $("<h3></h3>")

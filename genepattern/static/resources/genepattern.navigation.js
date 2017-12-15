@@ -66,8 +66,8 @@ define("genepattern/navigation", ["base/js/namespace",
         function notification() {
             new Notification("GenePattern Notebook", {
                 body: message,
-                badge: Jupyter.notebook.base_url + "nbextensions/genepattern/resources/gp-logo.png",
-                icon: Jupyter.notebook.base_url + "nbextensions/genepattern/resources/gp-logo.png",
+                badge: Jupyter.notebook.base_url + "nbextensions/genepattern/resources/gp-icon.png",
+                icon: Jupyter.notebook.base_url + "nbextensions/genepattern/resources/gp-icon.png",
                 silent: true
             });
         }

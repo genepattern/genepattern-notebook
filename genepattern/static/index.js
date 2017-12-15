@@ -12,30 +12,23 @@ define([
     "base/js/namespace", "base/js/events", "jquery",
 
     // Bootstrap loading the GenePattern requirejs modules
-    "nbextensions/genepattern/resources/gp",
-    "nbextensions/genepattern/resources/navigation",
-    "nbextensions/genepattern/resources/auth-widget",
-    "nbextensions/genepattern/resources/job-widget",
-    "nbextensions/genepattern/resources/task-widget",
-    "nbextensions/genepattern/resources/ui-builder"], function(Jupyter, events, $) {
+    "nbextensions/genepattern/resources/genepattern",
+    "nbextensions/genepattern/resources/genepattern.navigation",
+    "nbextensions/genepattern/resources/genepattern.authentication",
+    "nbextensions/genepattern/resources/genepattern.job",
+    "nbextensions/genepattern/resources/genepattern.task",
+    "nbextensions/genepattern/resources/genepattern.uibuilder"], function(Jupyter, events, $) {
 
     function load_ipython_extension() {
         const STATIC_PATH = Jupyter.notebook.base_url + "nbextensions/genepattern/resources/";
 
         $('head')
-            // Import styles used by GenePattern navigation
+            // Import styles used by GenePattern Notebook
             .append(
                 $('<link rel="stylesheet" type="text/css" />')
                     .attr("rel", "stylesheet")
                     .attr("type", "text/css")
-                    .attr('href', STATIC_PATH + 'navigation.css')
-            )
-            // Import styles used by GenePattern widgets
-            .append(
-                $('<link rel="stylesheet" type="text/css" />')
-                    .attr("rel", "stylesheet")
-                    .attr("type", "text/css")
-                    .attr('href', STATIC_PATH + 'widget.css')
+                    .attr('href', STATIC_PATH + 'genepattern.css')
             );
 
         // Wait for the kernel to be ready and then initialize the widgets

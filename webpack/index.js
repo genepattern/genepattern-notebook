@@ -20,7 +20,7 @@ import '../css/navigation.css';
 import '../css/widget.css';
 
 // Import GenePattern Notebook image assets
-import '../img/aurora5.png'
+import '../img/background.png'
+import '../img/gp-icon.png'
 import '../img/gp-logo.png'
-import '../img/GP_logo_on_black.png'
-import '../img/loader.gif'
+import '../img/loading.gif'

@@ -1549,7 +1549,7 @@ define("genepattern/task", ["base/js/namespace",
                     .append(
                         $("<img/>")
                             .addClass("gp-widget-logo")
-                            .attr("src", Jupyter.notebook.base_url + "nbextensions/genepattern/resources/" + "GP_logo_on_black.png")
+                            .attr("src", Jupyter.notebook.base_url + "nbextensions/genepattern/resources/" + "gp-logo.png")
                     )
                     .append(
                         $("<h3></h3>")
@@ -1623,7 +1623,7 @@ define("genepattern/task", ["base/js/namespace",
                                     .addClass("gp-widget-loading")
                                     .append(
                                         $("<img />")
-                                            .attr("src", Jupyter.notebook.base_url + "nbextensions/genepattern/resources/" + "loader.gif")
+                                            .attr("src", Jupyter.notebook.base_url + "nbextensions/genepattern/resources/" + "loading.gif")
                                     )
                                     .hide()
                             )
