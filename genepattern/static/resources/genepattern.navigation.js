@@ -7,18 +7,15 @@
  * Copyright 2015-2017 Regents of the University of California & The Broad Institute
  */
 
-// Add shim to support Jupyter 3.x and 4.x
-var Jupyter = Jupyter || IPython || {};
-
 define("genepattern/navigation", ["base/js/namespace",
         "nbextensions/jupyter-js-widgets/extension",
         "nbtools",
         "genepattern"], function (Jupyter, widgets, NBToolManager, gp) {
 
-    var slider = {};
-    var init = {};
-    var util = {};
-    var session_manager = {
+    const slider = {};
+    const init = {};
+    const util = {};
+    const session_manager = {
         sessions: []
     };
 
@@ -28,7 +25,7 @@ define("genepattern/navigation", ["base/js/namespace",
      * @returns {*|jQuery}
      */
     slider.sliderTab = function() {
-        var auth_view = session_manager.sessions.length > 0 ? "inline-block" : "none";
+        const auth_view = session_manager.sessions.length > 0 ? "inline-block" : "none";
         return $("<span></span>")
                 .addClass("fa fa-th sidebar-button sidebar-button-main")
                 .attr("title", "GenePattern")
@@ -39,7 +36,7 @@ define("genepattern/navigation", ["base/js/namespace",
     };
 
     util.getDomain = function(url) {
-        var a = document.createElement('a');
+        const a = document.createElement('a');
         a.href = url;
         return a.hostname;
     };
@@ -49,7 +46,7 @@ define("genepattern/navigation", ["base/js/namespace",
      * @param name
      */
     util.display_name = function(name) {
-        var display_name = name;
+        let display_name = name;
         display_name = display_name.replace(/\./g,' ');
         display_name = display_name.replace(/_/g,' ');
         return display_name;
@@ -58,7 +55,6 @@ define("genepattern/navigation", ["base/js/namespace",
     /**
      * Send a browser notification
      *
-     * @param title
      * @param message
      */
     util.send_notification = function(message) {
@@ -104,24 +100,24 @@ define("genepattern/navigation", ["base/js/namespace",
 
     slider.registerModule = function(session, module) {
         // Prepare the origin
-        var origin = null;
-        var gp_url = session.server();
+        let origin = null;
+        const gp_url = session.server();
         if (gp_url === "https://genepattern.broadinstitute.org/gp") origin = "GenePattern Public";
         else if (gp_url === "https://gp.indiana.edu/gp") origin = "GenePattern Indiana";
         else if (gp_url === "https://gpbroad.broadinstitute.org/gp") origin = "GenePattern Broad";
         else origin = util.getDomain(gp_url);
 
         // Prepare tags
-        var tags = module['categories'];
+        const tags = module['categories'];
         $.each(module['tags'], function(i, e) {
             tags.push(e['tag'])
         });
         tags.sort();
 
         // Prepare the session index
-        var index = session_manager.get_session_index(session.server());
+        const index = session_manager.get_session_index(session.server());
 
-        var ModuleTool = new NBToolManager.NBTool({
+        const ModuleTool = new NBToolManager.NBTool({
             origin: origin,
             id: module['lsid'],
             name: module['name'],
@@ -130,8 +126,8 @@ define("genepattern/navigation", ["base/js/namespace",
             description: module['description'],
             load: function() { return true; },
             render: function() {
-                var cell = Jupyter.notebook.get_selected_cell();
-                var is_empty = cell.get_text().trim() == "";
+                let cell = Jupyter.notebook.get_selected_cell();
+                const is_empty = cell.get_text().trim() === "";
 
                 // If this cell is not empty, insert a new cell and use that
                 // Otherwise just use this cell
@@ -174,12 +170,12 @@ define("genepattern/navigation", ["base/js/namespace",
         $(".sidebar-button-main").show("slide", {"direction": "left"});
 
         // Disable same server on all authentication widgets
-        var dropdowns = $(".gp-widget-auth").find("[name=server]");
+        const dropdowns = $(".gp-widget-auth").find("[name=server]");
         dropdowns.find("option[value='" + GenePattern.server() + "']").prop("disabled", true);
         dropdowns.each(function(i, dropdown) {
             // If disabled server is selected, select a different one
             if ($(dropdown).find("option:selected").attr("value") === GenePattern.server()) {
-                var enabled_list = $(dropdown).find("option:enabled");
+                const enabled_list = $(dropdown).find("option:enabled");
                 if (enabled_list.length > 0) $(enabled_list[0]).prop('selected', true);
             }
         });
@@ -191,11 +187,11 @@ define("genepattern/navigation", ["base/js/namespace",
     };
 
     slider.output_files_by_kind = function(kinds) {
-        var matches = [];
-        var kind_list = kinds;
+        const matches = [];
+        let kind_list = kinds;
 
         // Handle the special case of * (match all)
-        var match_all = kinds === "*";
+        const match_all = kinds === "*";
 
         // If passing in a single kind as a string, wrap it in a list
         if (typeof kinds === 'string') {
@@ -204,9 +200,9 @@ define("genepattern/navigation", ["base/js/namespace",
 
         // For each out file, see if it is the right kind
         $(".gp-widget-job-output-file").each(function(index, output) {
-            var kind = $(output).data("kind");
+            const kind = $(output).data("kind");
             if (match_all || kind_list.indexOf(kind) >= 0) {
-                var job_desc = $(output).closest(".gp-widget").find(".gp-widget-job-task").text().trim();
+                const job_desc = $(output).closest(".gp-widget").find(".gp-widget-job-task").text().trim();
                 matches.push({
                     name: $(output).text().trim(),
                     url: $(output).attr("href"),
@@ -257,10 +253,10 @@ define("genepattern/navigation", ["base/js/namespace",
      */
     slider.removeKindVisualizers = function(kindMap) {
         $.each(kindMap, function(kind, taskList) {
-            var currentLength = taskList.length;
-            for (var i = 0; i < currentLength; i++) {
-                var task = taskList[i];
-                var categories = task.categories();
+            let currentLength = taskList.length;
+            for (let i = 0; i < currentLength; i++) {
+                const task = taskList[i];
+                const categories = task.categories();
                 if (categories.indexOf("Visualizer") !== -1) {
                     // This is a visualizer
                     taskList.splice(i, 1);
@@ -277,7 +273,7 @@ define("genepattern/navigation", ["base/js/namespace",
      * @param lsid
      */
     util.stripVersion = function(lsid) {
-        var parts = lsid.split(':');
+        const parts = lsid.split(':');
         if (parts.length === 6) {
             parts.pop();
             return parts.join(':');
@@ -296,13 +292,13 @@ define("genepattern/navigation", ["base/js/namespace",
      * @param module
      */
     slider.buildModuleCode = function(cell, session, module) {
-        var baseName = module["name"].toLowerCase().replace(/\./g, '_');
-        var taskName = baseName + "_task";
-        var specName = baseName + "_job_spec";
-        var baseLsid = util.stripVersion(module["lsid"]);
+        const baseName = module["name"].toLowerCase().replace(/\./g, '_');
+        const taskName = baseName + "_task";
+        const specName = baseName + "_job_spec";
+        const baseLsid = util.stripVersion(module["lsid"]);
 
         // Build the code
-        var code = taskName + " = gp.GPTask(genepattern.get_session(" + session + "), '" + baseLsid + "')\n" +
+        const code = taskName + " = gp.GPTask(genepattern.get_session(" + session + "), '" + baseLsid + "')\n" +
                    specName + " = " + taskName + ".make_job_spec()\n" +
                    "genepattern.GPTaskWidget(" + taskName + ")";
 
@@ -338,7 +334,7 @@ define("genepattern/navigation", ["base/js/namespace",
      * @returns {string}
      */
     util.nameFromUrl = function(url) {
-        var parts = url.split("/");
+        const parts = url.split("/");
         return decodeURIComponent(parts[parts.length - 1]);
     };
 
@@ -353,15 +349,15 @@ define("genepattern/navigation", ["base/js/namespace",
     };
 
     slider.detectKernelDisconnect = function() {
-        var disconnectCurrentlyDetected = false;
+        let disconnectCurrentlyDetected = false;
 
         // Run check every minute
         setInterval(function() {
-            var disconnected = Jupyter.notebook.kernel._reconnect_attempt === Jupyter.notebook.kernel.reconnect_limit;
+            const disconnected = Jupyter.notebook.kernel._reconnect_attempt === Jupyter.notebook.kernel.reconnect_limit;
 
             // If we've just become disconnected, display modal dialog
             if (disconnected && !disconnectCurrentlyDetected) {
-                var dialog = require('base/js/dialog');
+                const dialog = require('base/js/dialog');
                 dialog.modal({
                     notebook: Jupyter.notebook,
                     keyboard_manager: this.keyboard_manager,
@@ -388,8 +384,8 @@ define("genepattern/navigation", ["base/js/namespace",
         function isWidgetPresent() { return cell.element.find(".gp-widget").length > 0; }
         function isRunning() { return cell.element.hasClass("running") }
 
-        var widgetPresent = isWidgetPresent();
-        var running = isRunning();
+        let widgetPresent = isWidgetPresent();
+        let running = isRunning();
 
         function ensure_widget() {
             if (!widgetPresent && !running) {
@@ -412,8 +408,8 @@ define("genepattern/navigation", ["base/js/namespace",
             $("#nbtools-toolbar").trigger("click");
         }
         else {
-            var cell = Jupyter.notebook.get_selected_cell();
-            var contents = cell.get_text().trim();
+            let cell = Jupyter.notebook.get_selected_cell();
+            const contents = cell.get_text().trim();
 
             // Insert a new cell if the current one has contents
             if (contents !== "") {
@@ -567,10 +563,10 @@ define("genepattern/navigation", ["base/js/namespace",
             });
 
             // Add options to "Send to New Task" dropdown, or hide if none
-            var modules = null;
-            var fixedKind = Array.isArray(kind) ? kind[0] : kind;
-            var sendToNewTask = popover.find('.gp-widget-job-new-task');
-            var kindsMap = widget.options.session.kinds();
+            let modules = null;
+            const fixedKind = Array.isArray(kind) ? kind[0] : kind;
+            const sendToNewTask = popover.find('.gp-widget-job-new-task');
+            const kindsMap = widget.options.session.kinds();
             if (kindsMap !==  null && kindsMap !== undefined) {
                 modules = kindsMap[fixedKind];
                 if (modules === null || modules === undefined) { modules = []; } // Protect against undefined & null
@@ -589,10 +585,10 @@ define("genepattern/navigation", ["base/js/namespace",
 
             // Attach methods in a way that will not break when popover is hidden
             element.on('shown.bs.popover', function () {
-                var sendCodeButton = element.parent().find(".gp-widget-job-send-code");
-                var sendDataFrameButton = element.parent().find(".gp-widget-job-send-dataframe");
-                var newTaskDropdown = element.parent().find(".gp-widget-job-new-task");
-                var sendToExistingTask = element.parent().find('.gp-widget-job-existing-task');
+                const sendCodeButton = element.parent().find(".gp-widget-job-send-code");
+                const sendDataFrameButton = element.parent().find(".gp-widget-job-send-dataframe");
+                const newTaskDropdown = element.parent().find(".gp-widget-job-new-task");
+                const sendToExistingTask = element.parent().find('.gp-widget-job-existing-task');
 
                 // Unbind old click events so they aren't double-bound
                 sendCodeButton.unbind("click");
@@ -616,29 +612,28 @@ define("genepattern/navigation", ["base/js/namespace",
 
                 // Attach "Send to New Task" clicks
                 newTaskDropdown.change(function(event) {
-                    var option = $(event.target).find(":selected");
-                    var lsid = option.attr("data-lsid");
-                    var server = option.attr("data-server");
+                    const option = $(event.target).find(":selected");
+                    const lsid = option.attr("data-lsid");
                     if (lsid === undefined || lsid === null) return;
-                    var name = option.text();
-                    var cell = Jupyter.notebook.insert_cell_at_bottom();
+                    const name = option.text();
+                    const cell = Jupyter.notebook.insert_cell_at_bottom();
                     slider.buildModuleCode(cell, widget.options.session_index, {"lsid":lsid, "name": name});
 
                     // Execute the cell
                     setTimeout(function() {
                         cell.element.on("gp.widgetRendered", function() {
-                            var widgetElement = cell.element.find(".gp-widget");
-                            var widget = widgetElement.data("widget");
+                            const widgetElement = cell.element.find(".gp-widget");
+                            const widget = widgetElement.data("widget");
 
                             // Define what to do to receive the file
-                            var receiveFile = function() {
+                            const receiveFile = function() {
                                 setTimeout(function() {
                                     widget.receiveFile(element.attr("href"), fixedKind);
                                 }, 100);
                             };
 
                             // Check to see whether params have already been loaded
-                            var alreadyLoaded = widget._paramsLoaded;
+                            const alreadyLoaded = widget._paramsLoaded;
 
                             // If already loaded, receive file
                             if (alreadyLoaded) {
@@ -721,7 +716,7 @@ define("genepattern/navigation", ["base/js/namespace",
         });
 
         // Make the "i" icon open the menus as well
-        var icon = element.find(".fa-info-circle");
+        const icon = element.find(".fa-info-circle");
         icon.click(function(event) {
             $(this).parent().trigger("click");
             event.preventDefault();
@@ -780,11 +775,11 @@ define("genepattern/navigation", ["base/js/namespace",
 
                 // Set event for hiding popovers & slider when user clicks away
                 $(document).on("click", function (e) {
-                    var target = $(e.target);
+                    const target = $(e.target);
 
                     // Handle hiding popovers
-                    var isPopover = target.is("[data-toggle=popover]");
-                    var inPopover = target.closest(".popover").length > 0;
+                    const isPopover = target.is("[data-toggle=popover]");
+                    const inPopover = target.closest(".popover").length > 0;
 
                     // Hide popover only if click not inside popover
                     if (!isPopover && !inPopover) {
@@ -792,9 +787,9 @@ define("genepattern/navigation", ["base/js/namespace",
                     }
 
                     // Handle hiding the slider
-                    var inSlider = target.closest("#slider").length > 0;
-                    var inTab = target.is(".sidebar-button-main");
-                    var sliderVisible = $("#slider:visible").length > 0;
+                    const inSlider = target.closest("#slider").length > 0;
+                    const inTab = target.is(".sidebar-button-main");
+                    const sliderVisible = $("#slider:visible").length > 0;
 
                     // Hide slider only if click not inside slider
                     if (!inSlider && !inTab && sliderVisible) {
@@ -821,7 +816,7 @@ define("genepattern/navigation", ["base/js/namespace",
      * @param password
      */
     init.buildCode = function(cell, server, username, password) {
-        var code = '# Requires GenePattern Notebook: pip install genepattern-notebook\n' +
+        const code = '# Requires GenePattern Notebook: pip install genepattern-notebook\n' +
                    'import gp\n' +
                    'import genepattern\n' +
                    '\n' +
@@ -924,8 +919,8 @@ define("genepattern/navigation", ["base/js/namespace",
 
         // Hide or show the slider tab if a GenePattern cell is highlighted
         $([Jupyter.events]).on('select.Cell', function() {
-            var cell = Jupyter.notebook.get_selected_cell();
-            var isGPCell = cell.element.find(".gp-widget").length > 0;
+            const cell = Jupyter.notebook.get_selected_cell();
+            const isGPCell = cell.element.find(".gp-widget").length > 0;
 
             // If authenticated and the selected cell is a GenePattern cell, show
             if (session_manager.sessions.length > 0 && isGPCell) {
@@ -949,27 +944,27 @@ define("genepattern/navigation", ["base/js/namespace",
         });
 
         // Add GenePattern "cell type" if not already in menu
-        var dropdown = $("#cell_type");
-        var gpInDropdown = dropdown.find("option:contains('GenePattern')").length > 0;
+        const dropdown = $("#cell_type");
+        const gpInDropdown = dropdown.find("option:contains('GenePattern')").length > 0;
         if (!gpInDropdown) {
             dropdown.append(
                     $("<option value='code'>GenePattern</option>")
                 );
 
             dropdown.change(function(event) {
-                var type = $(event.target).find(":selected").text();
+                const type = $(event.target).find(":selected").text();
                 if (type === "GenePattern") {
-                    var former_type = Jupyter.notebook.get_selected_cell().cell_type;
+                    const former_type = Jupyter.notebook.get_selected_cell().cell_type;
                     slider.toGenePatternCell(former_type);
                 }
             });
 
             // Reverse the ordering of events so we check for ours first
-            $._data($("#cell_type")[0], "events").change.reverse();
+            $._data(dropdown[0], "events").change.reverse();
         }
 
-        var cellMenu = $("#change_cell_type");
-        var gpInMenu = cellMenu.find("#to_genepattern").length > 0;
+        const cellMenu = $("#change_cell_type");
+        const gpInMenu = cellMenu.find("#to_genepattern").length > 0;
         if (!gpInMenu) {
             cellMenu.find("ul.dropdown-menu")
                 .append(
@@ -1073,7 +1068,7 @@ define("genepattern/navigation", ["base/js/namespace",
     };
 
     slider.applyColors = function(element, url) {
-        var theme = "gp-server-custom";
+        let theme = "gp-server-custom";
 
         // GenePattern Public
         if (url === GENEPATTERN_SERVERS[0][1]) {
@@ -1095,17 +1090,17 @@ define("genepattern/navigation", ["base/js/namespace",
 
     session_manager.register_session = function(server, username, password) {
         // Create the session
-        var session = new gp.GenePattern();
+        const session = new gp.GenePattern();
         session.server(server);
         session.username = username;
         session.password = password;
 
         // Validate username if not empty
-        var valid_username = username !== "" && username !== null && username !== undefined;
+        const valid_username = username !== "" && username !== null && username !== undefined;
 
         // Validate that the server is not already registered
-        var index = session_manager.get_session_index(server);
-        var new_server = index === -1;
+        const index = session_manager.get_session_index(server);
+        const new_server = index === -1;
 
         // Add the new session to the list
         if (valid_username && new_server) {
@@ -1135,7 +1130,7 @@ define("genepattern/navigation", ["base/js/namespace",
         }
 
         // Handle server URLs
-        var index = session_manager.get_session_index(server);
+        const index = session_manager.get_session_index(server);
         if (index === -1) return null;
         else return session_manager.sessions[index];
     };
@@ -1145,13 +1140,13 @@ define("genepattern/navigation", ["base/js/namespace",
      * Returns -1 if a matching session was not found
      *
      * @param url
-     * @returns {string}
+     * @returns {number}
      */
     session_manager.get_session_index = function(url) {
-        for (var i in session_manager.sessions) {
-            var session = session_manager.sessions[i];
+        for (let i in session_manager.sessions) {
+            const session = session_manager.sessions[i];
             if (session.server() === url) {
-                return i;
+                return parseInt(i);
             }
         }
         return -1;
