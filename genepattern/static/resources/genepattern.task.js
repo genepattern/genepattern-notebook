@@ -715,7 +715,7 @@ define("genepattern/task", ["base/js/namespace",
             const widget = this;
 
             // Handle special case of Python variables
-            if (variableManager.getVariableList(value).length > 0) {
+            if (VariableManager.getVariableList(value).length > 0) {
                 // Assume the first value matches the variable and remove it
                 widget._values.splice(0, 1);
                 return;
