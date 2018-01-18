@@ -393,6 +393,12 @@ div.cell.selected {
     border-color: #BBBBBB !important;
 }
 
+.gp-widget-job-outputs-list .popover label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 /*
  * File Input Styles
  */
@@ -446,9 +452,10 @@ div.cell.selected {
     margin-top: 10px;
     overflow: hidden;
     padding: 4px;
-    white-space: normal;
     line-height: 2.2em;
     vertical-align: middle;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .file-widget-value-erase {
@@ -479,8 +486,19 @@ div.cell.selected {
 }
 
 /*
- * Run Task Styles
+ * Task & UI Builder Styles
  */
+
+.gp-widget-task > .panel-body,
+.gp-widget-call > .panel-body {
+    padding: 0;
+}
+
+.gp-widget-task > .panel-body > .alert {
+    margin-top: 10px;
+    margin-right: 10px;
+    margin-left: 10px;
+}
 
 .gp-widget-task-version {
     font-size: 0.8em;
@@ -490,6 +508,14 @@ div.cell.selected {
 
 .gp-widget-task-subheader {
     border-bottom: 1px solid rgba(10, 45, 105, 0.8);
+    /*background: #d3d3d355;*/
+    padding-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.gp-widget-task-desc {
+    padding-bottom: 10px;
 }
 
 .gp-widget-task-run {
@@ -497,6 +523,7 @@ div.cell.selected {
     margin-left: 20px;
     font-size: 0.9em;
     padding-top: 10px;
+    float: right;
 }
 
 .gp-widget-task-run-button {
@@ -505,13 +532,8 @@ div.cell.selected {
     top: -10px;
 }
 
-.gp-widget-task-form {
-    padding-top: 10px;
-    padding-bottom: 10px;
-}
-
 .gp-widget-task-param {
-    margin: 10px;
+    margin: 15px;
     padding-right: 20px;
 }
 
@@ -519,7 +541,7 @@ div.cell.selected {
     display: inline-block;
     min-width: 150px;
     font-weight: bold;
-    font-size: 1em;
+    font-size: 0.9em;
     vertical-align: top;
     padding-top: 10px;
     padding-right: 10px;
@@ -531,9 +553,8 @@ div.cell.selected {
 }
 
 .gp-widget-task-param-desc {
-    font-size: 1em;
-    margin-top: 10px;
-    margin-bottom: 10px;
+    font-size: 0.9em;
+    margin-top: 5px;
 }
 
 .gp-widget-task-param-missing {
@@ -543,6 +564,9 @@ div.cell.selected {
 .gp-widget-task-footer {
     border-top: 1px solid rgba(10, 45, 105, 0.8);
     padding-top: 10px;
+    /*background: #d3d3d355;*/
+    padding-left: 10px;
+    padding-right: 10px;
 }
 
 .gp-widget-task-eula-license {
@@ -564,6 +588,10 @@ div.cell.selected {
     font-weight: bold;
     line-height: 3em;
 }
+
+/*
+ * Typeahead Styles
+ */
 
 .gp-widget-typeahead {
     display: inline-block;
@@ -598,6 +626,10 @@ div.cell.selected {
 .gp-widget-typeahead-list .dropdown-file {
     padding-left: 40px;
 }
+
+/*
+ * Module Maker Styles
+ */
 
 .gp-widget-module-previous-button, .gp-widget-module-next-button {
     float: right;

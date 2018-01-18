@@ -2,7 +2,7 @@
  * Navigation functionality
  *
  * @author Thorin Tabor
- * @requires - jQuery
+ * @requires - jQuery, requirejs
  *
  * Copyright 2015-2017 Regents of the University of California & The Broad Institute
  */
@@ -809,8 +809,8 @@ define("genepattern/navigation", ["base/js/namespace",
                     const help_section = $("#kernel-help-links");
                     const library_section = $("#help_menu").find(".divider:last");
                     if (help_section.length > 0) {
-                        help_section.before($("<li><a href='https://groups.google.com/forum/#!forum/genepattern-help' target='_blank'>GenePattern Help <i class='fa fa-external-link menu-icon pull-right'></i></a></li>"));
-                        library_section.before($("<li><a href='http://genepattern-notebook.org' target='_blank'>GenePattern<i class='fa fa-external-link menu-icon pull-right'></i></a></li>"));
+                        help_section.before($("<li><a href='https://groups.google.com/forum/#!forum/genepattern-help' target='_blank'><i class='fa fa-external-link menu-icon pull-right'></i>GenePattern Help</a></li>"));
+                        library_section.before($("<li><a href='http://genepattern-notebook.org' target='_blank'><i class='fa fa-external-link menu-icon pull-right'></i>GenePattern</a></li>"));
                     }
                     else setTimeout(add_help_link, 200);
                 }

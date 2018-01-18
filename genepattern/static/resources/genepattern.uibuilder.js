@@ -2,7 +2,7 @@
  * Define the UI Builder widget for Jupyter Notebook
  *
  * @author Thorin Tabor
- * @requires - jQuery, navigation.js
+ * @requires - jQuery, genepattern.navigation.js, genepattern.task.js
  *
  * Copyright 2017 Regents of the University of California and the Broad Institute
  */
@@ -160,10 +160,6 @@ define("genepattern/uibuilder", ["base/js/namespace",
                             .addClass("gp-widget-task-subheader")
                             .append(
                                 $("<div></div>")
-                                    .addClass("gp-widget-task-desc")
-                            )
-                            .append(
-                                $("<div></div>")
                                     .addClass("gp-widget-task-run")
                                     .append(
                                         $("<button></button>")
@@ -175,7 +171,13 @@ define("genepattern/uibuilder", ["base/js/namespace",
                                                 }
                                             })
                                     )
-                                    .append("* Required Field")
+                            )
+                            .append(
+                                $("<div></div>")
+                                    .addClass("gp-widget-task-desc")
+                            )
+                            .append(
+                                $("<div></div>").css("clear", "both")
                             )
                     )
                     .append(
@@ -202,7 +204,9 @@ define("genepattern/uibuilder", ["base/js/namespace",
                                                 }
                                             })
                                     )
-                                    .append("* Required Field")
+                            )
+                            .append(
+                                $("<div></div>").css("clear", "both")
                             )
                     )
             );

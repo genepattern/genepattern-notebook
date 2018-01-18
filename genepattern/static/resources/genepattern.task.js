@@ -2,7 +2,7 @@
  * Define the Jupyter GenePattern Task widget
  *
  * @author Thorin Tabor
- * @requires - jQuery, navigation.js
+ * @requires - jQuery, genepattern.navigation.js
  *
  * Copyright 2015-2017 Regents of the University of California & The Broad Institute
  */
@@ -116,6 +116,18 @@ define("genepattern/task", ["base/js/namespace",
             }
 
             // Add the dynamic choices to the menu, if available
+            if (Object.keys(choices).length > 0) {
+                menu.append(this._create_menu_header("FTP Server Files", "ftp"));
+                for (let key in choices) {
+                    const choice = {
+                        name: key,
+                        url: choices[key]
+                    };
+                    menu.append(this._create_menu_file(choice, "ftp"));
+                }
+            }
+
+            // Add markdown file links, if available
             if (Object.keys(markdown).length > 0) {
                 menu.append(this._create_menu_header("Notebook Instructions", "markdown"));
                 for (let key in markdown) {
@@ -126,8 +138,6 @@ define("genepattern/task", ["base/js/namespace",
                     menu.append(this._create_menu_file(choice, "markdown"));
                 }
             }
-
-            // Add markdown file links, if available
         },
 
         /**
@@ -326,6 +336,7 @@ define("genepattern/task", ["base/js/namespace",
                         $("<span></span>")
                             .addClass("file-widget-drop")
                             .text("Drag Files Here")
+                            .hide()
                     )
             );
             this.element.append(
@@ -375,11 +386,13 @@ define("genepattern/task", ["base/js/namespace",
 
             dropTarget.addEventListener("dragenter", function(event) {
                 widget.element.css("background-color", "#dfeffc");
+                widget.element.find(".file-widget-drop").show();
                 event.stopPropagation();
                 event.preventDefault();
             }, false);
             dropTarget.addEventListener("dragexit", function(event) {
                 widget.element.css("background-color", "");
+                widget.element.find(".file-widget-drop").hide();
                 event.stopPropagation();
                 event.preventDefault();
             }, false);
@@ -656,6 +669,9 @@ define("genepattern/task", ["base/js/namespace",
                         .append(
                             $("<span></span>")
                                 .addClass("fa fa-times")
+                                .click(function() {
+                                    $(this).parent().click();
+                                })
                         )
                         .click(function() {
                             widget._removeValue(file);
@@ -788,14 +804,12 @@ define("genepattern/task", ["base/js/namespace",
         _setDisplayOptions: function() {
             if (!this.options.allowJobUploads) {
                 this.element.find(".file-widget-upload-file").hide();
-                this.element.find(".file-widget-drop").hide();
                 this.element.find(".gp-widget-typeahead").css("width", "100%");
                 this.element.css("border", "none");
                 this.element.css("padding", 0);
             }
             else {
                 this.element.find(".file-widget-upload-file").show();
-                this.element.find(".file-widget-drop").show();
                 this.element.find(".gp-widget-typeahead").css("width", "400px");
                 this.element.removeAttr("style");
             }
@@ -1574,10 +1588,6 @@ define("genepattern/task", ["base/js/namespace",
                             .addClass("gp-widget-task-subheader")
                             .append(
                                 $("<div></div>")
-                                    .addClass("gp-widget-task-desc")
-                            )
-                            .append(
-                                $("<div></div>")
                                     .addClass("gp-widget-task-run")
                                     .append(
                                         $("<button></button>")
@@ -1589,7 +1599,13 @@ define("genepattern/task", ["base/js/namespace",
                                                 }
                                             })
                                     )
-                                    .append("* Required Field")
+                            )
+                            .append(
+                                $("<div></div>")
+                                    .addClass("gp-widget-task-desc")
+                            )
+                            .append(
+                                $("<div></div>").css("clear", "both")
                             )
                     )
                     .append(
@@ -1612,7 +1628,9 @@ define("genepattern/task", ["base/js/namespace",
                                                 }
                                             })
                                     )
-                                    .append("* Required Field")
+                            )
+                            .append(
+                                $("<div></div>").css("clear", "both")
                             )
                     )
                     .append(
@@ -2438,7 +2456,7 @@ define("genepattern/task", ["base/js/namespace",
             const paramBox = $("<div></div>")
                 .addClass(" form-group gp-widget-task-param")
                 .attr("name", param.name())
-                .attr("title", param.name())
+                .attr("title", param.name() + (required ? " (required)" : ""))
                 .append(
                     $("<label></label>")
                         .addClass("col-sm-3 control-label gp-widget-task-param-name")

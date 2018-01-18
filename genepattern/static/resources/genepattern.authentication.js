@@ -2,7 +2,7 @@
  * Define the GenePattern Authentication widget
  *
  * @author Thorin Tabor
- * @requires - jQuery, navigation.js
+ * @requires - jQuery, genepattern.navigation.js
  *
  * Copyright 2015-2017 Regents of the University of California & The Broad Institute
  */
