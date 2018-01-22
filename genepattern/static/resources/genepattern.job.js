@@ -847,8 +847,10 @@ define("genepattern/job", ["base/js/namespace",
             // Clean the old data
             this._clean();
 
-            // Set the job number
+            // Set the job number and data attributes
             this.element.attr("name", job.jobNumber());
+            this.element.attr("data-job-number", job.jobNumber());
+            this.element.attr("data-task-name", job.taskName());
 
             // Display the job number and task name
             const taskText = " " + job.jobNumber() + ". " + job.taskName();
