@@ -2977,7 +2977,7 @@ define("genepattern/task", ["base/js/namespace",
             all_outputs.each(function(i, output) {
                 const kind = $(output).attr("data-kind");
                 const name = $(output).text().trim();
-                if (output_type === kind || name.match(output_type + "$" || output_type === "*")) selected_outputs.push(output);
+                if (output_type === kind || name.match(output_type + "$" || output_type === "")) selected_outputs.push(output);
             });
 
             // Select the output with the matching index
@@ -3033,9 +3033,15 @@ define("genepattern/task", ["base/js/namespace",
             // Handle the case of there being no variables
             if (!raw_string.includes("{{") || !raw_string.includes("}}")) return [];
 
-            return raw_string
-                .match(/{{\s*[\w\.\[\]]+\s*}}/g)
-                .map(function(x) { return x.match(/[\w\.\[\]]+/)[0]; });
+            try {
+                return raw_string
+                    .match(/{{\s*[\w\.\[\]]+\s*}}/g)
+                    .map(function(x) { return x.match(/[\w\.\[\]]+/)[0]; });
+            }
+            catch(e) {
+                console.log("Unable to parse for variables in: " + raw_string);
+                return [];
+            }
         },
 
         /**
