@@ -581,6 +581,9 @@ define("genepattern/uibuilder", ["base/js/namespace",
             for (let i = 0; i < params.length; i++) {
                 const p = params[i];
 
+                // Special case for output_var
+                if (p['name'] === 'output_var') continue;
+
                 try {
                     const param = {
                         _name: p["name"],
@@ -624,16 +627,27 @@ define("genepattern/uibuilder", ["base/js/namespace",
         _buildFooter: function() {
             const widget = this;
 
+            // Get the output_var parameter, if defined
+            let output_var_param = null;
+            widget.options.params.forEach(function(p) {
+                if (p['name'] === 'output_var') output_var_param = p;
+            });
+
+            const v_label = output_var_param && output_var_param['label'] ? output_var_param['label'] : 'output_variable';
+            const v_desc = output_var_param && output_var_param['description'] ? output_var_param['description'] : "The returned value of the function will be assigned to this variable, if provided.";
+            const v_hide = output_var_param && output_var_param['hide'] ? output_var_param['hide'] : false;
+            const v_default = output_var_param && output_var_param['default'] ? output_var_param['default'] : widget.options.output_var;
+
             try {
                 const output_param = {
-                    name: function() {return "_output_variable"; },
-                    label: function() {return "_output_variable"; },
+                    name: function() {return "output_var"; },
+                    label: function() {return v_label; },
                     optional: function() {return true; },
-                    type: function() {return "java.lang.String"; },
-                    description: function() {return "The returned value of the function will be assigned to this variable, if provided."; },
+                    type: function() {return "text"; },
+                    description: function() {return v_desc; },
                     choices: function() {return false; },
-                    defaultValue: function() {return widget.options.output_var; },
-                    hidden: function() { return false; }
+                    defaultValue: function() { return v_default; },
+                    hidden: function() { return v_hide; }
                 };
 
                 const footer = this.element.find(".gp-widget-ui-output");

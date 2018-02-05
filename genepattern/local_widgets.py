@@ -102,6 +102,10 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
         custom_output = kwargs['output_var'] if 'output_var' in kwargs else None
         custom_import = kwargs['function_import'] if 'function_import' in kwargs else None
 
+        # Apply output_var deprecation warning
+        if 'output_var' in kwargs:
+            print('Specifying the output variable using the output_var argument is deprecated. Use the parameters argument.')
+
         # Read parameter metadata
         if 'parameters' in kwargs:
             self._apply_custom_parameter_info(params, kwargs['parameters'])
@@ -124,6 +128,21 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
 
     @staticmethod
     def _apply_custom_parameter_info(params, metadata):
+        # If output_var is overridden as a parameter, add to the parameters list as a special case
+        if 'output_var' in metadata:
+            params.append({
+                "name": 'output_var',
+                "label": 'output_variable',
+                "optional": True,
+                "default": '',
+                "description": 'The returned value of the function will be assigned to this variable, if provided.',
+                "hide": False,
+                "type": 'text',
+                "kinds": None,
+                "choices": []
+            })
+
+        # Iterate through each parameters in the function
         for param in params:  # Iterate through each parameter
             if param['name'] in metadata:  # If there is something to override
                 p_meta = metadata[param['name']]
