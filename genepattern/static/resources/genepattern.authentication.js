@@ -110,6 +110,18 @@ define("genepattern/authentication", ["base/js/namespace",
                                                     $("<li></li>")
                                                         .append(
                                                             $("<a></a>")
+                                                                .attr("title", "Run Notebook as Workflow")
+                                                                .attr("href", "#")
+                                                                .append("Run Workflow")
+                                                                .click(function() {
+                                                                    WorkflowQueue.launch();
+                                                                })
+                                                        )
+                                                )
+                                                .append(
+                                                    $("<li></li>")
+                                                        .append(
+                                                            $("<a></a>")
                                                                 .attr("title", "Toggle Code View")
                                                                 .attr("href", "#")
                                                                 .append("Toggle Code View")
@@ -1045,6 +1057,268 @@ define("genepattern/authentication", ["base/js/namespace",
         });
     };
 
+    const WorkflowQueue = {
+        /**
+         * The current status of the queue.
+         *      Statuses: uninitialized, ready, running, canceled, error, complete
+         */
+        status: 'uninitialized',
+        step_index: 0,
+
+        /**
+         * Initialize the event handling necessary for the Workflow Queue
+         */
+        init: function() {
+            const workflow_queue = this;
+
+            // If the queue has already been initialized, do nothing
+            if (this.status !== 'uninitialized') return;
+
+            // Event that runs every time a cell completes execution
+            $([Jupyter.events]).on('shell_reply.Kernel', function(event, target) {
+                if (workflow_queue.status === 'running') {
+                    // Wait for display to process before testing
+                    setTimeout(function() {
+                        workflow_queue.step_completed();
+                    }, 1000);
+                }
+            });
+
+            // Set the queue status as ready
+            this.status = 'ready';
+        },
+
+        /**
+         * Display the error message and set the queue status
+         *
+         * @param message
+         */
+        error_encountered: function(message) {
+            const workflow_alert = $("#workflow_queue_alert");
+            workflow_alert.removeClass('alert-info');
+            workflow_alert.addClass('alert-danger');
+            workflow_alert.text(message);
+
+            this.status = 'error';
+        },
+
+        workflow_complete: function() {
+            const workflow_alert = $("#workflow_queue_alert");
+            workflow_alert.removeClass('alert-info');
+            workflow_alert.addClass('alert-success');
+            workflow_alert.text("The GenePattern workflow has successful ran to completion.");
+            $(".dialog-btn-complete").show();
+            $(".dialog-btn-cancel").hide();
+
+            this.status = 'completed';
+        },
+
+        /**
+         * Process the completion of a step in the workflow queue
+         */
+        step_completed: function() {
+            const cell = Jupyter.notebook.get_cell(this.step_index);
+
+            // Check for code error
+            if (this._has_code_error(cell)) {
+                this.error_encountered("Encountered a code cell error in the workflow. Stopping execution.");
+                return;
+            }
+
+            // Check for GenePattern error
+            if (this._has_genepattern_error(cell)) {
+                this.error_encountered("Encountered a GenePattern cell error in the workflow. Stopping execution.");
+                return;
+            }
+
+            // Increment the queue step
+            this.step_index++;
+
+            // Check for completion
+            if (this.step_index === Jupyter.notebook.get_cells().length -1) {
+                this.workflow_complete();
+                return;
+            }
+
+            // Notify the interface
+            this._update_step_display();
+
+            // Run the next cell
+            this.run_next_cell();
+        },
+
+        /**
+         * Launch the notebook workflow
+         */
+        launch: function() {
+            // Reset the queue state
+            this.reset();
+
+            // Display the workflow UI
+            this.display();
+
+            // Set the status to running
+            this.status = 'running';
+
+            // Run the first cell
+            this.run_next_cell();
+        },
+        /**
+         * Run the next cell in the queue
+         */
+        run_next_cell: function() {
+            const workflow_queue = this;
+            const cell = Jupyter.notebook.get_cell(this.step_index);
+
+            // Scroll to the cell
+            const site_div = $('#site');
+            const current_offset = Math.abs(site_div.find(".container").offset().top);
+            const cell_offset = $(cell.element).offset().top;
+            site_div.animate({
+                scrollTop: current_offset + cell_offset - 100
+            }, 500);
+
+            // Select the cell
+            Jupyter.notebook.select(this.step_index);
+
+            // Wait for the scroll to complete
+            setTimeout(function() {
+                // If this is a GenePattern cell, handle it
+                if (workflow_queue._is_genepattern_cell(cell)) {
+                    workflow_queue._handle_genepattern_step(cell);
+                    return;
+                }
+
+                // If this is a code cell, run it
+                if (cell.cell_type === 'code') {
+                    Jupyter.notebook.execute_cell();
+                    return;
+                }
+
+                // Otherwise, make sure the status is still running and skip the cell
+                if (workflow_queue.status === 'running') workflow_queue.step_completed();
+            }, 1000);
+        },
+
+        /**
+         * Reset the state of the workflow queue back to ready
+         */
+        reset: function() {
+            // If the queue hasn't been initialized, do so
+            if (this.status === 'uninitialized') this.init();
+
+            // Reset the state
+            this.step_index = 0;
+            this.status = 'ready';
+        },
+
+        /**
+         * Display the workflow queue dialog and UI
+         */
+        display: function() {
+            const workflow_queue = this;
+            const step_count = Jupyter.notebook.get_cells().length;
+
+            const dialog = require('base/js/dialog');
+            dialog.modal({
+                notebook: Jupyter.notebook,
+                keyboard_manager: this.keyboard_manager,
+                title : "Running Notebook as GenePattern Workflow",
+                body : $("<p>This notebook is currently being executed as a GenePattern workflow. Each code cell and GenePattern analysis will be executed in sequence. Please wait.</p><br/>" +
+                       "<div id='workflow_queue_alert' class='alert alert-info'><strong>Running Step: <span id='workflow_queue_step'>" + 1 + "</span> / <span id='workflow_queue_step_total'>" + step_count + "</span></strong></div>"),
+                buttons : {
+                    "Cancel" : {
+                        "click": function() {
+                            // Set status to canceled and close the dialog
+                            if (workflow_queue.status === 'running') workflow_queue.status = 'canceled';
+                        },
+                        "class": "btn-default dialog-btn-cancel"
+                    },
+                    "Complete" : {
+                        "click": function() {},
+                        "class": "btn-primary dialog-btn-complete"
+                    }
+                }
+            });
+
+            // Disable the complete button
+            setTimeout(function() {
+                $(".dialog-btn-complete").hide();
+            }, 200)
+        },
+
+        _update_step_display: function() {
+            const step_count = Jupyter.notebook.get_cells().length;
+
+            // Update current step
+            $("#workflow_queue_step").text(this.step_index + 1);
+
+            // Update step total
+            $("#workflow_queue_step_total").text(step_count);
+        },
+
+        /**
+         * Determine if the code cell has returned an error
+         *
+         * @param cell
+         * @returns {boolean}
+         * @private
+         */
+        _has_code_error: function(cell) {
+            // If not a code cell, there is no code error
+            if (cell.cell_type !== 'code') return false;
+
+            // If the output cannot be read, log and continue
+            if (!cell.output_area || !cell.output_area.outputs) {
+                console.log("Unable to read output area to detect error in cell");
+                return false;
+            }
+
+            let error_found  = false;
+            cell.output_area.outputs.forEach(function(o) {
+                if (o.output_type === 'error') error_found = true;
+            });
+
+            return error_found;
+        },
+
+        /**
+         * Determine if the cell is a GenePattern cell with an error returned
+         *
+         * @param cell
+         * @returns {boolean}
+         * @private
+         */
+        _has_genepattern_error: function(cell) {
+            // If not a GenePattern cell, there is no GenePattern error
+            if (!this._is_genepattern_cell(cell)) return false;
+
+            // Detect error messages
+            return !!$(cell.element).find(".alert-danger").length;
+        },
+
+        /**
+         * Determine if the indicated cell is a GenePattern cell
+         *
+         * @param cell
+         * @returns {boolean}
+         * @private
+         */
+        _is_genepattern_cell: function(cell) {
+            return !!(cell.metadata && cell.metadata.genepattern)
+        },
+
+        _handle_genepattern_step: function(cell) {
+            // TODO: Implement
+
+            // Make sure the status is still running and complete the step
+            if (this.status === 'running') this.step_completed();
+        }
+    };
+
+    // TODO: Testing purposes only
+    window.WorkflowQueue = WorkflowQueue;
+
     const AuthWidgetView = widgets.DOMWidgetView.extend({
         render: function () {
             let cell = this.options.cell;
@@ -1103,6 +1377,7 @@ define("genepattern/authentication", ["base/js/namespace",
 
     return {
         AuthWidgetView: AuthWidgetView,
-        AuthWidgetTool: AuthWidgetTool
+        AuthWidgetTool: AuthWidgetTool,
+        WorkflowQueue: WorkflowQueue
     }
 });
