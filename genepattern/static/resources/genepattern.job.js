@@ -806,9 +806,15 @@ define("genepattern/job", ["base/js/namespace",
                         // Check to see if the job just completed and send a notification if it has
                         if (widget.options.job && widget._statusText(job.status()) === "Completed") {
                             widget.send_notification(error=false);
+
+                            // Trigger a gp.jobComplete event
+                            widget.element.trigger("gp.jobComplete", job);
                         }
                         else if (widget.options.job && widget._statusText(job.status()) === "Error") {
                             widget.send_notification(error=true);
+
+                            // Trigger a gp.jobComplete event
+                            widget.element.trigger("gp.jobComplete", job);
                         }
 
                         // Set the job object

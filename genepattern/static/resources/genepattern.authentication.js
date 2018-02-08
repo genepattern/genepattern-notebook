@@ -1079,6 +1079,10 @@ define("genepattern/authentication", ["base/js/namespace",
                 if (workflow_queue.status === 'running') {
                     // Wait for display to process before testing
                     setTimeout(function() {
+                        // If the new cell is a GenePattern cell, ignore this, it has its own handling
+                        const cell = Jupyter.notebook.get_selected_cell();
+                        if (workflow_queue._is_genepattern_cell(cell)) return;
+
                         workflow_queue.step_completed();
                     }, 1000);
                 }
@@ -1309,15 +1313,63 @@ define("genepattern/authentication", ["base/js/namespace",
         },
 
         _handle_genepattern_step: function(cell) {
-            // TODO: Implement
+            const workflow_queue = this;
+            const gp_cell_type = cell.metadata.genepattern.type;
 
-            // Make sure the status is still running and complete the step
-            if (this.status === 'running') this.step_completed();
+            if (gp_cell_type === "auth") {
+                // If not authenticated, give an error
+                const widget = cell.element.find(".gp-widget").data("widget");
+                const authenticated = widget && widget.options.session && widget.options.session.authenticated;
+                if (!authenticated) this.error_encountered("Missing GenePattern server credentials. Stopping execution.");
+
+                // Otherwise, complete the step and move on if running
+                if (this.status === 'running') this.step_completed();
+            }
+            else if (gp_cell_type === "task") {
+                // Run the analysis
+                cell.element.find(".gp-widget-task-run-button:first").click();
+
+                // Wait three seconds and continue
+                setTimeout(function() {
+                    if (workflow_queue.status === 'running') workflow_queue.step_completed();
+                }, 3000);
+            }
+            else if (gp_cell_type === "job") {
+                // Get the job status
+                const widget = cell.element.find(".gp-widget").data("widget");
+                const job = widget ? widget.options.job : null;
+                const finished = widget && job ? job.status().isFinished : null;
+
+                // If is the job has already finished, move on if running
+                if (finished && this.status === 'running') this.step_completed();
+
+                // Otherwise wait until the completion event
+                widget.element.on("gp.jobComplete", function(event, job) {
+                    // Check for a job error and stop execution if one is found
+                    if (job && job.status && job.status().hasError) workflow_queue.error_encountered("GenePattern job encountered an error. Stopping execution.");
+
+                    // Make sure the status is still running and complete the step
+                    if (workflow_queue.status === 'running') workflow_queue.step_completed();
+                });
+            }
+            else if (gp_cell_type === "uibuilder") {
+                // Run the UI Builder function
+                cell.element.find(".gp-widget-task-run-button:first").click();
+
+                // Wait three seconds and continue
+                setTimeout(function() {
+                    if (workflow_queue.status === 'running') workflow_queue.step_completed();
+                }, 3000);
+            }
+            else {
+                // Log a warning an move on
+                console.log("Unknown GenePattern cell type detected: " + gp_cell_type);
+
+                // Make sure the status is still running and complete the step
+                if (this.status === 'running') this.step_completed();
+            }
         }
     };
-
-    // TODO: Testing purposes only
-    window.WorkflowQueue = WorkflowQueue;
 
     const AuthWidgetView = widgets.DOMWidgetView.extend({
         render: function () {
