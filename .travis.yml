@@ -18,7 +18,9 @@ install:
   - pip install genepattern-python nbtools jupyter notebook ipywidgets
   - python setup.py install
 script:
-- pytest
+  - pytest
+notifications:
+  - slack: genepattern:OAj2q4hee6Mk5v9r6SUCIacZ
 
 # JUPYTERLAB CHECKS
 #cache:
