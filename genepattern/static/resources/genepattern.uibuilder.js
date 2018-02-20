@@ -508,15 +508,15 @@ define("genepattern/uibuilder", ["base/js/namespace",
             const indicator = this.element.find(".widget-slide-indicator").find("span");
             const isHidden = toSlide.is(":hidden");
 
-            if (isHidden || expand) {
-                toSlide.slideDown();
-                indicator.removeClass("fa-plus");
-                indicator.addClass("fa-minus");
-            }
-            else if (expand === false || !isHidden) {
+            if (expand === false || !isHidden) {
                 toSlide.slideUp();
                 indicator.removeClass("fa-minus");
                 indicator.addClass("fa-plus");
+            }
+            else if (isHidden || expand) {
+                toSlide.slideDown();
+                indicator.removeClass("fa-plus");
+                indicator.addClass("fa-minus");
             }
         },
 
@@ -1048,7 +1048,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
                         scrollTop: $(widget.options.cell.element).position().top
                     }, 500);
 
-                    widget.expandCollapse();
+                    widget.expandCollapse(false);
                     const index = GPNotebook.util.cell_index(widget.options.cell) + 1;
                     const cell = Jupyter.notebook.insert_cell_at_index("code", index);
                     const code = widget.buildFunctionCode(funcInput, funcOutput);

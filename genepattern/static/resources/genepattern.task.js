@@ -1866,15 +1866,15 @@ define("genepattern/task", ["base/js/namespace",
             const indicator = this.element.find(".widget-slide-indicator").find("span");
             const isHidden = toSlide.is(":hidden");
 
-            if (isHidden || expand) {
-                toSlide.slideDown();
-                indicator.removeClass("fa-plus");
-                indicator.addClass("fa-minus");
-            }
-            else if (expand === false || !isHidden) {
+            if (expand === false || !isHidden) {
                 toSlide.slideUp();
                 indicator.removeClass("fa-minus");
                 indicator.addClass("fa-plus");
+            }
+            else if (isHidden || expand) {
+                toSlide.slideDown();
+                indicator.removeClass("fa-plus");
+                indicator.addClass("fa-minus");
             }
         },
 
@@ -2741,7 +2741,7 @@ define("genepattern/task", ["base/js/namespace",
                                         //widget.successMessage("Job successfully submitted! Job ID: " + jobNumber);
 
                                         // Collapse the task widget
-                                        widget.expandCollapse();
+                                        widget.expandCollapse(false);
 
                                         // Find the associated job widget
                                         let cell = widget.getJobWidget();
