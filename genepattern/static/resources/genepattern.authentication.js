@@ -1135,14 +1135,14 @@ define("genepattern/authentication", ["base/js/namespace",
                 return;
             }
 
-            // Increment the queue step
-            this.step_index++;
-
             // Check for completion
             if (this.step_index === Jupyter.notebook.get_cells().length -1) {
                 this.workflow_complete();
                 return;
             }
+
+            // Increment the queue step
+            this.step_index++;
 
             // Notify the interface
             this._update_step_display();
