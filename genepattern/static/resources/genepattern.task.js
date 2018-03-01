@@ -1549,6 +1549,18 @@ define("genepattern/task", ["base/js/namespace",
                                                 $("<li></li>")
                                                     .append(
                                                         $("<a></a>")
+                                                            .attr("title", "Reset Parameters")
+                                                            .attr("href", "#")
+                                                            .append("Reset Parameters")
+                                                            .click(function() {
+                                                                widget.reset_parameters();
+                                                            })
+                                                    )
+                                            )
+                                            .append(
+                                                $("<li></li>")
+                                                    .append(
+                                                        $("<a></a>")
                                                             .attr("title", "Toggle Code View")
                                                             .attr("href", "#")
                                                             .append("Toggle Code View")
@@ -2654,6 +2666,28 @@ define("genepattern/task", ["base/js/namespace",
          */
         acceptedKinds: function() {
             return this._kinds;
+        },
+
+        reset_parameters: function() {
+            const widget = this;
+
+            // Reset each of the input variables
+            const param_doms = widget.element.find(".gp-widget-task-form").find(".text-widget, .file-widget, .choice-widget");
+            param_doms.each(function(i, dom) {
+                const param_widget = $(dom).data("widget");
+                if (param_widget) {
+                    let default_value = param_widget.options.param.defaultValue().toString();
+                    const param_name = param_widget.options.param.name();
+
+                    param_widget.value(default_value, true);
+
+                    // Update the code
+                    param_widget._updateCode();
+                }
+                else {
+                    console.log("ERROR: Unknown widget in reset_parameters()");
+                }
+            });
         },
 
         /**

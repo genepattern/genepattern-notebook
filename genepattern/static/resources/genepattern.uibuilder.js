@@ -108,11 +108,11 @@ define("genepattern/uibuilder", ["base/js/namespace",
                                                     $("<li></li>")
                                                         .append(
                                                             $("<a></a>")
-                                                                .attr("title", "Toggle Code View")
+                                                                .attr("title", "Reset Parameters")
                                                                 .attr("href", "#")
-                                                                .append("Toggle Code View")
+                                                                .append("Reset Parameters")
                                                                 .click(function() {
-                                                                    widget.toggle_code();
+                                                                    widget.reset_parameters();
                                                                 })
                                                         )
                                                 )
@@ -120,11 +120,11 @@ define("genepattern/uibuilder", ["base/js/namespace",
                                                     $("<li></li>")
                                                         .append(
                                                             $("<a></a>")
-                                                                .attr("title", "Reset Parameters")
+                                                                .attr("title", "Toggle Code View")
                                                                 .attr("href", "#")
-                                                                .append("Reset Parameters")
+                                                                .append("Toggle Code View")
                                                                 .click(function() {
-                                                                    widget.reset_parameters();
+                                                                    widget.toggle_code();
                                                                 })
                                                         )
                                                 )
