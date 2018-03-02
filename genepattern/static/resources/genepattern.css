@@ -458,6 +458,10 @@ div.cell.selected {
     text-overflow: ellipsis;
 }
 
+.file-widget-value-upload {
+    background-color: #dadada;
+}
+
 .file-widget-value-erase {
     float: right;
 }

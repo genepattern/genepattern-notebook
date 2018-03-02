@@ -527,14 +527,19 @@ define("genepattern/task", ["base/js/namespace",
         /**
          * Creates or destroys the box of selected files
          *
-         * @param files - A string if to show, undefined or null if to hide
+         * @param files - A string or File if to show, undefined or null if to hide
          * @private
          */
         _fileBox: function(files) {
+            const displays = this._valuesToDisplay(files);
+
             if (files) {
                 const widget = this;
                 $.each(files, function (i, e) {
-                    widget.element.find(".file-widget-listing").append(widget._createFileBox(e));
+                    const display = displays[i];
+                    const model = files[i];
+
+                    widget.element.find(".file-widget-listing").append(widget._createFileBox(display, model));
                 });
                 this.element.find(".file-widget-listing").show();
 
@@ -654,15 +659,16 @@ define("genepattern/task", ["base/js/namespace",
         /**
          * Creates a file box element for the selected file value
          *
-         * @param file
+         * @param file_display
+         * @param file_model
          * @returns {jQuery} - the jQuery wrapped file box element
          * @private
          */
-        _createFileBox: function(file) {
+        _createFileBox: function(file_display, file_model) {
             const widget = this;
             return $("<div></div>")
-                .addClass("file-widget-value")
-                .attr("name", file)
+                .addClass("file-widget-value" + (file_model instanceof File ? " file-widget-value-upload" : ""))
+                .attr("name", file_display)
                 .append(
                     $("<div></div>")
                         .addClass("btn btn-default btn-sm file-widget-value-erase")
@@ -674,8 +680,8 @@ define("genepattern/task", ["base/js/namespace",
                                 })
                         )
                         .click(function() {
-                            widget._removeValue(file);
-                            widget.element.find(".file-widget-value[name='" + file + "']").remove();
+                            widget._removeValue(file_display);
+                            widget.element.find(".file-widget-value[name='" + file_display + "']").remove();
                             widget.element.find(".file-widget-upload").show();
                             widget._setFileWarning(widget._values);
                             widget._updateCode();
@@ -684,8 +690,28 @@ define("genepattern/task", ["base/js/namespace",
                 .append(
                     $("<span></span>")
                         .addClass("file-widget-value-text")
-                        .text(file)
-                );
+                        .text(file_display)
+                )
+                .dblclick(function(event) {
+                    // Ignore this event for file uploads
+                    if (file_model instanceof File) return;
+
+                    // Ignore this event for multiple values
+                    if (widget._values && widget._values.length > 1) return;
+
+                    // Get the parent element
+                    const file_element = $(event.target).closest(".file-widget");
+
+                    // Remove the value
+                    $(event.target).find(".file-widget-value-erase").click();
+
+                    // Add the value to the text box
+                    setTimeout(function() {
+                        const input = file_element.find(".gp-widget-typeahead-input");
+                        input.val(file_display);
+                        input.focus();
+                    }, 10);
+                });
         },
 
         /**
@@ -696,6 +722,9 @@ define("genepattern/task", ["base/js/namespace",
          * @private
          */
          _valuesToDisplay: function(values) {
+             // If values is null, return no displays
+            if (values === null || values === undefined) return [];
+
             const displays = [];
             const that = this;
             $.each(values, function(index, val) {
@@ -960,7 +989,7 @@ define("genepattern/task", ["base/js/namespace",
                 this._values = val;
                 this._displays = this._valuesToDisplay(val);
                 this._fileBox(null);
-                this._fileBox(this._displays);
+                this._fileBox(val);
             }
             // Do getter
             else {
@@ -994,7 +1023,7 @@ define("genepattern/task", ["base/js/namespace",
 
             this._values = this._values.concat(val);
             this._displays = this._displays.concat(displayList);
-            this._fileBox(displayList);
+            this._fileBox(val);
         }
     });
 
