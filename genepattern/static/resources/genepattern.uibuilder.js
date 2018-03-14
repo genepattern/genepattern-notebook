@@ -760,7 +760,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
             if (param.type() === "java.io.File" || param.type() === "file") {
                 paramBox.find(".gp-widget-task-param-input").fileInput({
                     runTask: this,
-                    allowJobUploads: false,
+                    allowJobUploads: true,
                     param: param
                 });
             }
@@ -1004,59 +1004,66 @@ define("genepattern/uibuilder", ["base/js/namespace",
         submit: function() {
             const widget = this;
 
-            widget.evaluateAllVars({
-                success: function(globals) {
-                    // Get the output variable, if one is defined
-                    const funcOutput = widget._get_valid_output_variable();
+            widget.uploadAll({
+                success: function() {
+                    widget.evaluateAllVars({
+                        success: function (globals) {
+                            // Get the output variable, if one is defined
+                            const funcOutput = widget._get_valid_output_variable();
 
-                    // Assign values from the inputs to the job input
-                    let funcInput = [];
-                    const uiParams = widget.element.find(".gp-widget-task-form").find(".gp-widget-task-param");
-                    for (let i = 0; i < uiParams.length; i++) {
-                        const uiParam = $(uiParams[i]);
-                        const uiInput = uiParam.find(".gp-widget-task-param-input");
-                        let uiValue = widget._getInputValue(uiInput);
+                            // Assign values from the inputs to the job input
+                            let funcInput = [];
+                            const uiParams = widget.element.find(".gp-widget-task-form").find(".gp-widget-task-param");
+                            for (let i = 0; i < uiParams.length; i++) {
+                                const uiParam = $(uiParams[i]);
+                                const uiInput = uiParam.find(".gp-widget-task-param-input");
+                                let uiValue = widget._getInputValue(uiInput);
 
-                        // Handle leading and trailing whitespace
-                        if (typeof uiValue === "string") uiValue = uiValue.trim();
+                                // Handle leading and trailing whitespace
+                                if (typeof uiValue === "string") uiValue = uiValue.trim();
 
-                        let name = uiParam.attr("name");
-                        let quotes = widget.is_string_literal(uiInput.find("input:last, select").val());
+                                let name = uiParam.attr("name");
+                                let quotes = widget.is_string_literal(uiInput.find("input:last, select").val());
 
-                        // Check for variable references
-                        let reference = false;
-                        if (typeof uiValue === "string") reference = globals.indexOf(uiValue) >= 0 && !quotes;          // Handle string values
-                        if (uiValue.constructor === Array) reference = globals.indexOf(uiValue[0]) >= 0 && !quotes;     // Handle array values
+                                // Check for variable references
+                                let reference = false;
+                                if (typeof uiValue === "string") reference = globals.indexOf(uiValue) >= 0 && !quotes;          // Handle string values
+                                if (uiValue.constructor === Array) reference = globals.indexOf(uiValue[0]) >= 0 && !quotes;     // Handle array values
 
-                        if (uiValue !== null) {
-                            // Wrap value in list if not already wrapped
-                            if (uiValue.constructor !== Array) {
-                                uiValue = [uiValue];
+                                if (uiValue !== null) {
+                                    // Wrap value in list if not already wrapped
+                                    if (uiValue.constructor !== Array) {
+                                        uiValue = [uiValue];
+                                    }
+
+                                    funcInput.push({
+                                        name: name,
+                                        value: uiValue,
+                                        reference: reference,
+                                        string_literal: quotes
+                                    });
+                                }
                             }
 
-                            funcInput.push({
-                                name: name,
-                                value: uiValue,
-                                reference: reference,
-                                string_literal: quotes
-                            });
+                            // Scroll to the new cell
+                            $('#site').animate({
+                                scrollTop: $(widget.options.cell.element).position().top
+                            }, 500);
+
+                            widget.expandCollapse(false);
+                            const index = GPNotebook.util.cell_index(widget.options.cell) + 1;
+                            const cell = Jupyter.notebook.insert_cell_at_index("code", index);
+                            const code = widget.buildFunctionCode(funcInput, funcOutput);
+                            cell.code_mirror.setValue(code);
+                            cell.execute();
+                        },
+                        error: function (exception) {
+                            widget.errorMessage("Error evaluating kernel variables in preparation of job submission: " + exception.statusText);
                         }
-                    }
-
-                    // Scroll to the new cell
-                    $('#site').animate({
-                        scrollTop: $(widget.options.cell.element).position().top
-                    }, 500);
-
-                    widget.expandCollapse(false);
-                    const index = GPNotebook.util.cell_index(widget.options.cell) + 1;
-                    const cell = Jupyter.notebook.insert_cell_at_index("code", index);
-                    const code = widget.buildFunctionCode(funcInput, funcOutput);
-                    cell.code_mirror.setValue(code);
-                    cell.execute();
+                    });
                 },
                 error: function(exception) {
-                    widget.errorMessage("Error evaluating kernel variables in preparation of job submission: " + exception.statusText);
+                    widget.errorMessage("Error uploading in preparation of job submission: " + exception.statusText);
                 }
             });
         },
@@ -1094,6 +1101,135 @@ define("genepattern/uibuilder", ["base/js/namespace",
             if (test_string === null) return false;
             const quote_test = new RegExp("^\'.*\'$|^\".*\"$");
             return quote_test.test(test_string.trim())
+        },
+
+        /**
+         * Calls the Jupyter contents API to upload the file
+         *
+         * @param pObj - Object containing the following params:
+         *                  file: The file object to upload
+         *                  success: Callback for success, expects response and url
+         *                  error: Callback on error, expects exception
+         * @private
+         */
+        _jupyter_upload: function (pObj) {
+            // Get the notebook's current directory
+            const dir_path = Jupyter.notebook.notebook_path.substring(0, Jupyter.notebook.notebook_path.lastIndexOf("\/") + 1);
+
+            // Create the base model object
+            const model = {
+                format: 'base64',
+                type: 'file'
+            };
+
+            // Instantiate the file reader
+            const reader = new FileReader();
+
+            // Closure to capture the file information.
+            reader.onload = (function (the_file) {
+                return function (e) {
+                    // Construct the path to the uploaded file
+                    const path = dir_path + encodeURI(the_file.name);
+
+                    // Attach the file data to the model
+                    model.content = btoa(e.target.result);
+
+                    // Start the file upload
+                    const promise = Jupyter.notebook.contents.save(path, model);
+
+                    // Make the success callback
+                    promise.then(function(response) {
+                        pObj.success(response, path);
+                    });
+                };
+            })(pObj.file);
+
+            // Begin reading the file
+            try {
+                reader.readAsBinaryString(pObj.file);
+            }
+            catch (e) {
+                // Make the error callback if something goes wrong
+                pObj.error(e);
+            }
+        },
+
+        /**
+         * Upload all the file inputs that still need uploading
+         *
+         * @param pObj - Object containing the following params:
+         *                  success: Callback for success, expects no arguments
+         *                  error: Callback on error, expects exception
+         * @returns {boolean} - Whether an upload was just initiated or not
+         */
+        uploadAll: function(pObj) {
+            const fileWidgets = this.element.find(".file-widget");
+            const widget = this;
+            const uploadList = [];
+            let error = false;
+
+            // Create upload list
+            for (let i = 0; i < fileWidgets.length; i++) {
+                const fileWidget = $(fileWidgets[i]).data("widget");
+                let values = fileWidget.values();
+
+                // Protect against nulls
+                if (values === null || values === undefined) values = [];
+
+                $.each(values, function(i, e) {
+                    if (typeof e === 'object') {
+                        uploadList.push({
+                            file: e,
+                            widget: fileWidget
+                        });
+                    }
+                });
+            }
+
+            // Declare finalizeUploads()
+            const finalizeUploads = function() {
+                if (error) {
+                    pObj.error(error);
+                }
+                else {
+                    pObj.success();
+                }
+            };
+
+            // Declare grabNextUpload()
+            const grabNextUpload = function() {
+                // Pop the upload off the list
+                const upload = uploadList.shift();
+
+                // If it's not undefined, upload
+                if (upload !== undefined) {
+                    widget.successMessage("Uploading file " + upload.file.name);
+                    widget._jupyter_upload({
+                        file: upload.file,
+                        success: function(response, url) {
+                            // Mark the file as uploaded
+                            const display = upload.widget._singleDisplay(upload.file);
+                            upload.widget._replaceValue(display, url);
+
+                            // On the success callback call grabNextUpload()
+                            grabNextUpload();
+                        },
+                        error: function(exception) {
+                            // On the error callback set the error and call finalize
+                            error = exception;
+                            finalizeUploads();
+                        }
+                    });
+                }
+
+                // If it is undefined, call finalizeUploads()
+                else {
+                    finalizeUploads();
+                }
+            };
+
+            // Start the uploads
+            grabNextUpload();
         },
 
         /**
