@@ -389,13 +389,19 @@ define("genepattern/uibuilder", ["base/js/namespace",
             if (default_value === "") default_value = " ";
 
             output_widget.value(default_value);
-            GPNotebook.slider.set_metadata(widget.options.cell, "output_variable", default_value.trim());
+            widget._set_parameter_metadata("output_var", default_value.trim());
         },
 
         _get_parameter: function(name) {
             const param_dom = this.element.find(".gp-widget-task-param[name='" + name + "']").find(".text-widget, .choice-widget, .file-widget");
             if (param_dom) return param_dom.data("widget");
             else console.log("Parameter cannot be found to obtain value: " + name);
+        },
+
+        _get_parameter_metadata: function(name) {
+            const cell = this.options.cell;
+            if (cell.metadata.genepattern.param_values) return cell.metadata.genepattern.param_values[name];
+            else return null;
         },
 
         _handle_metadata: function() {
@@ -420,17 +426,10 @@ define("genepattern/uibuilder", ["base/js/namespace",
             if (cell.metadata.genepattern.param_values) {
                 const params = Object.keys(cell.metadata.genepattern.param_values);
                 params.forEach(function(key) {
-                    const value = cell.metadata.genepattern.param_values[key];
+                    const value = widget._get_parameter_metadata(key);
                     const param = widget._get_parameter(key);
                     if (param) param.value(value);
                 });
-            }
-
-            // Set the output variable, if defined
-            if (cell.metadata.genepattern.output_variable) {
-                const value = cell.metadata.genepattern.output_variable;
-                const param = widget._get_parameter("_output_variable");
-                if (param) param.value(value);
             }
         },
 
@@ -688,15 +687,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
          * @param value
          */
         updateCode: function(paramName, value) {
-            // Special case for the output variable
-            if (paramName === "_output_variable") {
-                GPNotebook.slider.set_metadata(this.options.cell, "output_variable", value);
-            }
-
-            // Otherwise just set the parameter metadata
-            else {
-                this._set_parameter_metadata(paramName, value);
-            }
+            this._set_parameter_metadata(paramName, value);
         },
 
         /**
@@ -975,7 +966,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
          */
         _get_valid_output_variable: function() {
             // Get the output in the metadata
-            let output = GPNotebook.slider.get_metadata(this.options.cell, "output_variable");
+            let output = this._get_parameter_metadata("output_var");
 
             // Return null if the value is not defined
             if (output === null || output === undefined) return null;
@@ -1210,6 +1201,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
                             // Mark the file as uploaded
                             const display = upload.widget._singleDisplay(upload.file);
                             upload.widget._replaceValue(display, url);
+                            widget.updateCode(upload.widget._param.name(), [url]);
 
                             // On the success callback call grabNextUpload()
                             grabNextUpload();
@@ -1253,7 +1245,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
                     const iWidget = $(inputWidgets[i]).data("widget");
 
                     // Update widget values, do not call for files that already possess a value
-                    if (!(iWidget.element.hasClass("file-widget") && iWidget.values().length > 0)) {
+                    if (!(iWidget.element.hasClass("file-widget") && iWidget.values() !== null && iWidget.values().length > 0)) {
                         iWidget.element.find("input").change(); // Update widget values
                     }
 
