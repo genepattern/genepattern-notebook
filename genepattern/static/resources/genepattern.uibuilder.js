@@ -1251,7 +1251,12 @@ define("genepattern/uibuilder", ["base/js/namespace",
                 // Iterate over each widget
                 for (let i = 0; i < inputWidgets.length; i++) {
                     const iWidget = $(inputWidgets[i]).data("widget");
-                    iWidget.element.find("input").change(); // Update widget values
+
+                    // Update widget values, do not call for files that already possess a value
+                    if (!(iWidget.element.hasClass("file-widget") && iWidget.values().length > 0)) {
+                        iWidget.element.find("input").change(); // Update widget values
+                    }
+
                     let value = iWidget.value();
 
                     // Protect against nulls
