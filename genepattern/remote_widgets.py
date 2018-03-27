@@ -86,6 +86,15 @@ def get_session_index(server_url):
     return -1
 
 
+def clean_sessions():
+    """
+    Clear all GenePattern sessions from the sessions list
+    :return:
+    """
+    global sessions
+    sessions = []
+
+
 class GPAuthWidget(gp.GPResource, widgets.DOMWidget):
     """
     A running or completed job on a GenePattern server.

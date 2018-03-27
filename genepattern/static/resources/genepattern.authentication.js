@@ -260,6 +260,7 @@ define("genepattern/authentication", ["base/js/namespace",
 
                                             widget.build_code(server, username, password);
                                             widget.authenticate(server, username, password, true, function() {
+                                                widget.sync_sessions();
                                                 widget.executeCell();
                                                 widget.build_code(server, "", "");
                                                 widget._tokenCountdown(server, username, password);
@@ -795,6 +796,21 @@ define("genepattern/authentication", ["base/js/namespace",
 
         executeCell: function() {
             this.options.cell.execute();
+        },
+
+        /**
+         * If there is only one session - the one just authenticated,
+         * clean the kernel's session list before the new one is entered
+         */
+        sync_sessions: function() {
+            const should_clean = GPNotebook.session_manager.sessions.length === 1;
+            if (should_clean) {
+                // Call the kernel and tell it to clean
+                Jupyter.notebook.kernel.execute(
+                    "genepattern.clean_sessions()",
+                    {}
+                );
+            }
         },
 
         /**
