@@ -638,7 +638,7 @@ define("genepattern/authentication", ["base/js/namespace",
             const lines = code.split("\n");
             let serverLine = null;
             lines.forEach(function(line) {
-                if (line.indexOf("genepattern.register_session") >= 0) {
+                if (line.indexOf("genepattern.session.register") >= 0 || line.indexOf("genepattern.register_session") >= 0) {
                     serverLine = line;
                 }
             });
@@ -807,7 +807,7 @@ define("genepattern/authentication", ["base/js/namespace",
             if (should_clean) {
                 // Call the kernel and tell it to clean
                 Jupyter.notebook.kernel.execute(
-                    "genepattern.clean_sessions()",
+                    "genepattern.sessions.clean()",
                     {}
                 );
             }

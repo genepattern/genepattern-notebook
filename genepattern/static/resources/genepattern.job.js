@@ -64,94 +64,94 @@ define("genepattern/job", ["base/js/namespace",
             this.element.addClass("panel panel-default gp-widget gp-widget-job");
             this.element.append(
                 $("<div></div>")
-                    .addClass("panel-heading gp-widget-job-header")
+                    .addClass("gp-widget-job-float-right")
                     .append(
                         $("<div></div>")
-                            .addClass("widget-float-right")
+                            .addClass("gp-widget-job-buttons")
+                            .append(
+                                $("<button></button>")
+                                    .addClass("btn btn-default btn-sm widget-slide-indicator")
+                                    .css("padding", "2px 7px")
+                                    .attr("title", "Expand or Collapse")
+                                    .attr("data-toggle", "tooltip")
+                                    .attr("data-placement", "bottom")
+                                    .append(
+                                        $("<span></span>")
+                                            .addClass("fa fa-minus")
+                                    )
+                                    .tooltip()
+                                    .click(function() {
+                                        widget.expandCollapse();
+                                    })
+                            )
+                            .append(" ")
                             .append(
                                 $("<div></div>")
-                                    .addClass("gp-widget-job-buttons")
+                                    .addClass("btn-group gp-widget-job-group")
                                     .append(
                                         $("<button></button>")
-                                            .addClass("btn btn-default btn-sm widget-slide-indicator")
+                                            .addClass("btn btn-default btn-sm")
                                             .css("padding", "2px 7px")
-                                            .attr("title", "Expand or Collapse")
-                                            .attr("data-toggle", "tooltip")
-                                            .attr("data-placement", "bottom")
+                                            .attr("type", "button")
+                                            .attr("data-toggle", "dropdown")
+                                            .attr("aria-haspopup", "true")
+                                            .attr("aria-expanded", "false")
                                             .append(
                                                 $("<span></span>")
-                                                    .addClass("fa fa-minus")
+                                                    .addClass("fa fa-cog")
                                             )
-                                            .tooltip()
-                                            .click(function() {
-                                                widget.expandCollapse();
-                                            })
+                                            .append(" ")
+                                            .append(
+                                                $("<span></span>")
+                                                    .addClass("caret")
+                                            )
                                     )
-                                    .append(" ")
                                     .append(
-                                        $("<div></div>")
-                                            .addClass("btn-group")
+                                        $("<ul></ul>")
+                                            .addClass("dropdown-menu gear-menu")
                                             .append(
-                                                $("<button></button>")
-                                                    .addClass("btn btn-default btn-sm")
-                                                    .css("padding", "2px 7px")
-                                                    .attr("type", "button")
-                                                    .attr("data-toggle", "dropdown")
-                                                    .attr("aria-haspopup", "true")
-                                                    .attr("aria-expanded", "false")
+                                                $("<li></li>")
                                                     .append(
-                                                        $("<span></span>")
-                                                            .addClass("fa fa-cog")
-                                                    )
-                                                    .append(" ")
-                                                    .append(
-                                                        $("<span></span>")
-                                                            .addClass("caret")
+                                                        $("<a></a>")
+                                                            .attr("title", "Share Job")
+                                                            .attr("href", "#")
+                                                            .append("Share Job")
+                                                            .click(function() {
+                                                                widget.buildSharingPanel();
+                                                            })
                                                     )
                                             )
                                             .append(
-                                                $("<ul></ul>")
-                                                    .addClass("dropdown-menu gear-menu")
+                                                $("<li></li>")
                                                     .append(
-                                                        $("<li></li>")
-                                                            .append(
-                                                                $("<a></a>")
-                                                                    .attr("title", "Share Job")
-                                                                    .attr("href", "#")
-                                                                    .append("Share Job")
-                                                                    .click(function() {
-                                                                        widget.buildSharingPanel();
-                                                                    })
-                                                            )
+                                                        $("<a></a>")
+                                                            .attr("title", "Duplicate Analysis")
+                                                            .attr("href", "#")
+                                                            .append("Duplicate Analysis")
+                                                            .click(function() {
+                                                                widget.reloadJob();
+                                                            })
                                                     )
+                                            )
+                                            .append(
+                                                $("<li></li>")
                                                     .append(
-                                                        $("<li></li>")
-                                                            .append(
-                                                                $("<a></a>")
-                                                                    .attr("title", "Duplicate Analysis")
-                                                                    .attr("href", "#")
-                                                                    .append("Duplicate Analysis")
-                                                                    .click(function() {
-                                                                        widget.reloadJob();
-                                                                    })
-                                                            )
-                                                    )
-                                                    .append(
-                                                        $("<li></li>")
-                                                            .append(
-                                                                $("<a></a>")
-                                                                    .attr("title", "Toggle Code View")
-                                                                    .attr("href", "#")
-                                                                    .append("Toggle Code View")
-                                                                    .click(function() {
-                                                                        widget.toggle_code();
-                                                                    })
-                                                            )
+                                                        $("<a></a>")
+                                                            .attr("title", "Toggle Code View")
+                                                            .attr("href", "#")
+                                                            .append("Toggle Code View")
+                                                            .click(function() {
+                                                                widget.toggle_code();
+                                                            })
                                                     )
                                             )
                                     )
                             )
                     )
+            );
+            this.element.append(
+                $("<div></div>")
+                    .addClass("panel-heading gp-widget-job-header")
                     .append(
                         $("<img/>")
                             .addClass("gp-widget-logo")
@@ -160,6 +160,10 @@ define("genepattern/job", ["base/js/namespace",
                     .append(
                         $("<h3></h3>")
                             .addClass("panel-title")
+                            .append(
+                                $("<span></span>")
+                                    .addClass("gp-widget-job-number")
+                            )
                             .append(
                                 $("<span></span>")
                                     .addClass("gp-widget-job-task")
@@ -179,20 +183,19 @@ define("genepattern/job", ["base/js/namespace",
                             )
                             .append(
                                 $("<div></div>")
-                                    .addClass("widget-float-right gp-widget-job-status")
-                            )
-                            .append(
-                                $("<div></div>")
-                                    .addClass("gp-widget-job-share-options")
-                                    .css("display", "none")
-                            )
-                            .append(
-                                $("<div></div>")
-                                    .addClass("gp-widget-job-submitted")
-                            )
-                            .append(
-                                $("<div></div>")
-                                    .addClass("gp-widget-job-outputs")
+                                    .addClass("row")
+                                    .append(
+                                        $("<div></div>")
+                                            .addClass("gp-widget-job-status col-md-3")
+                                    )
+                                    .append(
+                                        $("<div></div>")
+                                            .addClass("gp-widget-job-submitted col-md-9")
+                                    )
+                                    .append(
+                                        $("<div></div>")
+                                            .addClass("gp-widget-job-outputs col-md-9")
+                                    )
                             )
                             .append(
                                 $("<div></div>")
@@ -642,7 +645,7 @@ define("genepattern/job", ["base/js/namespace",
 
                 // Replace gpserver variable with session
                 if (line.indexOf("gpserver") !== -1) {
-                    line = line.replace("gpserver", "genepattern.get_session(" + this.options.session_index + ")")
+                    line = line.replace("gpserver", "genepattern.session.get(" + this.options.session_index + ")")
                 }
 
                 // Append the code if it's not a skipped line
@@ -652,7 +655,7 @@ define("genepattern/job", ["base/js/namespace",
             }
 
             // Append the widget view
-            newCode += "\ngenepattern.GPTaskWidget(" + taskVar + ")";
+            newCode += "\ngenepattern.display(" + taskVar + ")";
 
             // Add the metadata
             GPNotebook.slider.make_genepattern_cell(cell, "task");
@@ -775,7 +778,7 @@ define("genepattern/job", ["base/js/namespace",
          * @private
          */
         _showAuthenticationMessage: function() {
-            this.element.find(".gp-widget-job-task").text("Not Authenticated");
+            this.element.find(".gp-widget-job-number").text("Not Authenticated");
             this.errorMessage("You must be authenticated before the job information can be displayed. After you authenticate it may take a few seconds for the job information to appear.");
 
             // Update the reload button
@@ -859,8 +862,9 @@ define("genepattern/job", ["base/js/namespace",
             this.element.attr("data-task-name", job.taskName());
 
             // Display the job number and task name
-            const taskText = " " + job.jobNumber() + ". " + job.taskName();
-            this.element.find(".gp-widget-job-task:first").text(taskText);
+            const job_number_text = " Job #" + job.jobNumber() + " ";
+            this.element.find(".gp-widget-job-number:first").text(job_number_text);
+            this.element.find(".gp-widget-job-task:first").text(job.taskName());
 
             // Display the user and date submitted
             const submittedText = "Submitted by " + job.userId() + " on " + job.dateSubmitted();
@@ -1156,8 +1160,8 @@ define("genepattern/job", ["base/js/namespace",
         },
 
         _session_index_from_code: function() {
-            // Make sure that this is a task cell
-            if ('genepattern' in this.options.cell.metadata && this.options.cell.metadata.genepattern.type !== "job") {
+            // Make sure that this is a task or job cell
+            if ('genepattern' in this.options.cell.metadata && this.options.cell.metadata.genepattern.type !== "job" && this.options.cell.metadata.genepattern.type !== "task") {
                 console.log("Attempting to extract session index from non-job cell");
                 return 0;
             }
@@ -1165,7 +1169,7 @@ define("genepattern/job", ["base/js/namespace",
             const code = this.options.cell.get_text();
             let index = 0;
             try {
-                index = Number.parseInt(code.split("genepattern.get_session(")[1].split(")")[0]);
+                index = Number.parseInt(code.split("genepattern.session.get(")[1].split(")")[0]);
             }
             catch (e) {
                 console.log("Cannot extract GenePattern session index, defaulting to 0");
@@ -1190,6 +1194,7 @@ define("genepattern/job", ["base/js/namespace",
 
             // Check to see if this is a legacy job widget, if so replace with full code
             if (!('genepattern' in cell.metadata)) {
+                cell.set_text(''); // Remove the old code
                 GPNotebook.slider.build_job_code(cell, 0, jobNumber);
             }
 

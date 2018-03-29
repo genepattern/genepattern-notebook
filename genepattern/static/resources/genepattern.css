@@ -362,8 +362,60 @@ div.cell.selected {
  * Job Widget Styles
  */
 
+.gp-widget-job {
+    position: relative;
+    top: -5px;
+    border-radius: 0 0 2px 2px;
+}
+
+.gp-widget-job-header {
+    /*display: none;*/
+    opacity: 0.6;
+}
+
+.gp-widget-job-header > img {
+    display: none;
+}
+
+.gp-widget-job .gp-widget-job-task {
+    display: none;
+}
+
+.gp-widget-job-float-right {
+    float: right;
+    position: relative;
+    z-index: 1;
+    top: 6px;
+    right: 7px;
+}
+
+.output_area:first-child .gp-widget-job {
+    /* Handle the style when it is a standalone widget */
+    position: static;
+    top: auto;
+    border-radius: inherit;
+}
+
+.output_area:first-child .gp-widget-job > .gp-widget-job-header {
+    /* Handle the style when it is a standalone widget */
+    display: block;
+    opacity: 1;
+}
+
+.output_area:first-child .gp-widget-job .gp-widget-job-task {
+    /* Handle the style when it is a standalone widget */
+    display: inline-block;
+}
+
+.output_area:first-child .gp-widget-job-header > img {
+    /* Handle the style when it is a standalone widget */
+    display: block;
+}
+
 .gp-widget-job-status {
     padding-bottom: 3px;
+    text-align: right;
+    padding-right: 20px;
 }
 
 .gp-widget-job-submitted {
@@ -373,6 +425,7 @@ div.cell.selected {
 
 .gp-widget-job-buttons {
     text-align: right;
+    display: inline-block;
 }
 
 .gp-widget-job-share-table {
@@ -591,6 +644,13 @@ div.cell.selected {
     width: 100%;
     font-weight: bold;
     line-height: 3em;
+}
+
+.gp-widget-task-group-title {
+    opacity: 0.75;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 10px;
 }
 
 /*

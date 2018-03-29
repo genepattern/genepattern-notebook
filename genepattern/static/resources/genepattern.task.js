@@ -1565,19 +1565,6 @@ define("genepattern/task", ["base/js/namespace",
                                                 $("<li></li>")
                                                     .append(
                                                         $("<a></a>")
-                                                            .addClass("gp-widget-task-placeholder")
-                                                            .attr("title", "Create Result Cell")
-                                                            .attr("href", "#")
-                                                            .append("Create Placeholder")
-                                                            .click(function() {
-                                                                GPNotebook.slider.create_placeholder();
-                                                            })
-                                                    )
-                                            )
-                                            .append(
-                                                $("<li></li>")
-                                                    .append(
-                                                        $("<a></a>")
                                                             .attr("title", "Reset Parameters")
                                                             .attr("href", "#")
                                                             .append("Reset Parameters")
@@ -1851,49 +1838,39 @@ define("genepattern/task", ["base/js/namespace",
          *
          * If no such widget can be found, returns null.
          */
-        getJobWidget: function() {
-            const all_cells = Jupyter.notebook.get_cells();
-            const this_cell = this.element.closest(".cell").data("cell");
-            let this_cell_found = false;
-            let output_cell = null;
+        add_job_widget: function(cell, session, job_number) {
+            let output_subarea = null;
 
-            // Iterate over all cells
-            for (let i in all_cells) {
-                const cell = all_cells[i];
+            // Does a job widget already exist in this cell?
+            let job_widget = cell.element.find(".gp-widget-job");
 
-                // Break loop if the next task cell is found
-                const is_task_cell = cell.element.find(".gp-widget-task").length > 0;
-                if (this_cell_found && is_task_cell) break;
-
-                // Locate the current task cell
-                if (cell.cell_id === this_cell.cell_id) {
-                    this_cell_found = true;
-                    continue;
-                }
-
-                // Locate the next matching job cell
-                const is_job_cell = cell.element.find(".gp-widget-job").length > 0;
-                if (this_cell_found && is_job_cell) {
-                    const task_lsid = this.options.task.lsid();
-                    const job_widget = cell.element.find(".gp-widget-job").data("widget");
-                    const job_ref = job_widget.options.job;
-
-                    // If the job object is null, this is a purged job, assume it matches
-                    if (job_ref === null) {
-                        output_cell = cell;
-                        break;
-                    }
-
-                    const job_task = job_ref.task();
-                    const job_lsid = job_task.lsid();
-                    if (job_lsid === task_lsid) {
-                        output_cell = cell;
-                        break;
-                    }
-                }
+            // If so, get the parent output_subarea and remove the widget
+            if (job_widget.length) {
+                output_subarea = job_widget.parent();
+                job_widget.remove();
             }
 
-            return output_cell;
+            // If not, create the output_subarea
+            else {
+                output_subarea = $("<div></div>").addClass("output_subarea jupyter-widgets-view");
+
+                const output = cell.element.find(".output");
+                output.append(
+                    $("<div></div>")
+                        .addClass("output_area")
+                        .append($("<div></div>").addClass("prompt"))
+                        .append(output_subarea)
+                );
+            }
+
+            // Add the new widget to the output_subarea
+            job_widget = $("<div></div>");
+            output_subarea.append(job_widget);
+
+            $(job_widget).jobResults({
+                jobNumber: job_number,
+                cell: cell
+            });
         },
 
         /**
@@ -1943,7 +1920,7 @@ define("genepattern/task", ["base/js/namespace",
             const code = this.options.cell.get_text();
             let index = 0;
             try {
-                index = Number.parseInt(code.split("genepattern.get_session(")[1].split(")")[0]);
+                index = Number.parseInt(code.split("genepattern.session.get(")[1].split(")")[0]);
             }
             catch (e) {
                 console.log("Cannot extract GenePattern session index, defaulting to 0");
@@ -2801,28 +2778,27 @@ define("genepattern/task", ["base/js/namespace",
                                 // Submit the job input
                                 jobInput.submit({
                                     success: function(response, jobNumber) {
-                                        //widget.successMessage("Job successfully submitted! Job ID: " + jobNumber);
+                                        // Was a new cell created?
+                                        let cell_created = false;
 
                                         // Collapse the task widget
                                         widget.expandCollapse(false);
 
-                                        // Find the associated job widget
-                                        let cell = widget.getJobWidget();
+                                        // Find the associated job widget and add the job output section, if necessary
+                                        let cell = widget.options.cell;
+                                        widget.add_job_widget(cell, widget.options.session_index, jobNumber);
 
-                                        // Create a new cell for the job widget, if necessay
-                                        if (!cell) cell = Jupyter.notebook.insert_cell_below();
+                                        // Create a new cell for the job widget, if necessary
+                                        if (!cell) {
+                                            cell_created = true;
+                                            cell = Jupyter.notebook.insert_cell_below();
+                                        }
 
                                         // Set the code for the job widget
                                         GPNotebook.slider.build_job_code(cell, widget.options.session_index, jobNumber);
 
-                                        // Execute cell.
-                                        cell.execute();
-
-                                        // Scroll to the top of the task cell
-                                        $('#site').animate({
-                                            scrollTop: $(Jupyter.notebook.get_selected_cell().element).position().top - 10
-                                        }, 500);
-                                        Jupyter.notebook.select(Jupyter.notebook.find_cell_index(cell));
+                                        // Execute if the cell if a new one was created
+                                        if (cell_created) cell.execute();
                                     },
                                     error: function(exception) {
                                         widget.errorMessage("Error submitting job: " + exception.statusText);
@@ -3198,8 +3174,7 @@ define("genepattern/task", ["base/js/namespace",
 
             // Check to see if this is a legacy task widget, if so update the code
             if (!('genepattern' in cell.metadata) || cell.get_text().indexOf("gp.GPTask(gpserver") > -1) {
-                code = cell.get_text().replace("GPTaskWidget", "genepattern.GPTaskWidget");
-                code = code.replace("# !AUTOEXEC\n\n", "");
+                code = cell.get_text().replace("GPTaskWidget", "genepattern.display");
                 code = code.replace("# !AUTOEXEC\n\n", "");
 
                 // Add the metadata

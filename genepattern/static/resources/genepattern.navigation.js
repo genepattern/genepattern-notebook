@@ -333,9 +333,9 @@ define("genepattern/navigation", ["base/js/namespace",
         const baseLsid = util.strip_version(module["lsid"]);
 
         // Build the code
-        const code = taskName + " = gp.GPTask(genepattern.get_session(" + session + "), '" + baseLsid + "')\n" +
+        const code = taskName + " = gp.GPTask(genepattern.session.get(" + session + "), '" + baseLsid + "')\n" +
                    specName + " = " + taskName + ".make_job_spec()\n" +
-                   "genepattern.GPTaskWidget(" + taskName + ")";
+                   "genepattern.display(" + taskName + ")\n";
 
         // Add the metadata
         slider.make_genepattern_cell(cell, "task");
@@ -352,14 +352,16 @@ define("genepattern/navigation", ["base/js/namespace",
      * @param jobNumber
      */
     slider.build_job_code = function(cell, session, jobNumber) {
-        const code = "job" + jobNumber + " = gp.GPJob(genepattern.get_session(" + session + "), " + jobNumber + ")\n" +
-                   "genepattern.GPJobWidget(job" + jobNumber + ")";
+        const code = "\njob" + jobNumber + " = gp.GPJob(genepattern.session.get(" + session + "), " + jobNumber + ")\n" +
+                   "genepattern.display(job" + jobNumber + ")";
 
-        // Add the metadata
-        slider.make_genepattern_cell(cell, "job");
+        // Add the metadata if this is a standalone cell
+        if (!('genepattern' in cell.metadata)) {
+            slider.make_genepattern_cell(cell, "job");
+        }
 
-        // Add the code to the cell, if not a placeholder cell
-        if (jobNumber !== -1) cell.set_text(code);
+        // Append the code to the cell
+        cell.set_text(cell.get_text() + code);
     };
 
     /**
@@ -867,7 +869,7 @@ define("genepattern/navigation", ["base/js/namespace",
                    'import genepattern\n' +
                    '\n' +
                    '# Username and password removed for security reasons.\n' +
-                   'genepattern.GPAuthWidget(genepattern.register_session("' + server + '", "' + username + '", "' + password + '"))';
+                   'genepattern.display(genepattern.session.register("' + server + '", "' + username + '", "' + password + '"))';
 
         if (cell.cell_type === 'markdown') {
             console.log("ERROR: Attempting to turn markdown cell into widget in authWidget.build_code()")
@@ -1115,25 +1117,6 @@ define("genepattern/navigation", ["base/js/namespace",
 
         // Set the value
         cell.metadata.genepattern[key] = value;
-    };
-
-    /**
-     * Create a placeholder job cell below the current cell
-     */
-    slider.create_placeholder = function() {
-        const cell = Jupyter.notebook.insert_cell_below();
-        const code = "genepattern.GPJobWidget(None)";
-
-        // Add the metadata
-        slider.make_genepattern_cell(cell, "job");
-
-        // Add the code to the cell
-        cell.set_text(code);
-
-        // Render the widget
-        setTimeout(function() {
-            cell.execute();
-        }, 10);
     };
 
     /**
