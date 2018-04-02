@@ -3,13 +3,12 @@ import os
 
 
 def get_data_files():
-    """Get the data files for the package.
+    """
+    Get the data files for the package.
     """
     return [
         ('share/jupyter/nbextensions/genepattern', [
             'genepattern/static/index.js',
-            'genepattern/static/resources/genepattern.js',
-            'genepattern/static/resources/genepattern.authentication.js',
         ]),
         ('share/jupyter/nbextensions/genepattern/resources',
          ['genepattern/static/resources/' + f for f in os.listdir('genepattern/static/resources')]
