@@ -1,53 +1,36 @@
 from distutils.core import setup
-from setuptools.command.install import install as _install
-from setuptools.command.develop import develop as _develop
+import os
 
 
-def _post_install():
-    import subprocess
-    from distutils import log
-    log.set_verbosity(log.DEBUG)
-
-    try:
-        # Enable the required nbextensions for ipywidgets and nbtools
-        subprocess.call(["jupyter", "nbextension", "enable", "--py", "widgetsnbextension"])
-        subprocess.call(["jupyter", "nbextension", "install", "--py", "nbtools"])
-        subprocess.call(["jupyter", "nbextension", "enable", "--py", "nbtools"])
-
-        # Enable the GenePattern Notebook extension
-        subprocess.call(["jupyter", "nbextension", "install", "--py", "genepattern"])
-        subprocess.call(["jupyter", "nbextension", "enable", "--py", "genepattern"])
-        subprocess.call(["jupyter", "serverextension", "enable", "--py", "genepattern"])
-    except:
-        log.warn("Unable to automatically enable GenePattern extension for Jupyter.\n" +
-                 "Please manually enable the extension by running the following commands:\n" +
-                 "jupyter nbextension enable --py widgetsnbextension\n" +
-                 "jupyter nbextension install --py genepattern\n" +
-                 "jupyter nbextension enable --py genepattern\n" +
-                 "jupyter serverextension enable --py genepattern\n")
-
-
-class GPInstall(_install):
-    def run(self):
-        _install.run(self)
-        self.execute(_post_install, [], msg="Running post install task")
-
-
-class GPDevelop(_develop):
-    def run(self):
-        _develop.run(self)
-        self.execute(_post_install, [], msg="Running post develop task")
+def get_data_files():
+    """Get the data files for the package.
+    """
+    return [
+        ('share/jupyter/nbextensions/genepattern', [
+            'genepattern/static/index.js',
+            'genepattern/static/resources/genepattern.js',
+            'genepattern/static/resources/genepattern.authentication.js',
+        ]),
+        ('share/jupyter/nbextensions/genepattern/resources',
+         ['genepattern/static/resources/' + f for f in os.listdir('genepattern/static/resources')]
+         ),
+        ('etc/jupyter/nbconfig/notebook.d', ['genepattern.json']),
+        # ('share/jupyter/lab/extensions', [
+        #     'genepattern/static/index.js',
+        #     'genepattern/static/resources',
+        # ])
+    ]
 
 
 setup(name='genepattern-notebook',
       packages=['genepattern'],
-      version='0.8.0',
+      version='0.7.2',
       description='GenePattern Notebook extension for Jupyter',
       license='BSD',
       author='Thorin Tabor',
       author_email='tmtabor@cloud.ucsd.edu',
       url='https://github.com/genepattern/genepattern-notebook',
-      download_url='https://github.com/genepattern/genepattern-notebook/archive/0.8.0.tar.gz',
+      download_url='https://github.com/genepattern/genepattern-notebook/archive/0.7.2.tar.gz',
       keywords=['genepattern', 'genomics', 'bioinformatics', 'ipython', 'jupyter'],
       classifiers=[
           'Development Status :: 4 - Beta',
@@ -55,7 +38,8 @@ setup(name='genepattern-notebook',
           'Intended Audience :: Developers',
           'Topic :: Scientific/Engineering :: Bio-Informatics',
           'License :: OSI Approved :: BSD License',
-          'Programming Language :: Python',
+          'Programming Language :: Python :: 3.5',
+          'Programming Language :: Python :: 3.6',
           'Framework :: Jupyter',
       ],
       install_requires=[
@@ -65,6 +49,6 @@ setup(name='genepattern-notebook',
           'notebook>=4.2.0',
           'ipywidgets>=5.0.0',
       ],
-      cmdclass={'install': GPInstall, 'develop': GPDevelop},
       package_data={'genepattern': ['static/index.js', 'static/resources/*']},
+      data_files=get_data_files(),
       )
