@@ -691,6 +691,9 @@ define("genepattern/task", ["base/js/namespace",
                     $("<span></span>")
                         .addClass("file-widget-value-text")
                         .text(file_display)
+                        .dblclick(function(event) {
+                            $(event.target).parent().trigger("dblclick");
+                        })
                 )
                 .dblclick(function(event) {
                     // Ignore this event for file uploads
