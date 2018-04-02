@@ -49,17 +49,23 @@ If you don't already have Jupyter installed, you can install it from PIP by runn
 
 From here go to the "Load the GenePattern extension" step below.
 
-### Install GenePattern Notebook from PIP
+### Install GenePattern Notebook from PIP or Conda
 
-The easiest way to install GenePattern Notebook is through PIP. It can be installed by executing
-the following command:
+The easiest way to install GenePattern Notebook is through either PIP or conda. It can be installed by 
+executing one of the following commands:
 
 > pip install genepattern-notebook
 
+*or*
+
+> conda install -c genepattern genepattern-notebook
+
 ### Load the GenePattern extension
 
-Before you the GenePattern extension for the very first time, you should make sure that it is 
-enable in Jupyter. To do this run the following on the command line: 
+In Jupyter 5.2 and earlier, before you can use the GenePattern extension for the very first time, 
+you need to enable it by running command lines below. 
+
+In Jupyter 5.3 and later this is automatic and there is no need to run these commands.
 
 > jupyter nbextension enable --py widgetsnbextension
 >
@@ -86,7 +92,7 @@ This will start up the notebook kernel and launch your web browser pointing to t
 If you want to update GenePattern Notebook to a more recent version on PIP, run the following 
 command:
 
-> pip install -upgrade --no-deps genepattern-notebook
+> pip install --upgrade --no-deps genepattern-notebook
 
 # Related Repositories
 
