@@ -2795,10 +2795,13 @@ define("genepattern/task", ["base/js/namespace",
                                         }
 
                                         // Set the code for the job widget
-                                        GPNotebook.slider.build_job_code(cell, widget.options.session_index, jobNumber);
+                                        const code = GPNotebook.slider.build_job_code(cell, widget.options.session_index, jobNumber);
 
                                         // Execute if the cell if a new one was created
                                         if (cell_created) cell.execute();
+
+                                        // Otherwise, run the code in the background
+                                        else Jupyter.notebook.kernel.execute(code, {});
                                     },
                                     error: function(exception) {
                                         widget.errorMessage("Error submitting job: " + exception.statusText);

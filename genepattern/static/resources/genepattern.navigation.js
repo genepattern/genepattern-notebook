@@ -350,6 +350,7 @@ define("genepattern/navigation", ["base/js/namespace",
      * @param cell
      * @param session
      * @param jobNumber
+     * @returns {string}
      */
     slider.build_job_code = function(cell, session, jobNumber) {
         const code = "\njob" + jobNumber + " = gp.GPJob(genepattern.session.get(" + session + "), " + jobNumber + ")\n" +
@@ -362,6 +363,8 @@ define("genepattern/navigation", ["base/js/namespace",
 
         // Append the code to the cell
         cell.set_text(cell.get_text() + code);
+
+        return code;
     };
 
     /**
