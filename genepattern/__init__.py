@@ -1,7 +1,7 @@
 """
 GenePattern Notebook extension for Jupyter
 
-Copyright 2015-2017 Regents of the University of California & Broad Institute
+Copyright 2015-2018 Regents of the University of California & Broad Institute
 """
 
 from .remote_widgets import GPAuthWidget, GPTaskWidget, GPJobWidget, session, register_session, get_session, display
