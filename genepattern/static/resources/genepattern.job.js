@@ -190,7 +190,15 @@ define("genepattern/job", ["base/js/namespace",
                                     )
                                     .append(
                                         $("<div></div>")
-                                            .addClass("gp-widget-job-submitted col-md-9")
+                                            .addClass("col-md-9")
+                                            .append(
+                                                $("<span></span>")
+                                                    .addClass("gp-widget-job-submitted")
+                                            )
+                                            .append(
+                                                $("<span></span>")
+                                                    .addClass("gp-widget-job-sharing")
+                                            )
                                     )
                                     .append(
                                         $("<div></div>")
@@ -546,12 +554,16 @@ define("genepattern/job", ["base/js/namespace",
                             widget._savePermissions(bundle,
                                 // On success
                                 function() {
-                                    // Success message
-                                    widget.element.find(".gp-widget-job-share-alert")
-                                        .removeClass("alert-danger")
-                                        .addClass("alert alert-success")
-                                        .text("Permissions saved!");
+                                    // Assign the bundle to permissions
                                     widget.options.job.permissions().groups = bundle;
+                                    widget.options.job.permissions().isPublic = widget._determine_public(bundle);
+                                    widget.options.job.permissions().isShared = widget._determine_shared(bundle);
+
+                                    // Update the sharing icon
+                                    const sharing_status = widget._create_sharing_indicator();
+                                    const sharing_icon = widget.element.find(".gp-widget-job-sharing:first");
+                                    sharing_icon.empty();
+                                    sharing_icon.append(sharing_status);
                                 },
                                 // On fail
                                 function() {
@@ -566,6 +578,28 @@ define("genepattern/job", ["base/js/namespace",
                     }
                 }
             });
+        },
+
+        _determine_public: function(bundle) {
+            for (let i = 0; i < bundle.length; i++) {
+                let group = bundle[i];
+                if (group['id'] === "*") return group['read'] || group['write'];
+            }
+
+            // Assume false if no public group found
+            return false;
+        },
+
+        _determine_shared: function(bundle) {
+            for (let i = 0; i < bundle.length; i++) {
+                let group = bundle[i];
+
+                // Return true if sharing was found
+                if (group['id'] !== "*" && (group['read'] || group['write'])) return true;
+            }
+
+            // No sharing was found
+            return false;
         },
 
         /**
@@ -845,6 +879,25 @@ define("genepattern/job", ["base/js/namespace",
         },
 
         /**
+         * Return a locked or unlocked icon with explanatory title
+         *
+         * @private
+         */
+        _create_sharing_indicator: function() {
+            const permissions = this.options.job.permissions();
+            const icon = permissions.isPublic || permissions.isShared ? 'fa-unlock' : 'fa-lock';
+
+            // Create title
+            let title = "Private Job";
+            if (permissions.isPublic) title = "Public Job";
+            else if (permissions.isShared) title = "Shared Job";
+
+            return $("<i></i>")
+                .addClass("fa " + icon)
+                .attr("title", title);
+        },
+
+        /**
          * Display the widget for the job object
          *
          * @param job
@@ -869,6 +922,10 @@ define("genepattern/job", ["base/js/namespace",
             // Display the user and date submitted
             const submittedText = "Submitted by " + job.userId() + " on " + job.dateSubmitted();
             this.element.find(".gp-widget-job-submitted:first").text(submittedText);
+
+            // Display the sharing status
+            const sharing_status = widget._create_sharing_indicator();
+            this.element.find(".gp-widget-job-sharing:first").append(sharing_status);
 
             // Display the status
             const statusText = this._statusText(job.status());

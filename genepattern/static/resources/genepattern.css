@@ -423,6 +423,11 @@ div.cell.selected {
     font-size:0.9em;
 }
 
+.gp-widget-job-sharing {
+    display: inline-block;
+    margin-left: 10px;
+}
+
 .gp-widget-job-buttons {
     text-align: right;
     display: inline-block;
