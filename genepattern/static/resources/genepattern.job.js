@@ -925,7 +925,7 @@ define("genepattern/job", ["base/js/namespace",
 
             // Display the sharing status
             const sharing_status = widget._create_sharing_indicator();
-            this.element.find(".gp-widget-job-sharing:first").append(sharing_status);
+            this.element.find(".gp-widget-job-sharing:first").empty().append(sharing_status);
 
             // Display the status
             const statusText = this._statusText(job.status());
