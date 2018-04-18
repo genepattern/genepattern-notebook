@@ -1358,6 +1358,27 @@ define("genepattern/authentication", ["base/js/namespace",
             const workflow_queue = this;
             const gp_cell_type = cell.metadata.genepattern.type;
 
+            // Job widgets can appear in task cells or job cells. Define how to handle them.
+            const handle_job_widget = function() {
+                // Get the job status
+                const widget = cell.element.find(".gp-widget:last").data("widget");
+                const job = widget ? widget.options.job : null;
+                const finished = widget && job ? job.status().isFinished : null;
+
+                // If is the job has already finished, move on if running
+                if (finished && workflow_queue.status === 'running') workflow_queue.step_completed();
+
+                // Otherwise wait until the completion event
+                widget.element.on("gp.jobComplete", function(event, job) {
+                    // Check for a job error and stop execution if one is found
+                    if (job && job.status && job.status().hasError) workflow_queue.error_encountered("GenePattern job encountered an error. Stopping execution.");
+
+                    // Make sure the status is still running and complete the step
+                    if (workflow_queue.status === 'running') workflow_queue.step_completed();
+                });
+            };
+
+            // Go through each GenePattern cell type and handle it
             if (gp_cell_type === "auth") {
                 // If not authenticated, give an error
                 const widget = cell.element.find(".gp-widget").data("widget");
@@ -1373,26 +1394,11 @@ define("genepattern/authentication", ["base/js/namespace",
 
                 // Wait three seconds and continue
                 setTimeout(function() {
-                    if (workflow_queue.status === 'running') workflow_queue.step_completed();
+                    if (workflow_queue.status === 'running') handle_job_widget();
                 }, 3000);
             }
             else if (gp_cell_type === "job") {
-                // Get the job status
-                const widget = cell.element.find(".gp-widget").data("widget");
-                const job = widget ? widget.options.job : null;
-                const finished = widget && job ? job.status().isFinished : null;
-
-                // If is the job has already finished, move on if running
-                if (finished && this.status === 'running') this.step_completed();
-
-                // Otherwise wait until the completion event
-                widget.element.on("gp.jobComplete", function(event, job) {
-                    // Check for a job error and stop execution if one is found
-                    if (job && job.status && job.status().hasError) workflow_queue.error_encountered("GenePattern job encountered an error. Stopping execution.");
-
-                    // Make sure the status is still running and complete the step
-                    if (workflow_queue.status === 'running') workflow_queue.step_completed();
-                });
+                handle_job_widget();
             }
             else if (gp_cell_type === "uibuilder") {
                 // Run the UI Builder function
