@@ -1205,18 +1205,23 @@ define("genepattern/authentication", ["base/js/namespace",
             setTimeout(function() {
                 // If this is a GenePattern cell, handle it
                 if (workflow_queue._is_genepattern_cell(cell)) {
+                    workflow_queue._description_from_genepattern(cell);
                     workflow_queue._handle_genepattern_step(cell);
                     return;
                 }
 
                 // If this is a code cell, run it
                 if (cell.cell_type === 'code') {
+                    workflow_queue._description_from_code(cell);
                     Jupyter.notebook.execute_cell();
                     return;
                 }
 
                 // Otherwise, make sure the status is still running and skip the cell
-                if (workflow_queue.status === 'running') workflow_queue.step_completed();
+                if (workflow_queue.status === 'running') {
+                    workflow_queue._description_from_markdown(cell);
+                    workflow_queue.step_completed();
+                }
             }, 1000);
         },
 
@@ -1245,7 +1250,7 @@ define("genepattern/authentication", ["base/js/namespace",
                 keyboard_manager: this.keyboard_manager,
                 title : "Running Notebook as GenePattern Workflow",
                 body : $("<p>This notebook is currently being executed as a GenePattern workflow. Each code cell and GenePattern analysis will be executed in sequence. Please wait.</p><br/>" +
-                       "<div id='workflow_queue_alert' class='alert alert-info'><strong>Running Step: <span id='workflow_queue_step'>" + 1 + "</span> / <span id='workflow_queue_step_total'>" + step_count + "</span></strong></div>"),
+                       "<div id='workflow_queue_alert' class='alert alert-info'><h4>Running Step: <span id='workflow_queue_step'>" + 1 + "</span> / <span id='workflow_queue_step_total'>" + step_count + "</span></h4><div id='workflow_queue_description'>Initializing...</div></div>"),
                 buttons : {
                     "Cancel" : {
                         "click": function() {
@@ -1265,6 +1270,27 @@ define("genepattern/authentication", ["base/js/namespace",
             setTimeout(function() {
                 $(".dialog-btn-complete").hide();
             }, 200)
+        },
+
+        _description_from_markdown: function(cell) {
+            const to_display = "<strong>Markdown Cell</strong><div><em>. . .</em></div>";
+            $("#workflow_queue_description").html(to_display);
+        },
+
+        _description_from_code: function(cell) {
+            const lines = cell.get_text().split('\n');
+            const display_code = lines.length > 1 ? lines[0] + '\n...' : lines[0];
+            const to_display = "<strong>Code Cell</strong><div><em>" + display_code + "</em></div>";
+
+            $("#workflow_queue_description").html(to_display);
+        },
+
+        _description_from_genepattern: function(cell) {
+            let name = $($(".gp-widget-task-name, .gp-widget-job-task")[0]).text();
+            if (!name) name = "Verifying Authentication";
+            const to_display = "<strong>GenePattern Cell</strong><div><em>" + name + "</em></div>";
+
+            $("#workflow_queue_description").html(to_display);
         },
 
         _update_step_display: function() {
