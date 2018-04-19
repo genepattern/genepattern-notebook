@@ -426,6 +426,7 @@ div.cell.selected {
 .gp-widget-job-sharing {
     display: inline-block;
     margin-left: 10px;
+    cursor: pointer;
 }
 
 .gp-widget-job-buttons {

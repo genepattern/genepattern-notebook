@@ -532,6 +532,9 @@ define("genepattern/job", ["base/js/namespace",
                 }
             });
             optionsPane.append(table);
+            optionsPane.append(
+                $("<p style='margin-top: 10px;'>For more information about sharing GenePattern jobs, see the <a href='http://software.broadinstitute.org/cancer/software/genepattern/user-guide#working-with-analysis-results-sharing-analysis-results' target='_blank'>User Guide</a>.</p>")
+            );
 
             const dialog = require('base/js/dialog');
             dialog.modal({
@@ -884,17 +887,21 @@ define("genepattern/job", ["base/js/namespace",
          * @private
          */
         _create_sharing_indicator: function() {
+            const widget = this;
             const permissions = this.options.job.permissions();
             const icon = permissions.isPublic || permissions.isShared ? 'fa-unlock' : 'fa-lock';
 
             // Create title
-            let title = "Private Job";
-            if (permissions.isPublic) title = "Public Job";
-            else if (permissions.isShared) title = "Shared Job";
+            let title = "Sharing: Private";
+            if (permissions.isPublic) title = "Sharing: Public";
+            else if (permissions.isShared) title = "Sharing: Shared with Group";
 
             return $("<i></i>")
                 .addClass("fa " + icon)
-                .attr("title", title);
+                .attr("title", title)
+                .click(function() {
+                    widget.buildSharingPanel();
+                });
         },
 
         /**
