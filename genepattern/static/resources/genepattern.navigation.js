@@ -353,7 +353,7 @@ define("genepattern/navigation", ["base/js/namespace",
      * @returns {string}
      */
     slider.build_job_code = function(cell, session, jobNumber) {
-        const code = "\njob" + jobNumber + " = gp.GPJob(genepattern.session.get(" + session + "), " + jobNumber + ")\n" +
+        const code = "job" + jobNumber + " = gp.GPJob(genepattern.session.get(" + session + "), " + jobNumber + ")\n" +
                    "genepattern.display(job" + jobNumber + ")";
 
         // Add the metadata if this is a standalone cell
@@ -361,10 +361,45 @@ define("genepattern/navigation", ["base/js/namespace",
             slider.make_genepattern_cell(cell, "job");
         }
 
-        // Append the code to the cell
-        cell.set_text(cell.get_text() + code);
+        // Remove previous jobs and append the code to the cell
+        slider._append_job_code(cell, code);
 
         return code;
+    };
+
+    slider._append_job_code = function(cell, job_code) {
+        let existing_code = cell.get_text();
+
+        // Is this a combined task / job cell?
+        if (existing_code.indexOf('gp.GPTask(') > -1) {
+
+            // Does this cell have a job appended already?
+            if (existing_code.indexOf('gp.GPJob(') > -1) {
+                // Divide the code into lines
+                const lines = existing_code.split('\n');
+
+                // Find the line to display the task widget
+                let display_line = lines.length - 1;
+                for (let i = 0; i < lines.length; i++) {
+                    let line = lines[i];
+                    if (line.indexOf('GPTaskWidget') > -1 || line.indexOf('genepattern.display') > -1) {
+                        display_line = i;
+                        break;
+                    }
+                }
+
+                // Cut all lines after the task display line and join as a string
+                existing_code = lines.slice(0, display_line+1).join('\n').trim();
+            }
+
+            // Append the code
+            cell.set_text(existing_code + '\n\n' + job_code);
+        }
+
+        // If not, this is a job cell. Just replace the code.
+        else {
+            cell.set_text(job_code);
+        }
     };
 
     /**
