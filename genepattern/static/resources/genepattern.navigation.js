@@ -13,6 +13,7 @@ define("genepattern/navigation", ["base/js/namespace",
         "genepattern"], function (Jupyter, widgets, NBToolManager, gp) {
 
     const slider = {};
+    const menus = {};
     const init = {};
     const util = {};
     const session_manager = {
@@ -529,7 +530,7 @@ define("genepattern/navigation", ["base/js/namespace",
     /**
      * Construct and return a file menu for the provided output file
      *
-     * @param widget - the job widget pointed to by this menu
+     * @param widget - the job or output widget pointed to by this menu
      * @param element - HTML element to attach menu to
      * @param name - The file name
      * @param href - The URL of the file
@@ -537,259 +538,20 @@ define("genepattern/navigation", ["base/js/namespace",
      * @param fullMenu - Whether this is a full menu or a log file menu
      * @returns {*|jQuery|HTMLElement}
      */
-    slider.build_menu = function(widget, element, name, href, kind, fullMenu) {
+    menus.build_menu = function(widget, element, name, href, kind, fullMenu) {
         // Attach simple menu
         if (!fullMenu) {
-            element.popover({
-                title: "",
-                content: $("<div></div>")
-                    .addClass("list-group")
-                    .append(
-                        $("<label></label>")
-                            .text(name)
-                    )
-                    .append(
-                        $("<a></a>")
-                            .addClass("list-group-item")
-                            .text("Download File")
-                            .attr("href", href + "?download")
-                            .attr("target", "_blank")
-                    )
-                    .append(
-                        $("<a></a>")
-                            .addClass("list-group-item")
-                            .text("Open in New Tab")
-                            .attr("href", href)
-                            .attr("target", "_blank")
-                    ),
-                html: true,
-                placement: "right",
-                trigger: "click"
-            });
+            menus._build_basic_menu(widget, element, name, href);
         }
-        // Attach advanced menu
+
+        // Attach UI Builder output menu
+        else if (widget.options.jobNumber === undefined) {
+            menus._build_output_menu(widget, element, name, href, kind);
+        }
+
+        // Attach job result menu
         else {
-            const popover = $("<div></div>")
-                .addClass("list-group")
-                .append(
-                    $("<label></label>")
-                        .text(name)
-                )
-                .append(
-                    $("<a></a>")
-                        .addClass("list-group-item")
-                        .text("Download File")
-                        .attr("href", href + "?download")
-                        .attr("target", "_blank")
-                    )
-                .append(
-                    $("<a></a>")
-                        .addClass("list-group-item")
-                        .text("Open in New Tab")
-                        .attr("href", href)
-                        .attr("target", "_blank")
-                )
-                .append(
-                    $("<a></a>")
-                        .addClass("list-group-item gp-widget-job-send-code")
-                        .text("Send to Code")
-                        .attr("href", "#")
-                )
-                .append(
-                    $("<div></div>")
-                        .append(
-                            $("<label></label>")
-                                .css("padding-top", "10px")
-                                .text("Send to Existing GenePattern Cell")
-                        )
-                        .append(
-                            $("<select></select>")
-                                .addClass("form-control gp-widget-job-existing-task")
-                                .css("margin-left", "0")
-                                .append(
-                                    $("<option></option>")
-                                        .text("----")
-                                )
-                        )
-                )
-                .append(
-                    $("<div></div>")
-                        .append(
-                            $("<label></label>")
-                                .css("padding-top", "10px")
-                                .text("Send to New GenePattern Cell")
-                        )
-                        .append(
-                            $("<select></select>")
-                                .addClass("form-control gp-widget-job-new-task")
-                                .css("margin-left", "0")
-                                .append(
-                                    $("<option></option>")
-                                        .text("----")
-                                )
-                        )
-                );
-
-            // Attach "Send to DataFrame" if GCT or ODF
-            if (kind.indexOf("gct") !== -1 || name.endsWith(".odf")) {
-                popover.find(".gp-widget-job-send-code").after(
-                    $("<a></a>")
-                        .addClass("list-group-item gp-widget-job-send-dataframe")
-                        .text("Send to DataFrame")
-                        .attr("href", "#")
-                );
-            }
-
-            element.popover({
-                title: "",
-                content: popover,
-                html: true,
-                placement: "right",
-                trigger: "click"
-            });
-
-            // Add options to "Send to New Task" dropdown, or hide if none
-            let modules = null;
-            const fixedKind = Array.isArray(kind) ? kind[0] : kind;
-            const sendToNewTask = popover.find('.gp-widget-job-new-task');
-            const kindsMap = widget.options.session.kinds();
-            if (kindsMap !==  null && kindsMap !== undefined) {
-                modules = kindsMap[fixedKind];
-                if (modules === null || modules === undefined) { modules = []; } // Protect against undefined & null
-                $.each(modules, function(i, module) {
-                    sendToNewTask.append(
-                        $("<option></option>")
-                            .attr("data-lsid", module.lsid())
-                            .attr("data-server", widget.options.session.server())
-                            .text(module.name())
-                    )
-                });
-            }
-            if (modules === null || modules.length === 0) {
-                sendToNewTask.parent().hide();
-            }
-
-            // Attach methods in a way that will not break when popover is hidden
-            element.on('shown.bs.popover', function () {
-                const sendCodeButton = element.parent().find(".gp-widget-job-send-code");
-                const sendDataFrameButton = element.parent().find(".gp-widget-job-send-dataframe");
-                const newTaskDropdown = element.parent().find(".gp-widget-job-new-task");
-                const sendToExistingTask = element.parent().find('.gp-widget-job-existing-task');
-
-                // Unbind old click events so they aren't double-bound
-                sendCodeButton.unbind("click");
-                if (sendDataFrameButton) sendDataFrameButton.unbind("click");
-                newTaskDropdown.unbind("change");
-                sendToExistingTask.unbind("change");
-
-                // Attach the click method to "send to code"
-                sendCodeButton.click(function() {
-                    widget.codeCell(widget.options.job, name);
-                    $(".popover").popover("hide");
-                });
-
-                // Attach the click method to "send to dataframe"
-                if (sendDataFrameButton) {
-                    sendDataFrameButton.click(function() {
-                        widget.dataFrameCell(widget.options.job, name, fixedKind);
-                        $(".popover").popover("hide");
-                    });
-                }
-
-                // Attach "Send to New Task" clicks
-                newTaskDropdown.change(function(event) {
-                    const option = $(event.target).find(":selected");
-                    const lsid = option.attr("data-lsid");
-                    if (lsid === undefined || lsid === null) return;
-                    const name = option.text();
-                    const cell = Jupyter.notebook.insert_cell_at_bottom();
-                    slider.build_module_code(cell, widget.options.session_index, {"lsid":lsid, "name": name});
-
-                    // Execute the cell
-                    setTimeout(function() {
-                        cell.element.on("gp.widgetRendered", function() {
-                            const widgetElement = cell.element.find(".gp-widget");
-                            const widget = widgetElement.data("widget");
-
-                            // Define what to do to receive the file
-                            const receiveFile = function() {
-                                setTimeout(function() {
-                                    widget.receiveFile(element.attr("href"), fixedKind);
-                                }, 100);
-                            };
-
-                            // Check to see whether params have already been loaded
-                            const alreadyLoaded = widget._paramsLoaded;
-
-                            // If already loaded, receive file
-                            if (alreadyLoaded) {
-                                receiveFile();
-                            }
-
-                            // Otherwise wait until they are loaded.
-                            widgetElement.on("runTask.paramLoad", receiveFile);
-                        });
-                        cell.execute();
-                    }, 10);
-
-                    // Hide the popover
-                    $(".popover").popover("hide");
-
-                    // Scroll to the new cell
-                    const site_div = $('#site');
-                    const current_offset = Math.abs(site_div.find(".container").offset().top);
-                    const cell_offset = $(cell.element).offset().top;
-                    site_div.animate({
-                        scrollTop: current_offset + cell_offset
-                    }, 500);
-                });
-
-                // Dynamically add options to "Send to Downstream Task" dropdown
-                const matchingTasks = slider.task_widgets_for_kind(fixedKind);
-                sendToExistingTask
-                    .empty()
-                    .append(
-                        $("<option></option>")
-                            .text("----")
-                    );
-                $.each(matchingTasks, function(i, pairing) {
-                    const cellIndex = pairing[0];
-                    const taskWidget = pairing[1];
-                    const task = taskWidget.options.lsid ? widget.options.session.task(taskWidget.options.lsid) : null;
-                    let name = task !== null ? task.name() : null;
-
-                    // If task is null, extract the task name from the widget
-                    if (task === null) name = $(taskWidget.element).find(".gp-widget-task-name").text().trim();
-
-                    sendToExistingTask
-                        .append(
-                            $("<option></option>")
-                                .text(name + " [Cell " + cellIndex + "]")
-                                .data("widget", taskWidget)
-                        );
-                });
-
-                // Add event to hand changes on the "Send to Downstream Task" dropdown
-                sendToExistingTask.change(function() {
-                    const option = $(this).find(":selected");
-                    const theWidget = option.data("widget");
-                    theWidget.receiveFile(element.attr("href"), fixedKind);
-
-                    // Hide the popover
-                    $(".popover").popover("hide");
-
-                    // Scroll to the new cell
-                    const site_div = $('#site');
-                    const current_offset = Math.abs(site_div.find(".container").offset().top);
-                    const cell_offset = $(theWidget.element).offset().top;
-                    site_div.animate({
-                        scrollTop: current_offset + cell_offset
-                    }, 500);
-
-                    // Expand the cell, if necessary
-                    theWidget.expandCollapse(true);
-                });
-            });
+            menus._build_job_menu(widget, element, name, href, kind);
         }
 
         // Ensure that the popover showed
@@ -810,6 +572,390 @@ define("genepattern/navigation", ["base/js/namespace",
         });
 
         return element;
+    };
+
+    menus._build_output_menu = function(widget, element, name, href, kind) {
+        const popover = $("<div></div>")
+            .addClass("list-group")
+            .append(
+                $("<label></label>")
+                    .text(name)
+            )
+            .append(
+                $("<a></a>")
+                    .addClass("list-group-item")
+                    .text("Open in New Tab")
+                    .attr("href", href)
+                    .attr("target", "_blank")
+            )
+            .append(
+                $("<a></a>")
+                    .addClass("list-group-item gp-widget-job-send-code")
+                    .text("Send to Code")
+                    .attr("href", "#")
+            )
+            .append(
+                $("<div></div>")
+                    .append(
+                        $("<label></label>")
+                            .css("padding-top", "10px")
+                            .text("Send to Existing GenePattern Cell")
+                    )
+                    .append(
+                        $("<select></select>")
+                            .addClass("form-control gp-widget-job-existing-task")
+                            .css("margin-left", "0")
+                            .append(
+                                $("<option></option>")
+                                    .text("----")
+                            )
+                    )
+            );
+
+        // Attach "Send to DataFrame" if GCT or ODF
+        if (name.endsWith(".gct") || name.endsWith(".odf")) {
+            popover.find(".gp-widget-job-send-code").after(
+                $("<a></a>")
+                    .addClass("list-group-item gp-widget-job-send-dataframe")
+                    .text("Send to DataFrame")
+                    .attr("href", "#")
+            );
+        }
+
+        element.popover({
+            title: "",
+            content: popover,
+            html: true,
+            placement: "right",
+            trigger: "click"
+        });
+
+        // Attach methods in a way that will not break when popover is hidden
+        element.on('shown.bs.popover', function () {
+            const sendCodeButton = element.parent().find(".gp-widget-job-send-code");
+            const sendDataFrameButton = element.parent().find(".gp-widget-job-send-dataframe");
+            const sendToExistingTask = element.parent().find('.gp-widget-job-existing-task');
+
+            // Unbind old click events so they aren't double-bound
+            sendCodeButton.unbind("click");
+            if (sendDataFrameButton) sendDataFrameButton.unbind("click");
+            sendToExistingTask.unbind("change");
+
+            // Attach the click method to "send to code"
+            sendCodeButton.click(function() {
+                widget.code_cell(href, name);
+                $(".popover").popover("hide");
+            });
+
+            // Attach the click method to "send to dataframe"
+            if (sendDataFrameButton) {
+                sendDataFrameButton.click(function() {
+                    widget.dataframe_cell(kind);
+                    $(".popover").popover("hide");
+                });
+            }
+
+            // Dynamically add options to "Send to Existing GenePattern Cell" dropdown
+            const matching_functions = slider.task_widgets_for_kind(kind);
+            sendToExistingTask
+                .empty()
+                .append(
+                    $("<option></option>")
+                        .text("----")
+                );
+            $.each(matching_functions, function(i, pairing) {
+                const cellIndex = pairing[0];
+                const ui_widget = pairing[1];
+                const task = null;
+
+                // Extract the task name from the widget
+                let name = $(ui_widget.element).find(".gp-widget-task-name").text().trim();
+
+                // If this is a UI Builder widget, not a task widget, append
+                if (!ui_widget.options.lsid) {
+                    sendToExistingTask
+                        .append(
+                            $("<option></option>")
+                                .text(name + " [Cell " + cellIndex + "]")
+                                .data("widget", ui_widget)
+                        );
+                }
+            });
+
+            // Add event to handle changes on the "Send to Downstream Task" dropdown
+            sendToExistingTask.change(function() {
+                const option = $(this).find(":selected");
+                const the_widget = option.data("widget");
+                the_widget.receiveFile(element.attr("href"), kind);
+
+                // Hide the popover
+                $(".popover").popover("hide");
+
+                // Scroll to the new cell
+                const site_div = $('#site');
+                const current_offset = Math.abs(site_div.find(".container").offset().top);
+                const cell_offset = $(the_widget.element).offset().top;
+                site_div.animate({
+                    scrollTop: current_offset + cell_offset
+                }, 500);
+
+                // Expand the cell, if necessary
+                the_widget.expandCollapse(true);
+            });
+        });
+    };
+
+    menus._build_basic_menu = function(widget, element, name, href) {
+        element.popover({
+            title: "",
+            content: $("<div></div>")
+                .addClass("list-group")
+                .append(
+                    $("<label></label>")
+                        .text(name)
+                )
+                .append(
+                    $("<a></a>")
+                        .addClass("list-group-item")
+                        .text("Download File")
+                        .attr("href", href + "?download")
+                        .attr("target", "_blank")
+                )
+                .append(
+                    $("<a></a>")
+                        .addClass("list-group-item")
+                        .text("Open in New Tab")
+                        .attr("href", href)
+                        .attr("target", "_blank")
+                ),
+            html: true,
+            placement: "right",
+            trigger: "click"
+        });
+    };
+
+    menus._build_job_menu = function() {
+        const popover = $("<div></div>")
+            .addClass("list-group")
+            .append(
+                $("<label></label>")
+                    .text(name)
+            )
+            .append(
+                $("<a></a>")
+                    .addClass("list-group-item")
+                    .text("Download File")
+                    .attr("href", href + "?download")
+                    .attr("target", "_blank")
+                )
+            .append(
+                $("<a></a>")
+                    .addClass("list-group-item")
+                    .text("Open in New Tab")
+                    .attr("href", href)
+                    .attr("target", "_blank")
+            )
+            .append(
+                $("<a></a>")
+                    .addClass("list-group-item gp-widget-job-send-code")
+                    .text("Send to Code")
+                    .attr("href", "#")
+            )
+            .append(
+                $("<div></div>")
+                    .append(
+                        $("<label></label>")
+                            .css("padding-top", "10px")
+                            .text("Send to Existing GenePattern Cell")
+                    )
+                    .append(
+                        $("<select></select>")
+                            .addClass("form-control gp-widget-job-existing-task")
+                            .css("margin-left", "0")
+                            .append(
+                                $("<option></option>")
+                                    .text("----")
+                            )
+                    )
+            )
+            .append(
+                $("<div></div>")
+                    .append(
+                        $("<label></label>")
+                            .css("padding-top", "10px")
+                            .text("Send to New GenePattern Cell")
+                    )
+                    .append(
+                        $("<select></select>")
+                            .addClass("form-control gp-widget-job-new-task")
+                            .css("margin-left", "0")
+                            .append(
+                                $("<option></option>")
+                                    .text("----")
+                            )
+                    )
+            );
+
+        // Attach "Send to DataFrame" if GCT or ODF
+        if (kind.indexOf("gct") !== -1 || name.endsWith(".odf")) {
+            popover.find(".gp-widget-job-send-code").after(
+                $("<a></a>")
+                    .addClass("list-group-item gp-widget-job-send-dataframe")
+                    .text("Send to DataFrame")
+                    .attr("href", "#")
+            );
+        }
+
+        element.popover({
+            title: "",
+            content: popover,
+            html: true,
+            placement: "right",
+            trigger: "click"
+        });
+
+        // Add options to "Send to New Task" dropdown, or hide if none
+        let modules = null;
+        const fixedKind = Array.isArray(kind) ? kind[0] : kind;
+        const sendToNewTask = popover.find('.gp-widget-job-new-task');
+        const kindsMap = widget.options.session.kinds();
+        if (kindsMap !==  null && kindsMap !== undefined) {
+            modules = kindsMap[fixedKind];
+            if (modules === null || modules === undefined) { modules = []; } // Protect against undefined & null
+            $.each(modules, function(i, module) {
+                sendToNewTask.append(
+                    $("<option></option>")
+                        .attr("data-lsid", module.lsid())
+                        .attr("data-server", widget.options.session.server())
+                        .text(module.name())
+                )
+            });
+        }
+        if (modules === null || modules.length === 0) {
+            sendToNewTask.parent().hide();
+        }
+
+        // Attach methods in a way that will not break when popover is hidden
+        element.on('shown.bs.popover', function () {
+            const sendCodeButton = element.parent().find(".gp-widget-job-send-code");
+            const sendDataFrameButton = element.parent().find(".gp-widget-job-send-dataframe");
+            const newTaskDropdown = element.parent().find(".gp-widget-job-new-task");
+            const sendToExistingTask = element.parent().find('.gp-widget-job-existing-task');
+
+            // Unbind old click events so they aren't double-bound
+            sendCodeButton.unbind("click");
+            if (sendDataFrameButton) sendDataFrameButton.unbind("click");
+            newTaskDropdown.unbind("change");
+            sendToExistingTask.unbind("change");
+
+            // Attach the click method to "send to code"
+            sendCodeButton.click(function() {
+                widget.code_cell(widget.options.job, name);
+                $(".popover").popover("hide");
+            });
+
+            // Attach the click method to "send to dataframe"
+            if (sendDataFrameButton) {
+                sendDataFrameButton.click(function() {
+                    widget.dataframe_cell(widget.options.job, name, fixedKind);
+                    $(".popover").popover("hide");
+                });
+            }
+
+            // Attach "Send to New Task" clicks
+            newTaskDropdown.change(function(event) {
+                const option = $(event.target).find(":selected");
+                const lsid = option.attr("data-lsid");
+                if (lsid === undefined || lsid === null) return;
+                const name = option.text();
+                const cell = Jupyter.notebook.insert_cell_at_bottom();
+                slider.build_module_code(cell, widget.options.session_index, {"lsid":lsid, "name": name});
+
+                // Execute the cell
+                setTimeout(function() {
+                    cell.element.on("gp.widgetRendered", function() {
+                        const widgetElement = cell.element.find(".gp-widget");
+                        const widget = widgetElement.data("widget");
+
+                        // Define what to do to receive the file
+                        const receiveFile = function() {
+                            setTimeout(function() {
+                                widget.receiveFile(element.attr("href"), fixedKind);
+                            }, 100);
+                        };
+
+                        // Check to see whether params have already been loaded
+                        const alreadyLoaded = widget._paramsLoaded;
+
+                        // If already loaded, receive file
+                        if (alreadyLoaded) {
+                            receiveFile();
+                        }
+
+                        // Otherwise wait until they are loaded.
+                        widgetElement.on("runTask.paramLoad", receiveFile);
+                    });
+                    cell.execute();
+                }, 10);
+
+                // Hide the popover
+                $(".popover").popover("hide");
+
+                // Scroll to the new cell
+                const site_div = $('#site');
+                const current_offset = Math.abs(site_div.find(".container").offset().top);
+                const cell_offset = $(cell.element).offset().top;
+                site_div.animate({
+                    scrollTop: current_offset + cell_offset
+                }, 500);
+            });
+
+            // Dynamically add options to "Send to Downstream Task" dropdown
+            const matchingTasks = slider.task_widgets_for_kind(fixedKind);
+            sendToExistingTask
+                .empty()
+                .append(
+                    $("<option></option>")
+                        .text("----")
+                );
+            $.each(matchingTasks, function(i, pairing) {
+                const cellIndex = pairing[0];
+                const taskWidget = pairing[1];
+                const task = taskWidget.options.lsid ? widget.options.session.task(taskWidget.options.lsid) : null;
+                let name = task !== null ? task.name() : null;
+
+                // If task is null, extract the task name from the widget
+                if (task === null) name = $(taskWidget.element).find(".gp-widget-task-name").text().trim();
+
+                sendToExistingTask
+                    .append(
+                        $("<option></option>")
+                            .text(name + " [Cell " + cellIndex + "]")
+                            .data("widget", taskWidget)
+                    );
+            });
+
+            // Add event to hand changes on the "Send to Downstream Task" dropdown
+            sendToExistingTask.change(function() {
+                const option = $(this).find(":selected");
+                const theWidget = option.data("widget");
+                theWidget.receiveFile(element.attr("href"), fixedKind);
+
+                // Hide the popover
+                $(".popover").popover("hide");
+
+                // Scroll to the new cell
+                const site_div = $('#site');
+                const current_offset = Math.abs(site_div.find(".container").offset().top);
+                const cell_offset = $(theWidget.element).offset().top;
+                site_div.animate({
+                    scrollTop: current_offset + cell_offset
+                }, 500);
+
+                // Expand the cell, if necessary
+                theWidget.expandCollapse(true);
+            });
+        });
     };
 
     /**
@@ -1261,6 +1407,7 @@ define("genepattern/navigation", ["base/js/namespace",
      */
     return {
         slider: slider,
+        menus: menus,
         init: init,
         util: util,
         session_manager: session_manager

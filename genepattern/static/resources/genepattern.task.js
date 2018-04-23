@@ -1887,7 +1887,7 @@ define("genepattern/task", ["base/js/namespace",
             const indicator = this.element.find(".widget-slide-indicator").find("span");
             const isHidden = toSlide.is(":hidden");
 
-            if (expand === false || !isHidden) {
+            if (expand !== true && (expand === false || !isHidden)) {
                 toSlide.slideUp();
                 indicator.removeClass("fa-minus");
                 indicator.addClass("fa-plus");

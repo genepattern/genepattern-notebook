@@ -32,9 +32,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
          *
          * @returns {boolean} - true if the server has been set, else false
          */
-        gp.isServerSet = function () {
-            return !!gp._server;
-        };
+        gp.isServerSet = () => !!gp._server;
 
 
         /**
@@ -1014,63 +1012,49 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
              *
              * @returns {number|null}
              */
-            this.jobNumber = function () {
-                return this._jobNumber;
-            };
+            this.jobNumber = () => this._jobNumber;
 
             /**
              * Returns a job permissions object
              *
              * @returns {null|object}
              */
-            this.permissions = function () {
-                return this._permissions;
-            };
+            this.permissions = () => this._permissions;
 
             /**
              * Returns a job status object
              *
              * @returns {null|object}
              */
-            this.status = function () {
-                return this._status;
-            };
+            this.status = () => this._status;
 
             /**
              * Returns the date the job was submitted
              *
              * @returns {null|string|Date}
              */
-            this.dateSubmitted = function () {
-                return this._dateSubmitted;
-            };
+            this.dateSubmitted = () => this._dateSubmitted;
 
             /**
              * Returns an array of log files associated with the job
              *
              * @returns {Array}
              */
-            this.logFiles = function () {
-                return this._logFiles;
-            };
+            this.logFiles = () => this._logFiles;
 
             /**
              * Returns an array of the output files possessed by the job
              *
              * @returns {Array}
              */
-            this.outputFiles = function () {
-                return this._outputFiles;
-            };
+            this.outputFiles = () => this._outputFiles;
 
             /**
              * Returns the number of output files the job has currently output
              *
              * @returns {null|number}
              */
-            this.numOutputFiles = function () {
-                return this._numOutputFiles;
-            };
+            this.numOutputFiles = () => this._numOutputFiles;
         };
 
 
@@ -1109,18 +1093,14 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
              *
              * @returns {string|null}
              */
-            this.lsid = function () {
-                return this._lsid;
-            };
+            this.lsid = () => this._lsid;
 
             /**
              * Getter for the params list
              *
              * @returns {Array}
              */
-            this.params = function () {
-                return this._params;
-            };
+            this.params = () => this._params;
 
             /**
              * Returns a Parameter after looking it up by name

@@ -698,7 +698,27 @@ div.cell.selected {
 }
 
 /*
- * Module Maker Styles
+ * UI Output Styles
+ */
+
+.gp-widget-output-text {
+    margin-top: 20px;
+}
+
+.gp-widget-output-text > pre {
+    word-break: normal;
+}
+
+.gp-widget-output-status {
+    padding-bottom: 3px;
+    text-align: right;
+    padding-right: 20px;
+    color: #303F9F;
+    font-family: monospace;
+}
+
+/*
+ * Module Bundler Styles
  */
 
 .gp-widget-module-previous-button, .gp-widget-module-next-button {

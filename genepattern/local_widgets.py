@@ -1,7 +1,11 @@
+import builtins
 import inspect
 import functools
+import re
+
 import gp
 import sys
+import urllib.request
 
 from IPython.core.display import display
 from ipywidgets import widgets
@@ -10,6 +14,26 @@ from traitlets import Unicode, List
 """
 The CallWidget and functions related to local code execution
 """
+
+
+def open(path_or_url):
+    """
+    Wrapper for opening an IO object to a local file or URL
+    :param path_or_url:
+    :return:
+    """
+    is_url = re.compile(
+        r'^(?:http|ftp)s?://'  # http:// or https://
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...
+        r'localhost|'  # localhost...
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+        r'(?::\d+)?'  # optional port
+        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+
+    if re.match(is_url, path_or_url):
+        return urllib.request.urlopen(path_or_url)
+    else:
+        return builtins.open(path_or_url)
 
 
 class build_ui:
@@ -284,12 +308,37 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
         return func_name
 
 
+class GPUIOutput(gp.GPResource, widgets.DOMWidget):
+    """
+    Widget used to render Python output in a UI
+    """
+    _view_name = Unicode('UIOutputView').tag(sync=True)
+    _view_module = Unicode("genepattern/uibuilder").tag(sync=True)
+
+    name = Unicode('', sync=True)
+    description = Unicode('', sync=True)
+    files = List(sync=True)
+    text = Unicode('', sync=True)
+    visualization = Unicode('', sync=True)
+
+    def __init__(self, **kwargs):
+        super(GPUIOutput, self).__init__('output')
+        widgets.DOMWidget.__init__(self, **kwargs)
+
+        # Assign the traitlets, if specified
+        self.name = kwargs['name'] if 'name' in kwargs else 'Python Results'
+        self.description = kwargs['description'] if 'description' in kwargs else ''
+        self.files = kwargs['files'] if 'files' in kwargs else []
+        self.text = kwargs['text'] if 'text' in kwargs else ''
+        self.visualization = kwargs['visualization'] if 'visualization' in kwargs else ''
+
+
 class GPModuleWidget(gp.GPResource, widgets.DOMWidget):
     """
     Widget used to create GenePattern modules from a notebook
     """
     _view_name = Unicode('ModuleWidgetView').tag(sync=True)
-    _view_module = Unicode("genepattern/uibuilder").tag(sync=True)
+    _view_module = Unicode("genepattern/modulebundler").tag(sync=True)
     lsid = Unicode("", sync=True)
 
     def __init__(self, lsid="", **kwargs):
