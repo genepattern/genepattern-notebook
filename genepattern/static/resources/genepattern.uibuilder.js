@@ -25,6 +25,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
             name: null,
             description: null,
             output_var: null,
+            append_output: true,
             params: null,
             function_import: null,
             cell: null
@@ -1042,11 +1043,10 @@ define("genepattern/uibuilder", ["base/js/namespace",
                             }, 500);
 
                             widget.expandCollapse(false);
-                            const index = GPNotebook.util.cell_index(widget.options.cell) + 1;
-                            const cell = Jupyter.notebook.insert_cell_at_index("code", index);
                             const code = widget.buildFunctionCode(funcInput, funcOutput);
-                            cell.code_mirror.setValue(code);
-                            cell.execute();
+
+                            // Display the code either in a new cell or in the same cell
+                            widget._display_output(code);
                         },
                         error: function (exception) {
                             widget.errorMessage("Error evaluating kernel variables in preparation of job submission: " + exception.statusText);
@@ -1057,6 +1057,164 @@ define("genepattern/uibuilder", ["base/js/namespace",
                     widget.errorMessage("Error uploading in preparation of job submission: " + exception.statusText);
                 }
             });
+        },
+
+        _display_output: function(code) {
+            const widget = this;
+            const cell = widget.options.cell;
+
+            // If append_output is false, display the code in a new cell (the old way)
+            if (!this.options.append_output) {
+                widget._new_cell_output(code);
+                return;
+            }
+
+            // Otherwise, clear output and append to this cell
+            cell.element.find(".gp-widget-call-output").remove();
+
+            // Execute the code in the background
+            Jupyter.notebook.kernel.execute(code,
+            {
+                iopub: {
+                    output: function(response) {
+                        widget._add_output_area(cell, response.content)
+                    }
+                }
+            },
+            {
+                silent: false,
+                store_history: true,
+                stop_on_error: true
+            });
+        },
+
+        /**
+         * Appends an output area to the UI Builder cell with the returned output of the function.
+         * This will be called multiple times if the function has repeated output.
+         *
+         * @param cell
+         * @param content
+         * @private
+         */
+        _add_output_area: function(cell, content) {
+            // Create the output_area structure
+            const output_subarea = $("<div></div>").addClass("output_subarea jupyter-widgets-view");
+            const output = cell.element.find(".output");
+            output.append(
+                $("<div></div>")
+                    .addClass("output_area gp-widget-call-output")
+                    .append($("<div></div>").addClass("prompt"))
+                    .append(output_subarea)
+            );
+
+            // Add the new output to the output_subarea
+            let uibuilder_output = $("<div></div>");
+            output_subarea.append(uibuilder_output);
+
+            // Handle text output without returned data
+            if (content.text) {
+                $(uibuilder_output)
+                    .addClass("output_text")
+                    .append(
+                        $("<pre></pre>")
+                            .text(content.text)
+                    );
+            }
+
+            // Handle png output
+            else if (content.data && content.data["image/png"]) {
+                $(uibuilder_output)
+                    .addClass("output_png")
+                    .append(
+                        $("<img />")
+                            .attr("alt", content.data["text/plain"])
+                            .attr("src", "data:image/png;base64, " + content.data["image/png"])
+                    );
+            }
+
+            // Handle jpeg output
+            else if (content.data && content.data["image/jpeg"]) {
+                $(uibuilder_output)
+                    .addClass("output_jpeg")
+                    .append(
+                        $("<img />")
+                            .attr("alt", content.data["text/plain"])
+                            .attr("src", "data:image/jpeg;base64, " + content.data["image/jpeg"])
+                    );
+            }
+
+            // Handle widget output
+            else if (content.data && content.data["application/vnd.jupyter.widget-view+json"]) {
+                // Retrieve the model ID and use this to look up the widget manager and model promise
+                const model_id = content.data["application/vnd.jupyter.widget-view+json"]["model_id"];
+                const widget_manager = Jupyter.WidgetManager._managers[0];
+                const model_promise = widget_manager._models[model_id];
+
+                model_promise
+                    // Resolve the model promise, creating a new output area object and view promise
+                    .then(function(model) {
+                        const output_area = requirejs("notebook/js/outputarea");
+                        const output = new output_area.OutputArea({
+                            selector: uibuilder_output,
+                            config: {data: {OutputArea: {}}},
+                            prompt_area: false,
+                            events: widget_manager.notebook.events,
+                            keyboard_manager: widget_manager.keyboard_manager
+                        });
+
+                        return model.widget_manager.create_view(model, {
+                            cell: cell,
+                            output: output
+                        });
+                    }, console.error.bind(console))
+
+                    // Resolve the view promise, creating a new promise for the display
+                    .then(function(view) {
+                        return widget_manager.display_view(null, view);
+                    }, console.error.bind(console))
+
+                    // Resolve the display promise and append the widget to the output area
+                    .then(function(display) {
+                        display.$el.appendTo(uibuilder_output);
+                    });
+            }
+
+            // Handle returned Javascript data
+            else if (content.data && content.data["application/javascript"]) {
+                $(uibuilder_output)
+                    .addClass("output_javascript");
+                eval(content.data["application/javascript"]);
+            }
+
+            // Handle returned HTML data
+            else if (content.data && content.data["text/html"]) {
+                $(uibuilder_output)
+                    .addClass("rendered_html")
+                    .html(content.data["text/html"])
+            }
+
+            // Handle returned text data
+            else if (content.data && content.data["text/plain"]) {
+                $(uibuilder_output)
+                    .addClass("output_text")
+                    .append(
+                        $("<pre></pre>")
+                            .text(content.data["text/plain"])
+                    );
+            }
+
+            // If none of these types match, log an error
+            else {
+                console.log("Unknown return type in UIBuilder");
+                console.log(content);
+            }
+        },
+
+        _new_cell_output: function(code) {
+            const index = GPNotebook.util.cell_index(this.options.cell) + 1;
+            const cell = Jupyter.notebook.insert_cell_at_index("code", index);
+            cell.code_mirror.setValue(code);
+            cell.execute();
         },
 
         /**

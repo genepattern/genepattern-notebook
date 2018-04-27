@@ -650,7 +650,7 @@ define("genepattern/navigation", ["base/js/namespace",
             // Attach the click method to "send to dataframe"
             if (sendDataFrameButton) {
                 sendDataFrameButton.click(function() {
-                    widget.dataframe_cell(kind);
+                    widget.dataframe_cell(href, name, kind);
                     $(".popover").popover("hide");
                 });
             }
