@@ -4,7 +4,7 @@
  * @author Thorin Tabor
  * @requires - jQuery, genepattern.navigation.js, genepattern.task.js
  *
- * Copyright 2017 Regents of the University of California and the Broad Institute
+ * Copyright 2018 Regents of the University of California and the Broad Institute
  */
 
 define("genepattern/uibuilder", ["base/js/namespace",

@@ -4,7 +4,7 @@
  * @author Thorin Tabor
  * @requires - jQuery, genepattern.navigation.js
  *
- * Copyright 2015-2017 Regents of the University of California & The Broad Institute
+ * Copyright 2015-2018 Regents of the University of California & The Broad Institute
  */
 
 /**

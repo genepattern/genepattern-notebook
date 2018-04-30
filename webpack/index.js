@@ -4,7 +4,7 @@
  * Webpack entry point for bundling client-side resources used in the
  * GenePattern Notebook extension for Jupyter Notebook and JupyterLab
  *
- * Copyright 2015-2017, Regents of the University of California & Broad Institute
+ * Copyright 2015-2018, Regents of the University of California & Broad Institute
  */
 
 // Import GenePattern Notebook Javascript assets
