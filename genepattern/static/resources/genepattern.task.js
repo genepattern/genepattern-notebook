@@ -1855,7 +1855,10 @@ define("genepattern/task", ["base/js/namespace",
 
             // If not, create the output_subarea
             else {
-                output_subarea = $("<div></div>").addClass("output_subarea jupyter-widgets-view");
+                output_subarea = $("<div></div>")
+                    .addClass("output_subarea jupyter-widgets-view")
+                    .css("padding", 0)
+                    .css("max-width", "100%");
 
                 const output = cell.element.find(".output");
                 output.append(
