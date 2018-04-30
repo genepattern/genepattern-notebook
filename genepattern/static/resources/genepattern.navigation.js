@@ -734,7 +734,7 @@ define("genepattern/navigation", ["base/js/namespace",
         });
     };
 
-    menus._build_job_menu = function() {
+    menus._build_job_menu = function(widget, element, name, href, kind) {
         const popover = $("<div></div>")
             .addClass("list-group")
             .append(
