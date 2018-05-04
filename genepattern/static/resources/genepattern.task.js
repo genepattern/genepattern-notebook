@@ -1846,6 +1846,7 @@ define("genepattern/task", ["base/js/namespace",
             // If so, make it display the new way
             if (return_old_way) {
                 code.replace('genepattern.GPTaskWidget', 'genepattern.display');
+                cell.set_text(code);
             }
 
             // Does a job widget already exist in this cell?
