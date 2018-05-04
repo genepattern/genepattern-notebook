@@ -1188,7 +1188,7 @@ define("genepattern/authentication", ["base/js/namespace",
          */
         run_next_cell: function() {
             const workflow_queue = this;
-            const cell = Jupyter.notebook.get_cell(this.step_index);
+            let cell = Jupyter.notebook.get_cell(this.step_index);
 
             // Scroll to the cell
             const site_div = $('#site');
@@ -1196,33 +1196,35 @@ define("genepattern/authentication", ["base/js/namespace",
             const cell_offset = $(cell.element).offset().top;
             site_div.animate({
                 scrollTop: current_offset + cell_offset - 100
-            }, 500);
+            }, 500, function() {
+                // Select the cell
+                Jupyter.notebook.select(workflow_queue.step_index);
 
-            // Select the cell
-            Jupyter.notebook.select(this.step_index);
+                // Wait for the scroll & selection to complete
+                setTimeout(function() {
+                    cell = Jupyter.notebook.get_selected_cell();
 
-            // Wait for the scroll to complete
-            setTimeout(function() {
-                // If this is a GenePattern cell, handle it
-                if (workflow_queue._is_genepattern_cell(cell)) {
-                    workflow_queue._description_from_genepattern(cell);
-                    workflow_queue._handle_genepattern_step(cell);
-                    return;
-                }
+                    // If this is a GenePattern cell, handle it
+                    if (workflow_queue._is_genepattern_cell(cell)) {
+                        workflow_queue._description_from_genepattern(cell);
+                        workflow_queue._handle_genepattern_step(cell);
+                        return;
+                    }
 
-                // If this is a code cell, run it
-                if (cell.cell_type === 'code') {
-                    workflow_queue._description_from_code(cell);
-                    Jupyter.notebook.execute_cell();
-                    return;
-                }
+                    // If this is a code cell, run it
+                    if (cell.cell_type === 'code') {
+                        workflow_queue._description_from_code(cell);
+                        Jupyter.notebook.execute_cell();
+                        return;
+                    }
 
-                // Otherwise, make sure the status is still running and skip the cell
-                if (workflow_queue.status === 'running') {
-                    workflow_queue._description_from_markdown(cell);
-                    workflow_queue.step_completed();
-                }
-            }, 1000);
+                    // Otherwise, make sure the status is still running and skip the cell
+                    if (workflow_queue.status === 'running') {
+                        workflow_queue._description_from_markdown(cell);
+                        workflow_queue.step_completed();
+                    }
+                }, 100);
+            });
         },
 
         /**
@@ -1286,7 +1288,7 @@ define("genepattern/authentication", ["base/js/namespace",
         },
 
         _description_from_genepattern: function(cell) {
-            let name = $($(".gp-widget-task-name, .gp-widget-job-task")[0]).text();
+            let name = cell.element.find(".gp-widget-task-name, .gp-widget-job-task").first().text();
             if (!name) name = "Verifying Authentication";
             const to_display = "<strong>GenePattern Cell</strong><div><em>" + name + "</em></div>";
 
