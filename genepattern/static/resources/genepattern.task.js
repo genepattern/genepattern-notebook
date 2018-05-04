@@ -1840,12 +1840,12 @@ define("genepattern/task", ["base/js/namespace",
             let output_subarea = null;
 
             // Is the task widget displayed the old "return the widget" way?
-            const code = cell.get_text();
+            let code = cell.get_text();
             const return_old_way = code.indexOf('genepattern.GPTaskWidget') >= 0;
 
             // If so, make it display the new way
             if (return_old_way) {
-                code.replace('genepattern.GPTaskWidget', 'genepattern.display');
+                code = code.replace('genepattern.GPTaskWidget', 'genepattern.display');
                 cell.set_text(code);
             }
 
