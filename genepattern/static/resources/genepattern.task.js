@@ -1835,14 +1835,18 @@ define("genepattern/task", ["base/js/namespace",
 
         /**
          * Returns the associated job widget for output
-         *
-         * This selects the next JobWidget with a matching task, located in
-         * the notebook after this task widget, but before the next task widget.
-         *
-         * If no such widget can be found, returns null.
          */
         add_job_widget: function(cell, session, job_number) {
             let output_subarea = null;
+
+            // Is the task widget displayed the old "return the widget" way?
+            const code = cell.get_text();
+            const return_old_way = code.indexOf('genepattern.GPTaskWidget') >= 0;
+
+            // If so, make it display the new way
+            if (return_old_way) {
+                code.replace('genepattern.GPTaskWidget', 'genepattern.display');
+            }
 
             // Does a job widget already exist in this cell?
             let job_widget = cell.element.find(".gp-widget-job");
@@ -1856,9 +1860,7 @@ define("genepattern/task", ["base/js/namespace",
             // If not, create the output_subarea
             else {
                 output_subarea = $("<div></div>")
-                    .addClass("output_subarea jupyter-widgets-view")
-                    .css("padding", 0)
-                    .css("max-width", "100%");
+                    .addClass("output_subarea jupyter-widgets-view");
 
                 const output = cell.element.find(".output");
                 output.append(
