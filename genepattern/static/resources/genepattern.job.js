@@ -111,6 +111,7 @@ define("genepattern/job", ["base/js/namespace",
                                             .addClass("dropdown-menu gear-menu")
                                             .append(
                                                 $("<li></li>")
+                                                    .addClass("gp-widget-job-share")
                                                     .append(
                                                         $("<a></a>")
                                                             .attr("title", "Share Job")
@@ -645,6 +646,11 @@ define("genepattern/job", ["base/js/namespace",
                     group["write"] = true;
                     toReturn.push(group);
                 }
+                else {
+                    group["read"] = false;
+                    group["write"] = false;
+                    toReturn.push(group);
+                }
             });
 
             return toReturn;
@@ -900,7 +906,7 @@ define("genepattern/job", ["base/js/namespace",
                 .addClass("fa " + icon)
                 .attr("title", title)
                 .click(function() {
-                    widget.buildSharingPanel();
+                    if (permissions['canSetPermissions']) widget.buildSharingPanel();
                 });
         },
 
@@ -948,8 +954,8 @@ define("genepattern/job", ["base/js/namespace",
 
             // Enable sharing button, if necessary
             const permissions = job.permissions();
-            if (permissions !== undefined && permissions !== null && permissions['canSetPermissions']) {
-                this.element.find(".gp-widget-job-share:first").removeAttr("disabled");
+            if (permissions !== undefined && permissions !== null && !permissions['canSetPermissions']) {
+                this.element.find(".gp-widget-job-share:first").remove();
             }
 
             // Display error if Java visualizer
