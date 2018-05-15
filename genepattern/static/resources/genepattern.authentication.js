@@ -1214,7 +1214,11 @@ define("genepattern/authentication", ["base/js/namespace",
                     // If this is a code cell, run it
                     if (cell.cell_type === 'code') {
                         workflow_queue._description_from_code(cell);
-                        Jupyter.notebook.execute_cell();
+
+                        // If the code is empty, move on
+                        if (cell.get_text().trim() === '') workflow_queue.step_completed();
+
+                        else Jupyter.notebook.execute_cell();
                         return;
                     }
 
