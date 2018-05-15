@@ -1139,6 +1139,10 @@ define("genepattern/authentication", ["base/js/namespace",
         step_completed: function() {
             const cell = Jupyter.notebook.get_cell(this.step_index);
 
+            console.log("WORKFLOW MANAGER STEP COMPLETED  ");
+            console.log(cell);
+            console.log(cell.element);
+
             // Check for code error
             if (this._has_code_error(cell)) {
                 this.error_encountered("Encountered a code cell error in the workflow. Stopping execution.");
@@ -1346,7 +1350,7 @@ define("genepattern/authentication", ["base/js/namespace",
             if (!this._is_genepattern_cell(cell)) return false;
 
             // Detect error messages
-            return !!$(cell.element).find(".alert-danger").length;
+            return !!$(cell.element).find(".alert-danger:visible").length;
         },
 
         /**
@@ -1398,10 +1402,16 @@ define("genepattern/authentication", ["base/js/namespace",
                 // Run the analysis
                 cell.element.find(".gp-widget-task-run-button:first").click();
 
-                // Wait three seconds and continue
-                setTimeout(function() {
-                    if (workflow_queue.status === 'running') handle_job_widget();
-                }, 3000);
+                // Wait until the job is submitted and continue
+                cell.element.on("gp.widgetRendered", function() {
+                    setTimeout(function() {
+                        if (workflow_queue._has_genepattern_error(cell)) {
+                            workflow_queue.error_encountered("GenePattern analysis encountered an error. Stopping execution.");
+                        }
+
+                        if (workflow_queue.status === 'running') handle_job_widget();
+                    }, 1000);
+                });
             }
             else if (gp_cell_type === "job") {
                 handle_job_widget();

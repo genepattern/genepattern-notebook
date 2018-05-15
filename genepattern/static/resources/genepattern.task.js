@@ -2610,6 +2610,11 @@ define("genepattern/task", ["base/js/namespace",
          * Validate the current Run Task form
          */
         validate: function() {
+            // Clear any existing error messages
+            this.element.find(".gp-widget-task-message")
+                .removeClass("alert-danger alert-success")
+                .hide();
+
             let validated = true;
             const missing = [];
             const params = this.element.find(".gp-widget-task-param");
@@ -2787,6 +2792,9 @@ define("genepattern/task", ["base/js/namespace",
                                 // Submit the job input
                                 jobInput.submit({
                                     success: function(response, jobNumber) {
+                                        // Trigger the job submitted custom event
+                                        widget.element.closest(".cell").trigger("gp.jobSubmitted");
+
                                         // Was a new cell created?
                                         let cell_created = false;
 
