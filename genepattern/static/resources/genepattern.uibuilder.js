@@ -1088,6 +1088,18 @@ define("genepattern/uibuilder", ["base/js/namespace",
             });
         },
 
+        escape_return_text: function(raw_text) {
+            const utils = require("base/js/utils");
+
+            // Escape HTML tags
+            let fixed_text = utils.fixConsole(raw_text);
+
+            // Replace URLs links with links
+            fixed_text = utils.autoLinkUrls(fixed_text);
+
+            return fixed_text;
+        },
+
         /**
          * Appends an output area to the UI Builder cell with the returned output of the function.
          * This will be called multiple times if the function has repeated output.
@@ -1113,11 +1125,13 @@ define("genepattern/uibuilder", ["base/js/namespace",
 
             // Handle text output without returned data
             if (content.text) {
+                const escaped_text = this.escape_return_text(content.text);
+
                 $(uibuilder_output)
                     .addClass("output_text")
                     .append(
                         $("<pre></pre>")
-                            .text(content.text)
+                            .html(escaped_text)
                     );
             }
 
@@ -1195,11 +1209,13 @@ define("genepattern/uibuilder", ["base/js/namespace",
 
             // Handle returned text data
             else if (content.data && content.data["text/plain"]) {
+                const fixed_text = this.escape_return_text(content.data["text/plain"]);
+
                 $(uibuilder_output)
                     .addClass("output_text")
                     .append(
                         $("<pre></pre>")
-                            .text(content.data["text/plain"])
+                            .html(fixed_text)
                     );
             }
 
