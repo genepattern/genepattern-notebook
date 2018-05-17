@@ -8,7 +8,7 @@
 4. If the upload fails go to [https://testpypi.python.org/pypi](https://testpypi.python.org/pypi) and manually upload dist/genepattern-notebook-*.tar.gz.
 5. Test the deploy by uninstalling and reinstalling the package: 
 > sudo pip uninstall genepattern-notebook;
-> sudo pip install -i https://testpypi.python.org/pypi genepattern-notebook
+> sudo pip install --index-url https://test.pypi.org/simple/ genepattern-notebook
 
 # How to Deploy to Production PyPi
 
