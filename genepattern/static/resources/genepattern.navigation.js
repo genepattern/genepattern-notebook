@@ -959,6 +959,17 @@ define("genepattern/navigation", ["base/js/namespace",
     };
 
     /**
+     * Double-check to make sure the cell renders and re-execute if it did not
+     *
+     * @param cell
+     */
+    init.ensure_rendering = function(cell) {
+        setTimeout(function() {
+            if (cell.element.find(".gp-widget").length === 0) cell.execute();
+        }, 1000);
+    };
+
+    /**
      * Wait for kernel and then init notebook widgets
      */
     init.wait_for_kernel = function (id) {

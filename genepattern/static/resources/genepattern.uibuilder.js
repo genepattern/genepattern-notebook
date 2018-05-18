@@ -1519,43 +1519,44 @@ define("genepattern/uibuilder", ["base/js/namespace",
 
     const UIBuilderView = widgets.DOMWidgetView.extend({
         render: function () {
-            let cell = this.options.cell;
+            const widget = this;
+            let cell = widget.options.cell;
 
             // Ugly hack for getting the Cell object in ipywidgets 7
-            if (!cell) cell = this.options.output.element.closest(".cell").data("cell");
+            if (!cell) cell = widget.options.output.element.closest(".cell").data("cell");
 
             // Render the view.
-            if (!this.el) this.setElement($('<div></div>'));
+            if (!this.el) widget.setElement($('<div></div>'));
 
-            const name = this.model.get('name');
-            const description = this.model.get('description');
-            const output_var = this.model.get('output_var');
-            const params = this.model.get('params');
-            const function_import = this.model.get('function_import');
+            const name = widget.model.get('name');
+            const description = widget.model.get('description');
+            const output_var = widget.model.get('output_var');
+            const params = widget.model.get('params');
+            const function_import = widget.model.get('function_import');
 
-            // Initialize the widget
-            $(this.$el).buildUI({
-                name: name,
-                description: description,
-                output_var: output_var,
-                params: params,
-                function_import: function_import,
-                cell: cell
-            });
-
-            // Hide the code by default
-            const element = this.$el;
+            // Render the cell and hide code by default
+            const element = widget.$el;
             const hideCode = function() {
-                const cell = element.closest(".cell");
-                if (cell.length > 0) {
-                    // Protect against the "double render" bug in Jupyter 3.2.1
-                    element.parent().find(".gp-widget-call:not(:first-child)").remove();
+                const cell_div = element.closest(".cell");
+                if (cell_div.length > 0) {
+                    // Initialize the widget
+                    $(widget.$el).buildUI({
+                        name: name,
+                        description: description,
+                        output_var: output_var,
+                        params: params,
+                        function_import: function_import,
+                        cell: cell
+                    });
                 }
                 else {
                     setTimeout(hideCode, 10);
                 }
             };
             setTimeout(hideCode, 1);
+
+            // Double-check to make sure the widget renders
+            GPNotebook.init.ensure_rendering(cell);
         }
     });
 

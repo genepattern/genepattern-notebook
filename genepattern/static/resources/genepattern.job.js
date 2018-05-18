@@ -1254,13 +1254,14 @@ define("genepattern/job", ["base/js/namespace",
 
     const JobWidgetView = widgets.DOMWidgetView.extend({
         render: function () {
+            const widget = this;
             let cell = this.options.cell;
 
             // Ugly hack for getting the Cell object in ipywidgets 7
-            if (!cell) cell = this.options.output.element.closest(".cell").data("cell");
+            if (!cell) cell = widget.options.output.element.closest(".cell").data("cell");
 
             // Get the job number
-            const jobNumber = this.model.get('job_number');
+            const jobNumber = widget.model.get('job_number');
 
             // Check to see if this is a legacy job widget, if so replace with full code
             if (!('genepattern' in cell.metadata)) {
@@ -1269,28 +1270,30 @@ define("genepattern/job", ["base/js/namespace",
             }
 
             // Render the view.
-            if (!this.el) this.setElement($('<div></div>'));
+            if (!widget.el) widget.setElement($('<div></div>'));
 
-            $(this.$el).jobResults({
-                jobNumber: jobNumber,
-                cell: cell
-            });
-
-            // Hide the code by default
+            // Render the cell and hide code by default
             const element = this.$el;
             const hideCode = function() {
-                const cell = element.closest(".cell");
-                if (cell.length > 0) {
-                    // Protect against the "double render" bug in Jupyter 3.2.1
-                    element.parent().find(".gp-widget-job:not(:first-child)").remove();
+                const cell_div = element.closest(".cell");
+                if (cell_div.length > 0) {
+                    // Render the widget
+                    $(widget.$el).jobResults({
+                        jobNumber: jobNumber,
+                        cell: cell
+                    });
 
-                    element.closest(".cell").find(".input").hide();
+                    // Hide the code
+                    cell_div.find(".input").hide();
                 }
                 else {
                     setTimeout(hideCode, 10);
                 }
             };
             setTimeout(hideCode, 1);
+
+            // Double-check to make sure the widget renders
+            GPNotebook.init.ensure_rendering(cell);
         }
     });
 

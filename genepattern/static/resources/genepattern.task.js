@@ -3179,18 +3179,19 @@ define("genepattern/task", ["base/js/namespace",
 
     const TaskWidgetView = widgets.DOMWidgetView.extend({
         render: function () {
+            const widget = this;
             let cell = this.options.cell;
 
             // Ugly hack for getting the Cell object in ipywidgets 7
-            if (!cell) cell = this.options.output.element.closest(".cell").data("cell");
+            if (!cell) cell = widget.options.output.element.closest(".cell").data("cell");
 
             let code = null;
 
             // Protect against double-rendering
             if (cell.element.find(".gp-widget").length > 0) return;
 
-            const lsid = this.model.get('lsid');
-            const name = this.model.get('name');
+            const lsid = widget.model.get('lsid');
+            const name = widget.model.get('name');
 
             // Check to see if this is a legacy task widget, if so update the code
             if (!('genepattern' in cell.metadata) || cell.get_text().indexOf("gp.GPTask(gpserver") > -1) {
@@ -3205,37 +3206,39 @@ define("genepattern/task", ["base/js/namespace",
             }
 
             // Render the view.
-            if (!this.el) this.setElement($('<div></div>'));
+            if (!this.el) widget.setElement($('<div></div>'));
 
-            // Determine which identifier is used
-            if (lsid) {
-                $(this.$el).runTask({
-                    lsid: lsid,
-                    cell: cell
-                });
-            }
-            else {
-                $(this.$el).runTask({
-                    name: name,
-                    cell: cell
-                });
-            }
 
-            // Hide the code by default
+            // Render the cell and hide code by default
             const element = this.$el;
             const hideCode = function() {
-                const cell = element.closest(".cell");
-                if (cell.length > 0) {
-                    // Protect against the "double render" bug in Jupyter 3.2.1
-                    element.parent().find(".gp-widget-task:not(:first-child)").remove();
+                const cell_div = element.closest(".cell");
+                if (cell_div.length > 0) {
+                    // Determine which identifier is used and render the cell
+                    if (lsid) {
+                        $(widget.$el).runTask({
+                            lsid: lsid,
+                            cell: cell
+                        });
+                    }
+                    else {
+                        $(widget.$el).runTask({
+                            name: name,
+                            cell: cell
+                        });
+                    }
 
-                    element.closest(".cell").find(".input").hide();
+                    // Hide the code
+                    cell_div.find(".input").hide();
                 }
                 else {
                     setTimeout(hideCode, 10);
                 }
             };
             setTimeout(hideCode, 1);
+
+            // Double-check to make sure the widget renders
+            GPNotebook.init.ensure_rendering(cell);
         }
     });
 
