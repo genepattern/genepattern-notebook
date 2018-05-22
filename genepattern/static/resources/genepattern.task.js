@@ -3194,8 +3194,10 @@ define("genepattern/task", ["base/js/namespace",
             const name = widget.model.get('name');
 
             // Check to see if this is a legacy task widget, if so update the code
-            if (!('genepattern' in cell.metadata) || cell.get_text().indexOf("gp.GPTask(gpserver") > -1) {
-                code = cell.get_text().replace("GPTaskWidget", "genepattern.display");
+            if (!('genepattern' in cell.metadata) ||
+                cell.get_text().indexOf("gp.GPTask(gpserver") > -1 ||
+                cell.get_text().indexOf("genepattern.GPTaskWidget") > -1) {
+                code = cell.get_text().replace("genepattern.GPTaskWidget", "genepattern.display");
                 code = code.replace("# !AUTOEXEC\n\n", "");
 
                 // Add the metadata
