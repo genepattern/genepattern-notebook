@@ -1269,6 +1269,12 @@ define("genepattern/job", ["base/js/namespace",
                 GPNotebook.slider.build_job_code(cell, 0, jobNumber);
             }
 
+            // Fix for old-style non-combined task cells
+            if (cell.get_text().indexOf("genepattern.GPTaskWidget") > -1) {
+                const code = cell.get_text().replace("genepattern.GPTaskWidget", "genepattern.display");
+                cell.set_text(code);
+            }
+
             // Render the view.
             if (!widget.el) widget.setElement($('<div></div>'));
 
