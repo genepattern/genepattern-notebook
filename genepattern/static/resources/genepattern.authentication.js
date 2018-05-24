@@ -1126,7 +1126,7 @@ define("genepattern/authentication", ["base/js/namespace",
             const workflow_alert = $("#workflow_queue_alert");
             workflow_alert.removeClass('alert-info');
             workflow_alert.addClass('alert-success');
-            workflow_alert.text("The GenePattern workflow has successful ran to completion.");
+            workflow_alert.text("The GenePattern workflow has successfully ran to completion.");
             $(".dialog-btn-complete").show();
             $(".dialog-btn-cancel").hide();
 
