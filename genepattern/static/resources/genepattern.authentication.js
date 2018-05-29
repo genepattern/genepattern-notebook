@@ -1367,6 +1367,7 @@ define("genepattern/authentication", ["base/js/namespace",
         _handle_genepattern_step: function(cell) {
             const workflow_queue = this;
             const gp_cell_type = cell.metadata.genepattern.type;
+            let job_event_created = false;
 
             // Job widgets can appear in task cells or job cells. Define how to handle them.
             const handle_job_widget = function() {
@@ -1379,13 +1380,17 @@ define("genepattern/authentication", ["base/js/namespace",
                 if (finished && workflow_queue.status === 'running') workflow_queue.step_completed();
 
                 // Otherwise wait until the completion event
-                widget.element.on("gp.jobComplete", function(event, job) {
-                    // Check for a job error and stop execution if one is found
-                    if (job && job.status && job.status().hasError) workflow_queue.error_encountered("GenePattern job encountered an error. Stopping execution.");
+                if (!job_event_created) {
+                    job_event_created = true; // Only create this event once per job
+                    widget.element.one("gp.jobComplete", function(event, job) {
+                        // Check for a job error and stop execution if one is found
+                        if (job && job.status && job.status().hasError) workflow_queue.error_encountered("GenePattern job encountered an error. Stopping execution.");
 
-                    // Make sure the status is still running and complete the step
-                    if (workflow_queue.status === 'running') workflow_queue.step_completed();
-                });
+                        // Make sure the status is still running and complete the step
+                        if (workflow_queue.status === 'running') workflow_queue.step_completed();
+                    });
+                }
+
             };
 
             // Go through each GenePattern cell type and handle it
@@ -1412,6 +1417,13 @@ define("genepattern/authentication", ["base/js/namespace",
                         if (workflow_queue.status === 'running') handle_job_widget();
                     }, 1000);
                 });
+
+                // If job wasn't submitted because of an error, stop workflow
+                setTimeout(function() {
+                    if (workflow_queue._has_genepattern_error(cell)) {
+                        workflow_queue.error_encountered("GenePattern analysis encountered an error. Stopping execution.");
+                    }
+                }, 1000);
             }
             else if (gp_cell_type === "job") {
                 handle_job_widget();
