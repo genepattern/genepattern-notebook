@@ -1763,9 +1763,12 @@ define("genepattern/uibuilder", ["base/js/namespace",
          * @param file_name
          */
         code_cell: function(path, file_name) {
+            const is_path_url = path.startsWith('http://') || path.startsWith('https://') || path.startsWith('ftp://');
+            const open_string = is_path_url ? path : file_name;
+
             const var_name = file_name.toLowerCase().replace(/\./g, '_') + "_file";
             const code = "# More information can be obtained by calling help(" + var_name + ").\n" +
-                       var_name + " = genepattern.open(\"" + file_name + "\")\n" +
+                       var_name + " = genepattern.open(\"" + open_string + "\")\n" +
                        var_name;
             const cell = Jupyter.notebook.insert_cell_below();
             cell.code_mirror.setValue(code);
@@ -1795,7 +1798,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
         },
 
         /**
-         * Construct the file links for the outpt widget
+         * Construct the file links for the output widget
          *
          * @returns {*|jQuery}
          * @private
@@ -1857,7 +1860,10 @@ define("genepattern/uibuilder", ["base/js/namespace",
         },
 
         _build_url: function(path) {
-            return this._get_current_dir_url() + this._extract_file_name(path);
+            const is_already_url = path.startsWith('http://') || path.startsWith('https://') || path.startsWith('ftp://');
+
+            if (is_already_url) return path;
+            else return this._get_current_dir_url() + this._extract_file_name(path);
         },
 
         _get_current_dir_url: function() {
