@@ -1294,7 +1294,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
             reader.onload = (function (the_file) {
                 return function (e) {
                     // Construct the path to the uploaded file
-                    const path = dir_path + encodeURI(the_file.name);
+                    const path = dir_path + the_file.name;
 
                     // Attach the file data to the model
                     model.content = btoa(e.target.result);
@@ -1304,7 +1304,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
 
                     // Make the success callback
                     promise.then(function(response) {
-                        pObj.success(response, path);
+                        pObj.success(response, the_file.name);
                     });
                 };
             })(pObj.file);
