@@ -1580,6 +1580,18 @@ define("genepattern/task", ["base/js/namespace",
                                                 $("<li></li>")
                                                     .append(
                                                         $("<a></a>")
+                                                            .attr("title", "Remove Job")
+                                                            .attr("href", "#")
+                                                            .append("Remove Job")
+                                                            .click(function() {
+                                                                widget.remove_job();
+                                                            })
+                                                    )
+                                            )
+                                            .append(
+                                                $("<li></li>")
+                                                    .append(
+                                                        $("<a></a>")
                                                             .attr("title", "Toggle Code View")
                                                             .attr("href", "#")
                                                             .append("Toggle Code View")
@@ -1834,6 +1846,48 @@ define("genepattern/task", ["base/js/namespace",
         },
 
         /**
+         * If this cell also contains a job widget, removed that widget from both the UI and the code
+         */
+        remove_job: function() {
+            const cell = this.options.cell;
+
+            // Remove the widget
+            cell.element.find(".gp-widget-job").remove();
+
+            // If necessary, remove the parent output_area
+            const output_areas = cell.element.find(".output_area");
+            if (output_areas.length > 2) {
+                output_areas.each(function(i, area) {
+                    const contains_widget = $(area).find(".gp-widget").length > 0;
+                    if (!contains_widget) $(area).css("height", 0); // If empty, hide
+                })
+            }
+
+            // Update the code
+            let existing_code = cell.get_text();
+            if (existing_code.indexOf('gp.GPJob(') > -1) { // Does this cell have a job appended already?
+                const lines = existing_code.split('\n'); // Divide the code into lines
+
+                // Find the line to display the task widget
+                let display_line = lines.length - 1;
+                for (let i = 0; i < lines.length; i++) {
+                    let line = lines[i];
+                    if (line.indexOf('GPTaskWidget') > -1 || line.indexOf('genepattern.display') > -1) {
+                        display_line = i;
+                        break;
+                    }
+                }
+
+                // Cut all lines after the task display line and join as a string
+                existing_code = lines.slice(0, display_line+1).join('\n').trim();
+            }
+
+            // Append the code
+            cell.set_text(existing_code);
+
+        },
+
+        /**
          * Returns the associated job widget for output
          */
         add_job_widget: function(cell, session, job_number) {
@@ -1855,7 +1909,7 @@ define("genepattern/task", ["base/js/namespace",
             // If so, get the parent output_subarea and remove the widget
             if (job_widget.length) {
                 output_subarea = job_widget.parent();
-                job_widget.remove();
+                this.remove_job();
             }
 
             // If not, create the output_subarea
@@ -1874,6 +1928,7 @@ define("genepattern/task", ["base/js/namespace",
 
             // Add the new widget to the output_subarea
             job_widget = $("<div></div>");
+            output_subarea.parent().css("height", "auto");
             output_subarea.append(job_widget);
 
             $(job_widget).jobResults({
