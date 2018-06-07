@@ -1,4 +1,4 @@
-import gp
+import genepattern.client as gp
 from IPython.core.magic import Magics, magics_class, line_magic
 
 """

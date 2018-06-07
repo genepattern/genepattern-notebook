@@ -3,7 +3,7 @@ import inspect
 import functools
 import re
 
-import gp
+import genepattern.client as gp
 import sys
 import urllib.request
 

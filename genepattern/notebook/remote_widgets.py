@@ -1,6 +1,6 @@
 import warnings
 
-import gp
+import genepattern.client as gp
 import IPython.display
 from ipywidgets import widgets
 from traitlets import Unicode, Integer

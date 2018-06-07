@@ -1035,8 +1035,8 @@ define("genepattern/navigation", ["base/js/namespace",
      */
     init.build_code = function(cell, server, username, password) {
         const code = '# Requires GenePattern Notebook: pip install genepattern-notebook\n' +
-                   'import gp\n' +
-                   'import genepattern\n' +
+                   'import genepattern.client as gp\n' +
+                   'import genepattern.notebook as genepattern\n' +
                    '\n' +
                    '# Username and password removed for security reasons.\n' +
                    'genepattern.display(genepattern.session.register("' + server + '", "' + username + '", "' + password + '"))';
@@ -1060,7 +1060,7 @@ define("genepattern/navigation", ["base/js/namespace",
      */
     init.load_genepattern_py = function(callback) {
         // The print() is necessary to force the callback
-        Jupyter.notebook.kernel.execute('import gp\nimport genepattern\nprint("OK")',
+        Jupyter.notebook.kernel.execute('import genepattern.client as gp\nimport genepattern.notebook as genepattern\nprint("OK")',
             {
                 iopub: {
                     output: function(response) {
