@@ -1000,50 +1000,57 @@ define("genepattern/uibuilder", ["base/js/namespace",
                 success: function() {
                     widget.evaluateAllVars({
                         success: function (globals) {
-                            // Get the output variable, if one is defined
-                            const funcOutput = widget._get_valid_output_variable();
+                            let code;
+                            try {
+                                // Get the output variable, if one is defined
+                                const funcOutput = widget._get_valid_output_variable();
 
-                            // Assign values from the inputs to the job input
-                            let funcInput = [];
-                            const uiParams = widget.element.find(".gp-widget-task-form").find(".gp-widget-task-param");
-                            for (let i = 0; i < uiParams.length; i++) {
-                                const uiParam = $(uiParams[i]);
-                                const uiInput = uiParam.find(".gp-widget-task-param-input");
-                                let uiValue = widget._getInputValue(uiInput);
+                                // Assign values from the inputs to the job input
+                                let funcInput = [];
+                                const uiParams = widget.element.find(".gp-widget-task-form").find(".gp-widget-task-param");
+                                for (let i = 0; i < uiParams.length; i++) {
+                                    const uiParam = $(uiParams[i]);
+                                    const uiInput = uiParam.find(".gp-widget-task-param-input");
+                                    let uiValue = widget._getInputValue(uiInput);
 
-                                // Handle leading and trailing whitespace
-                                if (typeof uiValue === "string") uiValue = uiValue.trim();
+                                    // Handle leading and trailing whitespace
+                                    if (typeof uiValue === "string") uiValue = uiValue.trim();
 
-                                let name = uiParam.attr("name");
-                                let quotes = widget.is_string_literal(uiInput.find("input:last, select").val());
+                                    let name = uiParam.attr("name");
+                                    let quotes = widget.is_string_literal(uiInput.find("input:last, select").val());
 
-                                // Check for variable references
-                                let reference = false;
-                                if (typeof uiValue === "string") reference = globals.indexOf(uiValue) >= 0 && !quotes;          // Handle string values
-                                if (uiValue.constructor === Array) reference = globals.indexOf(uiValue[0]) >= 0 && !quotes;     // Handle array values
+                                    // Check for variable references
+                                    let reference = false;
+                                    if (typeof uiValue === "string") reference = globals.indexOf(uiValue) >= 0 && !quotes;          // Handle string values
+                                    if (uiValue.constructor === Array) reference = globals.indexOf(uiValue[0]) >= 0 && !quotes;     // Handle array values
 
-                                if (uiValue !== null) {
-                                    // Wrap value in list if not already wrapped
-                                    if (uiValue.constructor !== Array) {
-                                        uiValue = [uiValue];
+                                    if (uiValue !== null) {
+                                        // Wrap value in list if not already wrapped
+                                        if (uiValue.constructor !== Array) {
+                                            uiValue = [uiValue];
+                                        }
+
+                                        funcInput.push({
+                                            name: name,
+                                            value: uiValue,
+                                            reference: reference,
+                                            string_literal: quotes
+                                        });
                                     }
-
-                                    funcInput.push({
-                                        name: name,
-                                        value: uiValue,
-                                        reference: reference,
-                                        string_literal: quotes
-                                    });
                                 }
+
+                                // Scroll to the new cell
+                                $('#site').animate({
+                                    scrollTop: $(widget.options.cell.element).position().top
+                                }, 500);
+
+                                widget.expandCollapse(false);
+                                code = widget.buildFunctionCode(funcInput, funcOutput);
                             }
-
-                            // Scroll to the new cell
-                            $('#site').animate({
-                                scrollTop: $(widget.options.cell.element).position().top
-                            }, 500);
-
-                            widget.expandCollapse(false);
-                            const code = widget.buildFunctionCode(funcInput, funcOutput);
+                            catch(e) {
+                                widget._add_output_area(widget.options.cell, "ERROR: Client-side issue building output code. " + e);
+                                return;
+                            }
 
                             // Display the code either in a new cell or in the same cell
                             widget._display_output(code);
@@ -1063,29 +1070,37 @@ define("genepattern/uibuilder", ["base/js/namespace",
             const widget = this;
             const cell = widget.options.cell;
 
-            // If append_output is false, display the code in a new cell (the old way)
-            if (!this.options.append_output) {
-                widget._new_cell_output(code);
-                return;
-            }
-
-            // Otherwise, clear output and append to this cell
-            cell.element.find(".gp-widget-call-output").remove();
-
-            // Execute the code in the background
-            Jupyter.notebook.kernel.execute(code,
-            {
-                iopub: {
-                    output: function(response) {
-                        widget._add_output_area(cell, response.content)
-                    }
+            try {
+                // If append_output is false, display the code in a new cell (the old way)
+                if (!this.options.append_output) {
+                    widget._new_cell_output(code);
+                    return;
                 }
-            },
-            {
-                silent: false,
-                store_history: true,
-                stop_on_error: true
-            });
+
+                // Otherwise, clear output and append to this cell
+                cell.element.find(".gp-widget-call-output").remove();
+
+                // Execute the code in the background
+                Jupyter.notebook.kernel.execute(code, {
+                        iopub: {
+                            output: function (response) {
+                                // Handle errors
+                                if (response.msg_type === "error") widget._add_output_error(cell, response.content);
+
+                                // Handle standard response
+                                else widget._add_output_area(cell, response.content)
+                            }
+                        }
+                    },
+                    {
+                        silent: false,
+                        store_history: true,
+                        stop_on_error: true
+                    });
+            }
+            catch (e) {
+                widget._add_output_area(widget.options.cell, "ERROR: Client-side issue handling code execution. " + code + "\n | \n" + e);
+            }
         },
 
         escape_return_text: function(raw_text) {
@@ -1101,14 +1116,46 @@ define("genepattern/uibuilder", ["base/js/namespace",
         },
 
         /**
-         * Appends an output area to the UI Builder cell with the returned output of the function.
-         * This will be called multiple times if the function has repeated output.
+         * Appends an error response to the UI Builder cell with the returned error info
          *
          * @param cell
          * @param content
          * @private
          */
-        _add_output_area: function(cell, content) {
+        _add_output_error: function(cell, content) {
+            const widget = this;
+
+            // Create the output_area structure
+            let uibuilder_output = this._output_area_structure(cell);
+
+            // Build the stack trace message
+            let error_message;
+            if (content.traceback) {
+                error_message = '';
+                content.traceback.forEach(function(e) {
+                    error_message += widget.escape_return_text(e) + '\n';
+                });
+            }
+
+            else {
+                error_message = content.ename && content.evalue ? content.ename + ": " + content.evalue : content;
+            }
+
+            $(uibuilder_output)
+                .addClass("output_text output_error")
+                .append(
+                    $("<pre></pre>").html(error_message)
+                );
+        },
+
+        /**
+         * Build the basic structure of the output area and return the right div for appending
+         *
+         * @param cell
+         * @returns {*|jQuery}
+         * @private
+         */
+        _output_area_structure: function(cell) {
             // Create the output_area structure
             const output_subarea = $("<div></div>").addClass("output_subarea jupyter-widgets-view");
             const output = cell.element.find(".output");
@@ -1120,11 +1167,32 @@ define("genepattern/uibuilder", ["base/js/namespace",
             );
 
             // Add the new output to the output_subarea
-            let uibuilder_output = $("<div></div>");
-            output_subarea.append(uibuilder_output);
+            return $("<div></div>").appendTo(output_subarea);
+        },
+
+        /**
+         * Appends an output area to the UI Builder cell with the returned output of the function.
+         * This will be called multiple times if the function has repeated output.
+         *
+         * @param cell
+         * @param content
+         * @private
+         */
+        _add_output_area: function(cell, content) {
+            // Create the output_area structure
+            let uibuilder_output = this._output_area_structure(cell);
+
+            // Handle string error message
+            if (typeof content === "string") {
+                $(uibuilder_output)
+                    .addClass("output_text")
+                    .append(
+                        $("<pre></pre>").text(content)
+                    );
+            }
 
             // Handle text output without returned data
-            if (content.text) {
+            else if (content.text) {
                 const escaped_text = this.escape_return_text(content.text);
 
                 $(uibuilder_output)
