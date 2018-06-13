@@ -364,6 +364,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
 
         reset_parameters: function() {
             const widget = this;
+            const cell = this.options.cell;
 
             // Reset each of the input variables
             const param_doms = widget.element.find(".gp-widget-task-form").find(".text-widget, .file-widget, .choice-widget");
@@ -374,7 +375,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
                     const param_name = param_widget.options.param.name();
 
                     param_widget.value(default_value, true);
-                    widget._set_parameter_metadata(param_name, default_value);
+                    GPNotebook.slider.set_parameter_metadata(cell, param_name, default_value);
                 }
                 else {
                     console.log("ERROR: Unknown widget in reset_parameters()");
@@ -390,7 +391,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
             if (default_value === "") default_value = " ";
 
             output_widget.value(default_value);
-            widget._set_parameter_metadata("output_var", default_value.trim());
+            GPNotebook.slider.set_parameter_metadata(cell, "output_var", default_value.trim());
         },
 
         _get_parameter: function(name) {
@@ -417,6 +418,10 @@ define("genepattern/uibuilder", ["base/js/namespace",
             }
 
             // Read the metadata and alter the widget accordingly
+
+            // Add the current name and description of the widget
+            cell.metadata.genepattern.name = widget.options.name;
+            cell.metadata.genepattern.description = widget.options.description;
 
             // Hide or show code
             if (!cell.metadata.genepattern.show_code) {
@@ -688,30 +693,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
          * @param value
          */
         updateCode: function(paramName, value) {
-            this._set_parameter_metadata(paramName, value);
-        },
-
-        /**
-         * Set the new value in the cell metadata
-         *
-         * @param param_name
-         * @param value
-         * @private
-         */
-        _set_parameter_metadata: function(param_name, value) {
-            const cell = this.options.cell;
-
-            // Get the existing param values
-            let params = GPNotebook.slider.get_metadata(cell, "param_values");
-
-            // Initialize the parameter map if not defined
-            if (!params) params = {};
-
-            // Set the new value
-            params[param_name] = value;
-
-            // Write to the cell metadata
-            GPNotebook.slider.set_metadata(cell, "param_values", params)
+            GPNotebook.slider.set_parameter_metadata(this.options.cell, paramName, value);
         },
 
         /**
@@ -1999,6 +1981,10 @@ define("genepattern/uibuilder", ["base/js/namespace",
             }
 
             // Read the metadata and alter the widget accordingly
+
+            // Add the current name and description of the widget
+            cell.metadata.genepattern.name = widget.options.name;
+            cell.metadata.genepattern.description = widget.options.description;
 
             // Hide or show code
             if (!cell.metadata.genepattern.show_code) {

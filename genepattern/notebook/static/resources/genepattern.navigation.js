@@ -339,10 +339,35 @@ define("genepattern/navigation", ["base/js/namespace",
                    "genepattern.display(" + taskName + ")\n";
 
         // Add the metadata
-        slider.make_genepattern_cell(cell, "task");
+        slider.make_genepattern_cell(cell, "task", {
+            "name": module["name"],
+            "description": module["description"]
+        });
 
         // Add the code to the cell
         cell.set_text(code);
+    };
+
+    /**
+     * Set the new value in the cell metadata
+     *
+     * @param cell
+     * @param param_name
+     * @param value
+     * @private
+     */
+    slider.set_parameter_metadata = function(cell, param_name, value) {
+        // Get the existing param values
+        let params = slider.get_metadata(cell, "param_values");
+
+        // Initialize the parameter map if not defined
+        if (!params) params = {};
+
+        // Set the new value
+        params[param_name] = value;
+
+        // Write to the cell metadata
+        slider.set_metadata(cell, "param_values", params)
     };
 
     /**
@@ -359,7 +384,9 @@ define("genepattern/navigation", ["base/js/namespace",
 
         // Add the metadata if this is a standalone cell
         if (!('genepattern' in cell.metadata)) {
-            slider.make_genepattern_cell(cell, "job");
+            slider.make_genepattern_cell(cell, "job", {
+                "name": "Job #" + jobNumber
+            });
         }
 
         // Remove previous jobs and append the code to the cell
@@ -1046,7 +1073,8 @@ define("genepattern/navigation", ["base/js/namespace",
         }
         else if (cell.cell_type === 'code') {
             slider.make_genepattern_cell(cell, "auth", {
-                "server": server
+                "server": server,
+                "name": "Login"
             });
             cell.code_mirror.setValue(code);
         }
@@ -1212,8 +1240,10 @@ define("genepattern/navigation", ["base/js/namespace",
      * Valid options:
      *      server: default GP server URL (used in auth cell)
      *      show_code: hide or show the input code (default is false)
-     *      param_values: a map of the current parameter values (used in uibuilder) (not set is use function default)
+     *      param_values: a map of the current parameter values (used in uibuilder) (not set means use the function's default)
      *      hide_params: a map of whether parameters are hidden (default is false)
+     *      name: The name of the GenePattern cell
+     *      description: Description of the widget
      *
      * @param cell
      * @param type

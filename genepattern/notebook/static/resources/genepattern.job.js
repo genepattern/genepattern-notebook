@@ -700,9 +700,6 @@ define("genepattern/job", ["base/js/namespace",
             // Append the widget view
             newCode += "\ngenepattern.display(" + taskVar + ")";
 
-            // Add the metadata
-            GPNotebook.slider.make_genepattern_cell(cell, "task");
-
             // Put the code in the cell
             cell.code_mirror.setValue(newCode);
         },

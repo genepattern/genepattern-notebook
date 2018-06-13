@@ -3256,7 +3256,7 @@ define("genepattern/task", ["base/js/namespace",
                 code = code.replace("# !AUTOEXEC\n\n", "");
 
                 // Add the metadata
-                GPNotebook.slider.make_genepattern_cell(cell, "task");
+                GPNotebook.slider.make_genepattern_cell(cell, "task", {}); // Task name unknown
 
                 // Add the code to the cell
                 cell.set_text(code);
