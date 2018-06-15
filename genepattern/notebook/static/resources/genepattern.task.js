@@ -933,6 +933,7 @@ define("genepattern/task", ["base/js/namespace",
          * @private
          */
         _updateCode: function() {
+            // Update the code
             this._runTask.updateCode(this._param.name(), this._values);
         },
 
@@ -2288,6 +2289,9 @@ define("genepattern/task", ["base/js/namespace",
                     // Add the parameter widget
                     const pDiv = this._addParam(param, groupDiv.find(".gp-widget-task-group-params"));
 
+                    // Add to the metadata
+                    GPNotebook.slider.set_parameter_metadata(this.options.cell, param.name(), param.values());
+
                     if (reloadVals[param.name()] !== undefined) {
                         const pWidget = pDiv.data("widget");
                         pWidget.value(reloadVals[param.name()]);
@@ -2501,6 +2505,9 @@ define("genepattern/task", ["base/js/namespace",
             // Set the new code
             code = lines.join("\n");
             this.options.cell.code_mirror.setValue(code);
+
+            // Update the metadata
+            GPNotebook.slider.set_parameter_metadata(this.options.cell, paramName, value);
 
             return code;
         },

@@ -428,6 +428,15 @@ define("genepattern/uibuilder", ["base/js/namespace",
                 cell.element.find(".input").hide();
             }
 
+            if (widget.options.params) {
+                if (!cell.metadata.genepattern.param_values) cell.metadata.genepattern.param_values = {};
+                widget.options.params.forEach(function(p) {
+                    const param = widget._get_parameter(p.name);
+                    const value = widget._get_parameter_metadata(p.name);
+                    if (param && !value) GPNotebook.slider.set_parameter_metadata(cell, p.name, param.value());
+                });
+            }
+
             // Current values of parameters
             if (cell.metadata.genepattern.param_values) {
                 const params = Object.keys(cell.metadata.genepattern.param_values);
