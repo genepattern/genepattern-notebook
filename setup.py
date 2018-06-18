@@ -1,6 +1,8 @@
-import genepattern.notebook
 import os
 from distutils.core import setup
+
+
+__version__ = '0.7.3.RC4'
 
 
 def get_data_files():
@@ -9,10 +11,10 @@ def get_data_files():
     """
     return [
         ('share/jupyter/nbextensions/genepattern', [
-            'genepattern/notebook/static/index.js',
+            'genepattern/static/index.js',
         ]),
         ('share/jupyter/nbextensions/genepattern/resources',
-         ['genepattern/notebook/static/resources/' + f for f in os.listdir('genepattern/notebook/static/resources')]
+         ['genepattern/static/resources/' + f for f in os.listdir('genepattern/static/resources')]
          ),
         ('etc/jupyter/nbconfig/notebook.d', ['genepattern.json']),
         # ('share/jupyter/lab/extensions', [
@@ -23,15 +25,14 @@ def get_data_files():
 
 
 setup(name='genepattern-notebook',
-      packages=['genepattern', 'genepattern.notebook'],
-      package_dir={'genepattern': 'genepattern/notebook', 'genepattern.notebook': 'genepattern/notebook'},
-      version=genepattern.notebook.__version__,
+      packages=['genepattern'],
+      version=__version__,
       description='GenePattern Notebook extension for Jupyter',
       license='BSD',
       author='Thorin Tabor',
       author_email='tmtabor@cloud.ucsd.edu',
       url='https://github.com/genepattern/genepattern-notebook',
-      download_url='https://github.com/genepattern/genepattern-notebook/archive/' + genepattern.notebook.__version__ + '.tar.gz',
+      download_url='https://github.com/genepattern/genepattern-notebook/archive/' + __version__ + '.tar.gz',
       keywords=['genepattern', 'genomics', 'bioinformatics', 'ipython', 'jupyter'],
       classifiers=[
           'Development Status :: 4 - Beta',
@@ -44,12 +45,12 @@ setup(name='genepattern-notebook',
           'Framework :: Jupyter',
       ],
       install_requires=[
-          'genepattern-python>=1.4.7',
+          'genepattern-python>=1.4.1',
           'nbtools',
           'jupyter',
           'notebook>=4.2.0',
           'ipywidgets>=7.0.0',
       ],
-      package_data={'genepattern': ['notebook/static/index.js', 'notebook/static/resources/*']},
+      package_data={'genepattern': ['static/index.js', 'static/resources/*']},
       data_files=get_data_files(),
       )
