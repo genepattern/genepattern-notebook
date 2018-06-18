@@ -22,6 +22,6 @@ except Exception:
 
 __author__ = 'Thorin Tabor'
 __copyright__ = 'Copyright 2014-2018, Regents of the University of California & Broad Institute'
-__version__ = '0.7.2'
+__version__ = '0.7.3'
 __status__ = 'Beta'
 __license__ = 'BSD-3-Clause'
