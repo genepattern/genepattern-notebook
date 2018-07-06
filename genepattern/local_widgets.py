@@ -9,7 +9,7 @@ import urllib.request
 
 from IPython.core.display import display
 from ipywidgets import widgets
-from traitlets import Unicode, List
+from traitlets import Unicode, List, Bool
 
 """
 The CallWidget and functions related to local code execution
@@ -102,6 +102,7 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
     output_var = Unicode('', sync=True)
     params = List(sync=True)
     function_import = Unicode('', sync=True)
+    register_tool = Bool(True, sync=True)
     function_or_method = None
 
     def __init__(self, function_or_method, **kwargs):
@@ -125,6 +126,7 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
         custom_desc = kwargs['description'] if 'description' in kwargs else None
         custom_output = kwargs['output_var'] if 'output_var' in kwargs else None
         custom_import = kwargs['function_import'] if 'function_import' in kwargs else None
+        custom_register = kwargs['register_tool'] if 'register_tool' in kwargs else True
 
         # Apply output_var deprecation warning
         if 'output_var' in kwargs:
@@ -140,6 +142,7 @@ class GPUIBuilder(gp.GPResource, widgets.DOMWidget):
         self.output_var = custom_output or ''
         self.params = params
         self.function_import = custom_import or function_import
+        self.register_tool = custom_register
         self.function_or_method = function_or_method
 
     @staticmethod

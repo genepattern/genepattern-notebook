@@ -26,6 +26,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
             description: null,
             output_var: null,
             append_output: true,
+            register_tool: true,
             params: null,
             function_import: null,
             cell: null
@@ -272,6 +273,9 @@ define("genepattern/uibuilder", ["base/js/namespace",
         register_tool: function() {
             const widget = this;
             const code = widget.options.cell.get_text();
+
+            // Skip registering with the Tool Manager, if register_tool flag is false
+            if (!widget.options.register_tool) return;
 
             const UIBuilderTool = new NBToolManager.NBTool({
                 origin: "Notebook",
@@ -1592,6 +1596,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
             const output_var = widget.model.get('output_var');
             const params = widget.model.get('params');
             const function_import = widget.model.get('function_import');
+            const register_tool = widget.model.get('register_tool');
 
             // Render the cell and hide code by default
             const element = widget.$el;
@@ -1605,6 +1610,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
                         output_var: output_var,
                         params: params,
                         function_import: function_import,
+                        register_tool: register_tool,
                         cell: cell
                     });
                 }
