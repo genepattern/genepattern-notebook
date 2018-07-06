@@ -15,9 +15,9 @@
  */
 const GENEPATTERN_SERVERS = [
     ['Broad Institute', 'https://genepattern.broadinstitute.org/gp'],
+    ['GenePattern Cloud', 'https://cloud.genepattern.org/gp'],
     ['Indiana University', 'https://gp.indiana.edu/gp'],
-    ['GenePattern AWS Beta', 'https://gp-beta-ami.genepattern.org/gp'],
-    ['Broad Internal (Broad Institute Users Only)', 'https://gpbroad.broadinstitute.org/gp'],
+    ['Broad Internal', 'https://gpbroad.broadinstitute.org/gp'],
     ['Custom GenePattern Server', 'Custom']
 ];
 
