@@ -1153,7 +1153,7 @@ define("genepattern/uibuilder", ["base/js/namespace",
         _output_area_structure: function(cell) {
             // Create the output_area structure
             const output_subarea = $("<div></div>").addClass("output_subarea jupyter-widgets-view");
-            const output = cell.element.find(".output");
+            const output = cell.element.find(".output:first");
             output.append(
                 $("<div></div>")
                     .addClass("output_area gp-widget-call-output")
@@ -1253,6 +1253,9 @@ define("genepattern/uibuilder", ["base/js/namespace",
                     // Resolve the display promise and append the widget to the output area
                     .then(function(display) {
                         display.$el.appendTo(uibuilder_output);
+
+                        // Make sure parents are visible
+                        uibuilder_output.parents().show()
                     });
             }
 
