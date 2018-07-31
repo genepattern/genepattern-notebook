@@ -10,7 +10,8 @@
 define("genepattern/job", ["base/js/namespace",
                   "nbextensions/jupyter-js-widgets/extension",
                   "genepattern/navigation",
-                  "jqueryui"], function (Jupyter, widgets, GPNotebook) {
+                  "jqueryui",
+                  "nbtools/utils",], function (Jupyter, widgets, GPNotebook, $, Utils) {
 
     /**
      * Widget for viewing the job results of a launched job.
@@ -61,7 +62,7 @@ define("genepattern/job", ["base/js/namespace",
             }
 
             // Add class and child elements
-            this.element.addClass("panel panel-default gp-widget gp-widget-job");
+            this.element.addClass("panel panel-default nbtools-widget gp-widget gp-widget-job");
             this.element.append(
                 $("<div></div>")
                     .addClass("gp-widget-job-float-right")
@@ -1296,7 +1297,7 @@ define("genepattern/job", ["base/js/namespace",
             setTimeout(hideCode, 1);
 
             // Double-check to make sure the widget renders
-            GPNotebook.init.ensure_rendering(cell);
+            Utils.ensure_rendering(cell);
         }
     });
 

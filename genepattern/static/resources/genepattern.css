@@ -459,96 +459,6 @@ div.cell.selected {
 }
 
 /*
- * File Input Styles
- */
-
-.file-widget {
-    border: 2px dashed darkgray;
-    display: inline-block;
-    min-width: 450px;
-    width: 100%;
-    padding: 9px 10px 10px;
-    white-space: normal;
-    word-break: break-all;
-}
-
-.file-widget-upload {
-    position: relative;
-}
-
-.file-widget-upload-file {
-    margin-right: 7px;
-}
-
-.file-widget-input-file {
-    display: none;
-}
-
-.file-widget-input-file {
-    position: absolute;
-    z-index: -1000;
-}
-
-.file-widget-drop {
-    color: darkgray;
-    letter-spacing: 1px;
-    position: absolute;
-    display: block;
-    float: right;
-    bottom: 0px;
-    right: 0;
-}
-
-.file-widget-size {
-    font-size: 0.9em;
-    font-style: italic;
-    margin-left: 5px;
-    margin-top: 5px;
-}
-
-.file-widget-value {
-    background-color: #f7f7f7;
-    margin-top: 10px;
-    overflow: hidden;
-    padding: 4px;
-    line-height: 2.2em;
-    vertical-align: middle;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.file-widget-value-upload {
-    background-color: #dadada;
-}
-
-.file-widget-value-erase {
-    float: right;
-}
-
-.file-widget-path-label {
-    font-weight: bold;
-    text-align: left !important;
-}
-
-.file-widget-path-buttons {
-    margin-top: 5px;
-    text-align: right;
-}
-
-.file-widget-warning {
-    margin-top: 10px;
-}
-
-/*
- * Choice Input Styles
- */
-
-.choice-widget-select {
-    position: relative;
-    left: -10px;
-}
-
-/*
  * Task & UI Builder Styles
  */
 
@@ -695,26 +605,6 @@ div.cell.selected {
 
 .gp-widget-typeahead-list .dropdown-file {
     padding-left: 40px;
-}
-
-/*
- * UI Output Styles
- */
-
-.gp-widget-output-text {
-    margin-top: 20px;
-}
-
-.gp-widget-output-text > pre {
-    word-break: normal;
-}
-
-.gp-widget-output-status {
-    padding-bottom: 3px;
-    text-align: right;
-    padding-right: 20px;
-    color: #303F9F;
-    font-family: monospace;
 }
 
 /*

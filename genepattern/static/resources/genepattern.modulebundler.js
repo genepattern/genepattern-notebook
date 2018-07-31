@@ -11,7 +11,8 @@ define("genepattern/modulebundler", ["base/js/namespace",
                             "nbextensions/jupyter-js-widgets/extension",
                             "genepattern/navigation",
                             "genepattern/task",
-                            "nbtools"], function (Jupyter, widgets, GPNotebook, tasks, NBToolManager) {
+                            "nbtools",
+                            "nbtools/utils"], function (Jupyter, widgets, GPNotebook, tasks, NBToolManager, Utils) {
 
     $.widget("gp.createModule", {
         // Flags for whether events have been called on the widget
@@ -348,7 +349,7 @@ define("genepattern/modulebundler", ["base/js/namespace",
                 .append(
                     $("<label></label>")
                         .addClass("col-sm-3 control-label gp-widget-task-param-name")
-                        .text(GPNotebook.util.display_name(param.name()) + required)
+                        .text(Utils.display_name(param.name()) + required)
                 )
                 .append(
                     $("<div></div>")

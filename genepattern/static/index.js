@@ -16,8 +16,7 @@ define([
     "nbextensions/genepattern/resources/genepattern.navigation",
     "nbextensions/genepattern/resources/genepattern.authentication",
     "nbextensions/genepattern/resources/genepattern.job",
-    "nbextensions/genepattern/resources/genepattern.task",
-    "nbextensions/genepattern/resources/genepattern.uibuilder"], function(Jupyter, events, $) {
+    "nbextensions/genepattern/resources/genepattern.task"], function(Jupyter, events, $) {
 
     function load_ipython_extension() {
         const STATIC_PATH = Jupyter.notebook.base_url + "nbextensions/genepattern/resources/";
@@ -36,6 +35,9 @@ define([
             const interval = setInterval(function() {
                 GPNotebook.init.wait_for_kernel(interval);
             }, 500);
+
+            // Register global reference
+            window.GPNotebook = GPNotebook;
         });
     }
 

@@ -26,7 +26,8 @@ define("genepattern/authentication", ["base/js/namespace",
                                       "nbtools",
                                       "genepattern/navigation",
                                       "genepattern",
-                                      "jqueryui"], function (Jupyter, widgets, NBToolManager, GPNotebook, gp) {
+                                      "jqueryui",
+                                      "nbtools/utils",], function (Jupyter, widgets, NBToolManager, GPNotebook, gp, $, Utils) {
 
     $.widget("gp.auth", {
         options: {
@@ -53,7 +54,7 @@ define("genepattern/authentication", ["base/js/namespace",
 
             // Render the view.
             this.element
-                .addClass("panel panel-primary gp-widget gp-widget-auth")
+                .addClass("panel panel-primary nbtools-widget gp-widget gp-widget-auth")
                 .append(
                     $("<div></div>")
                         .addClass("panel-heading")
@@ -1486,7 +1487,7 @@ define("genepattern/authentication", ["base/js/namespace",
             setTimeout(hideCode, 1);
 
             // Double-check to make sure the widget renders
-            GPNotebook.init.ensure_rendering(cell);
+            Utils.ensure_rendering(cell);
         }
     });
 

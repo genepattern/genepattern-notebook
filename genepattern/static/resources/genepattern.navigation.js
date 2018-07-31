@@ -10,7 +10,8 @@
 define("genepattern/navigation", ["base/js/namespace",
         "nbextensions/jupyter-js-widgets/extension",
         "nbtools",
-        "genepattern"], function (Jupyter, widgets, NBToolManager, gp) {
+        "nbtools/metadata",
+        "genepattern"], function (Jupyter, widgets, NBToolManager, MetadataManager, gp) {
 
     const slider = {};
     const menus = {};
@@ -46,17 +47,6 @@ define("genepattern/navigation", ["base/js/namespace",
         const a = document.createElement('a');
         a.href = url;
         return a.hostname;
-    };
-
-    /**
-     * Converts a raw parameter name to a displayable format
-     * @param name
-     */
-    util.display_name = function(name) {
-        let display_name = name;
-        display_name = display_name.replace(/\./g,' ');
-        display_name = display_name.replace(/_/g,' ');
-        return display_name;
     };
 
     /**
@@ -104,16 +94,6 @@ define("genepattern/navigation", ["base/js/namespace",
 
         // Select provided cell
         cell.select();
-    };
-
-    /**
-     * Get the index of the specified cell
-     *
-     * @param cell
-     * @returns {*}
-     */
-    util.cell_index = function(cell) {
-        return Jupyter.notebook.get_cell_elements().index(cell.element);
     };
 
     /**
@@ -217,40 +197,6 @@ define("genepattern/navigation", ["base/js/namespace",
     };
 
     /**
-     * Return a list of GenePattern output files that match the indicated kind
-     *
-     * @param kinds
-     * @returns {Array}
-     */
-    slider.output_files_by_kind = function(kinds) {
-        const matches = [];
-        let kind_list = kinds;
-
-        // Handle the special case of * (match all)
-        const match_all = kinds === "*";
-
-        // If passing in a single kind as a string, wrap it in a list
-        if (typeof kinds === 'string') {
-            kind_list = [kinds];
-        }
-
-        // For each out file, see if it is the right kind
-        $(".gp-widget-job-output-file").each(function(index, output) {
-            const kind = $(output).data("kind");
-            if (match_all || kind_list.indexOf(kind) >= 0) {
-                const job_desc = $(output).closest(".gp-widget").find(".gp-widget-job-task").text().trim();
-                matches.push({
-                    name: $(output).text().trim(),
-                    url: $(output).attr("href"),
-                    job: job_desc
-                });
-            }
-        });
-
-        return matches;
-    };
-
-    /**
      * Returns structure containing all task widgets currently in the notebook, which accept the
      * indicated kind. Structure is a list of pairings with the cell index and the widget object.
      * Ex: [[1, gp.runTask()], [9, gp.runTask()], [12, gp.runTask()]]
@@ -262,7 +208,7 @@ define("genepattern/navigation", ["base/js/namespace",
         const matches = [];
 
         $(".cell").each(function(index, node) {
-            const widgetNode = $(node).find(".gp-widget-task, .gp-widget-call");
+            const widgetNode = $(node).find(".gp-widget-task, .nbtools-uibuilder");
 
             if (widgetNode.length > 0) {
                 const widget = widgetNode.data("widget");
@@ -508,25 +454,6 @@ define("genepattern/navigation", ["base/js/namespace",
             }
             slider.create_authentication_cell(cell);
         }
-    };
-
-    /**
-     * Get all files linked from markdown cells with the gp-file class on the <a> tag
-     *
-     * Returns a dict of files with the file linked text as the key and the URL as the value.
-     */
-    slider.markdown_files = function() {
-        const file_dict = {};
-
-        const markdown_cells = $(".cell.text_cell");
-        markdown_cells.each(function(i, cell) {
-            const file_links = $(cell).find("a.gp-file");
-            file_links.each(function(j, link) {
-                file_dict[$(link).text()] = $(link).attr("href");
-            });
-        });
-
-        return file_dict;
     };
 
     /**
@@ -961,17 +888,6 @@ define("genepattern/navigation", ["base/js/namespace",
     };
 
     /**
-     * Double-check to make sure the cell renders and re-execute if it did not
-     *
-     * @param cell
-     */
-    init.ensure_rendering = function(cell) {
-        setTimeout(function() {
-            if (cell.element.find(".gp-widget").length === 0) cell.execute();
-        }, 1000);
-    };
-
-    /**
      * Wait for kernel and then init notebook widgets
      */
     init.wait_for_kernel = function (id) {
@@ -1088,7 +1004,7 @@ define("genepattern/navigation", ["base/js/namespace",
      */
     init.load_genepattern_py = function(callback) {
         // The print() is necessary to force the callback
-        Jupyter.notebook.kernel.execute('import gp\nimport genepattern\nprint("OK")',
+        Jupyter.notebook.kernel.execute('import gp\nimport nbtools\nimport genepattern\nprint("OK")',
             {
                 iopub: {
                     output: function(response) {
@@ -1130,11 +1046,11 @@ define("genepattern/navigation", ["base/js/namespace",
 
             all_cells.forEach(function(cell) {
                 // Skip GenePattern cells that are already rendered
-                if (cell.element.find(".gp-widget").length > 0) return;
+                if (cell.element.find(".gp-widget, .nbtools-widget").length > 0) return;
 
-                if (init.is_gp_cell(cell)) {
+                if (init.is_gp_cell(cell) || MetadataManager.is_tool_cell(cell)) {
                     // Do we need to load the genepattern library first?
-                    if (slider.get_metadata(cell, "type") === "uibuilder" && !genepattern_loaded) {
+                    if (MetadataManager.get_metadata(cell, "type") === "uibuilder" && !genepattern_loaded) {
                         init.load_genepattern_py(function() {
                             genepattern_loaded = true;
                             cell.execute();
@@ -1172,7 +1088,7 @@ define("genepattern/navigation", ["base/js/namespace",
         // Hide or show the slider tab if a GenePattern cell is highlighted
         $([Jupyter.events]).on('select.Cell', function() {
             const cell = Jupyter.notebook.get_selected_cell();
-            const isGPCell = cell.element.find(".gp-widget").length > 0;
+            const isGPCell = cell.element.find(".gp-widget, .nbtools-widget").length > 0;
 
             // If authenticated and the selected cell is a GenePattern cell, show
             if (session_manager.sessions.length > 0 && isGPCell) {
