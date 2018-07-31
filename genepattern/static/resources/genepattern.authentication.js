@@ -422,7 +422,7 @@ define("genepattern/authentication", ["base/js/namespace",
 
             // Trigger gp.widgetRendered event on cell element
             setTimeout(function() {
-                widget.element.closest(".cell").trigger("gp.widgetRendered");
+                widget.element.closest(".cell").trigger("nbtools.widget_rendered");
             }, 10);
 
             return this;
@@ -1409,7 +1409,7 @@ define("genepattern/authentication", ["base/js/namespace",
                 cell.element.find(".gp-widget-task-run-button:first").click();
 
                 // Wait until the job is submitted and continue
-                cell.element.on("gp.widgetRendered", function() {
+                cell.element.on("nbtools.widget_rendered", function() {
                     setTimeout(function() {
                         if (workflow_queue._has_genepattern_error(cell)) {
                             workflow_queue.error_encountered("GenePattern analysis encountered an error. Stopping execution.");

@@ -219,7 +219,7 @@ define("genepattern/modulebundler", ["base/js/namespace",
             // Trigger gp.widgetRendered event on cell element
             setTimeout(function () {
                 widget._widgetRendered = true;
-                widget.element.closest(".cell").trigger("gp.widgetRendered");
+                widget.element.closest(".cell").trigger("nbtools.widget_rendered");
             }, 10);
 
             return this;

@@ -802,7 +802,7 @@ define("genepattern/navigation", ["base/js/namespace",
 
                 // Execute the cell
                 setTimeout(function() {
-                    cell.element.on("gp.widgetRendered", function() {
+                    cell.element.on("nbtools.widget_rendered", function() {
                         const widgetElement = cell.element.find(".gp-widget");
                         const widget = widgetElement.data("widget");
 
