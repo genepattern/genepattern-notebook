@@ -1167,9 +1167,9 @@ define("genepattern/job", ["base/js/namespace",
          * @param file_name
          */
         code_cell: function(job, file_name) {
-            const var_name = file_name.toLowerCase().replace(/\./g, '_') + "_" + job.jobNumber();
+            const var_name = Utils.make_python_safe(file_name.toLowerCase() + "_" + job.jobNumber());
             const code = "# More documentation can be obtained at the GenePattern website, or by calling help(job" + job.jobNumber() + ").\n" +
-                       var_name + " = " + "job" + job.jobNumber() + ".get_file(\"" + file_name + "\")\n" +
+                       var_name + " = " + "job" + job.jobNumber() + ".get_file(\"" + file_name.split('/').pop() + "\")\n" +
                        var_name;
             const cell = Jupyter.notebook.insert_cell_below();
             cell.code_mirror.setValue(code);
@@ -1182,11 +1182,11 @@ define("genepattern/job", ["base/js/namespace",
         },
 
         dataframe_cell: function(job, file_name, kind) {
-            const var_name = file_name.toLowerCase().replace(/\./g, '_') + "_" + job.jobNumber();
+            const var_name = Utils.make_python_safe(file_name.toLowerCase() + "_" + job.jobNumber());
             const kind_import = kind === "gct" ? "gct" : "odf";
             const code = "# The code below will only run if pandas is installed: http://pandas.pydata.org\n" +
                        "from gp.data import " + kind_import.toUpperCase() + "\n" +
-                       var_name + " = " + kind_import.toUpperCase() + "(job" + job.jobNumber() + ".get_file(\"" + file_name + "\"))\n" +
+                       var_name + " = " + kind_import.toUpperCase() + "(job" + job.jobNumber() + ".get_file(\"" + file_name.split('/').pop() + "\"))\n" +
                        var_name;
             const cell = Jupyter.notebook.insert_cell_below();
             cell.code_mirror.setValue(code);
