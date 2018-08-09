@@ -227,23 +227,23 @@
     left: 7px;
 }
 
-.gp-widget {
+.nbtools-widget.gp-widget {
     width: 100%;
     max-width: 100%;
     border-color: rgba(10, 45, 105, 0.80);
     overflow: visible !important;
 }
 
-.gp-widget.panel {
+.nbtools-widget.gp-widget.panel {
     margin-bottom: 0;
 }
 
-.gp-widget .panel-heading {
+.nbtools-widget.gp-widget .panel-heading {
     background-color: rgba(10, 45, 105, 0.80);
     color: white;
 }
 
-.gp-widget label {
+.nbtools-widget.gp-widget label {
     font-weight: bold;
 }
 
@@ -266,12 +266,12 @@
     padding-right: 10px;
 }
 
-.gp-widget .btn-primary {
+.nbtools-widget.gp-widget .btn-primary {
     border-color: rgba(10, 45, 105, 0.80);
     background-color: rgba(10, 45, 105, 0.80);
 }
 
-.gp-widget .btn-primary:hover {
+.nbtools-widget.gp-widget .btn-primary:hover {
     border-color: rgba(10, 45, 105, 1);
     background-color: rgba(10, 45, 105, 1);
 }
