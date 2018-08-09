@@ -11,6 +11,19 @@ define([
     // Load the dependencies
     "base/js/namespace", "base/js/events", "jquery",
 
+    // Bootstrap loading the nbtools requirejs modules
+    "nbextensions/nbtools/tool_manager",
+    "nbextensions/nbtools/metadata_manager",
+    "nbextensions/nbtools/variable_manager",
+    "nbextensions/nbtools/utils",
+    "nbextensions/nbtools/toolbox",
+    "nbextensions/nbtools/text",
+    "nbextensions/nbtools/choice",
+    "nbextensions/nbtools/file",
+    "nbextensions/nbtools/typeahead",
+    "nbextensions/nbtools/uibuilder",
+    "nbextensions/nbtools/uioutput",
+
     // Bootstrap loading the GenePattern requirejs modules
     "nbextensions/genepattern/resources/genepattern",
     "nbextensions/genepattern/resources/genepattern.navigation",
