@@ -48,7 +48,6 @@ setup(name='genepattern-notebook',
       install_requires=[
           'genepattern-python>=1.4.1',
           'nbtools>= 0.2.0',
-          'jupyter',
           'notebook>=4.2.0',
           'ipywidgets>=7.0.0',
       ],
