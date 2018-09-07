@@ -1132,7 +1132,7 @@ define("genepattern/job", ["base/js/namespace",
                     const output = outputs[i];
                     const link = $("<a></a>")
                         .text(output["link"]["name"] + " ")
-                        .addClass("gp-widget-job-output-file")
+                        .addClass("nbtools-widget-job-output-file")
                         .attr("data-kind", output["kind"])
                         .attr("href", output["link"]["href"])
                         .attr("onclick", "return false;")

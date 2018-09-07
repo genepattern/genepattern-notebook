@@ -1648,7 +1648,7 @@ define("genepattern/task", ["base/js/namespace",
         const output_index = output.match(/\[(.*?)\]/) ? parseInt(output.match(/\[(.*?)\]/)[1]) : 1;
 
         // Select matching outputs
-        const all_outputs = $(selected_module).find(".gp-widget-job-output-file");
+        const all_outputs = $(selected_module).find(".nbtools-widget-job-output-file");
         let selected_outputs = [];
         all_outputs.each(function(i, output) {
             const kind = $(output).attr("data-kind");
