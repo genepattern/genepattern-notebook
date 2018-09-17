@@ -2,7 +2,7 @@ import os
 from distutils.core import setup
 
 
-__version__ = '0.8.0'
+__version__ = '0.8.1'
 
 
 def get_data_files():
@@ -46,9 +46,9 @@ setup(name='genepattern-notebook',
           'Framework :: Jupyter',
       ],
       install_requires=[
-          'genepattern-python>=1.4.1',
+          'genepattern-python>=1.4.2',
           'nbtools>= 0.2.0',
-          'notebook>=4.2.0',
+          'notebook>=5.0.0',
           'ipywidgets>=7.0.0',
       ],
       package_data={'genepattern': ['static/index.js', 'static/resources/*']},
