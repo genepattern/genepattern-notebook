@@ -85,72 +85,11 @@ define("genepattern/job", ["base/js/namespace",
                                         widget.expandCollapse();
                                     })
                             )
-                            .append(" ")
-                            .append(
-                                $("<div></div>")
-                                    .addClass("btn-group gp-widget-job-group")
-                                    .append(
-                                        $("<button></button>")
-                                            .addClass("btn btn-default btn-sm")
-                                            .css("padding", "2px 7px")
-                                            .attr("type", "button")
-                                            .attr("data-toggle", "dropdown")
-                                            .attr("aria-haspopup", "true")
-                                            .attr("aria-expanded", "false")
-                                            .append(
-                                                $("<span></span>")
-                                                    .addClass("fa fa-cog")
-                                            )
-                                            .append(" ")
-                                            .append(
-                                                $("<span></span>")
-                                                    .addClass("caret")
-                                            )
-                                    )
-                                    .append(
-                                        $("<ul></ul>")
-                                            .addClass("dropdown-menu gear-menu")
-                                            .append(
-                                                $("<li></li>")
-                                                    .addClass("gp-widget-job-share")
-                                                    .append(
-                                                        $("<a></a>")
-                                                            .attr("title", "Share Job")
-                                                            .attr("href", "#")
-                                                            .append("Share Job")
-                                                            .click(function() {
-                                                                widget.buildSharingPanel();
-                                                            })
-                                                    )
-                                            )
-                                            .append(
-                                                $("<li></li>")
-                                                    .append(
-                                                        $("<a></a>")
-                                                            .attr("title", "Duplicate Analysis")
-                                                            .attr("href", "#")
-                                                            .append("Duplicate Analysis")
-                                                            .click(function() {
-                                                                widget.reloadJob();
-                                                            })
-                                                    )
-                                            )
-                                            .append(
-                                                $("<li></li>")
-                                                    .append(
-                                                        $("<a></a>")
-                                                            .attr("title", "Toggle Code View")
-                                                            .attr("href", "#")
-                                                            .append("Toggle Code View")
-                                                            .click(function() {
-                                                                widget.toggle_code();
-                                                            })
-                                                    )
-                                            )
-                                    )
-                            )
                     )
             );
+
+            this._create_gear_menu(this.element.find(".gp-widget-job-buttons"));
+
             this.element.append(
                 $("<div></div>")
                     .addClass("panel-heading gp-widget-job-header")
@@ -282,6 +221,104 @@ define("genepattern/job", ["base/js/namespace",
          */
         _setOption: function(key, value) {
             this._super(key, value);
+        },
+
+        /**
+         * Appends the options to the gear menu, creating a new menu, if appropriate
+         *
+         * @private
+         */
+        _create_gear_menu: function(button_area) {
+            const widget = this;
+            const combined_cell = widget.element.closest(".cell").find(".nbtools-widget").length > 1;
+            const task_gear_menu = widget.element.closest(".cell").find(".gp-widget-task").find(".gear-menu");
+
+            // Given an event launched from a cell, return the job widget in that cell
+            function _get_widget_from_event(event) {
+                return $(event.target).closest(".cell").find(".gp-widget-job").data("widget");
+            }
+
+            function _create_share_job() {
+                return $("<li></li>")
+                    .addClass("gp-widget-job-share")
+                    .append(
+                        $("<a></a>")
+                            .attr("title", "Share Job")
+                            .attr("href", "#")
+                            .append("Share Job")
+                            .click(function(event) {
+                                _get_widget_from_event(event).buildSharingPanel();
+                            })
+                    )
+            }
+
+            function _create_duplicate_analysis() {
+                return $("<li></li>")
+                    .addClass("gp-widget-job-duplicate")
+                    .append(
+                        $("<a></a>")
+                            .attr("title", "Duplicate Analysis")
+                            .attr("href", "#")
+                            .append("Duplicate Analysis")
+                            .click(function(event) {
+                                _get_widget_from_event(event).reloadJob();
+                            })
+                    );
+            }
+
+            // Append to gear menu if associated task cell, if necessary
+            if (combined_cell && !!task_gear_menu && !task_gear_menu.find(".gp-widget-job-share").length) {
+                task_gear_menu.find("li:last").before(_create_share_job());
+            }
+            if (combined_cell && !!task_gear_menu && !task_gear_menu.find(".gp-widget-job-duplicate").length) {
+                task_gear_menu.find("li:last").before(_create_duplicate_analysis());
+            }
+
+            // Create the gear menu for the job widget
+            const gear_menu = $("<div></div>")
+                .addClass("btn-group gp-widget-job-group")
+                .append(
+                    $("<button></button>")
+                        .addClass("btn btn-default btn-sm")
+                        .css("padding", "2px 7px")
+                        .attr("type", "button")
+                        .attr("data-toggle", "dropdown")
+                        .attr("aria-haspopup", "true")
+                        .attr("aria-expanded", "false")
+                        .append(
+                            $("<span></span>")
+                                .addClass("fa fa-cog")
+                        )
+                        .append(" ")
+                        .append(
+                            $("<span></span>")
+                                .addClass("caret")
+                        )
+                )
+                .append(
+                    $("<ul></ul>")
+                        .addClass("dropdown-menu gear-menu")
+                        .append(_create_share_job())
+                        .append(_create_duplicate_analysis())
+                        .append(
+                            $("<li></li>")
+                                .append(
+                                    $("<a></a>")
+                                        .attr("title", "Toggle Code View")
+                                        .attr("href", "#")
+                                        .append("Toggle Code View")
+                                        .click(function(event) {
+                                            _get_widget_from_event(event).toggle_code();
+                                        })
+                                )
+                        )
+                );
+
+            // Add the gear menu to the job widget
+            button_area.append(" ").append(gear_menu);
+
+            // Hide the gear menu if this is a combined cell
+            if (combined_cell) gear_menu.hide();
         },
 
         /**

@@ -436,6 +436,10 @@ define("genepattern/task", ["base/js/namespace",
                 })
             }
 
+            // Remove the job options from the gear menu
+            this.element.find(".gear-menu").find(".gp-widget-job-share").remove();
+            this.element.find(".gear-menu").find(".gp-widget-job-duplicate").remove();
+
             // Update the code
             let existing_code = cell.get_text();
             if (existing_code.indexOf('gp.GPJob(') > -1) { // Does this cell have a job appended already?
