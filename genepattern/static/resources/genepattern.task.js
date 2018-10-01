@@ -592,10 +592,19 @@ define("genepattern/task", ["base/js/namespace",
          * @private
          */
         _showAuthenticationMessage: function() {
-            this.element.find(".gp-widget-task-name").empty().text("Not Authenticated");
+            // Create message title
+            let title = "Not Authenticated";
+            if (this.options.session_index !== 0) title += " - Secondary Server";
+
+            // Create message text
+            let text = "You must be authenticated before the analysis can be displayed. After you authenticate it may take a few seconds for the information to appear.";
+            if (this.options.session_index !== 0) text += " This analysis is configured to run on a seconday GenePattern server. You will need to sign into an additional server before its information can be displayed.";
+
+            // Display the message
+            this.element.find(".gp-widget-task-name").empty().text(title);
             this.element.find(".gp-widget-task-form").empty()
                 .addClass("alert alert-danger")
-                .text("You must be authenticated before the task information can be displayed. After you authenticate it may take a few seconds for the task information to appear.");
+                .text(text);
             this.element.find(".gp-widget-task-subheader").hide();
             this.element.find(".gp-widget-task-footer").hide();
 
