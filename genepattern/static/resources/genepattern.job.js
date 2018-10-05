@@ -1006,7 +1006,8 @@ define("genepattern/job", ["base/js/namespace",
             });
 
             // Build the visualizer display, if necessary
-            const launchUrl = job.launchUrl();
+            let launchUrl = job.launchUrl(); // Get the JSViewer URL
+            if (!launchUrl) launchUrl = this.get_index_page(); // Get the URL to index.html if no JSViewer URL
             if (launchUrl !== undefined && launchUrl !== null) {
                 this._displayVisualizer(launchUrl);
             }
@@ -1021,6 +1022,20 @@ define("genepattern/job", ["base/js/namespace",
             if (!this.options.childJob) {
                 this._initPoll(job.status());
             }
+        },
+
+        get_index_page: function() {
+            const job = this.options.job;
+            const outputs = job.outputFiles();
+
+            // Iterate over each file looking for index.html
+            for (let i = 0; i < outputs.length; i++) {
+                let file = outputs[i];
+                if (file.link.name === "index.html") return file.link.href;
+            }
+
+            // No index.html found, return null
+            return null;
         },
 
         /**
