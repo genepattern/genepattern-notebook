@@ -234,8 +234,27 @@ define("genepattern/job", ["base/js/namespace",
             const task_gear_menu = widget.element.closest(".cell").find(".gp-widget-task").find(".gear-menu");
 
             // Given an event launched from a cell, return the job widget in that cell
-            function _get_widget_from_event(event) {
+            function _get_job_widget(event) {
                 return $(event.target).closest(".cell").find(".gp-widget-job").data("widget");
+            }
+
+            // Given an event launched from a cell, return the job widget in that cell
+            function _get_task_widget(event) {
+                return $(event.target).closest(".cell").find(".gp-widget-task").data("widget");
+            }
+
+            function _create_remove_job() {
+                return $("<li></li>")
+                    .addClass("gp-widget-job-remove")
+                    .append(
+                        $("<a></a>")
+                            .attr("title", "Remove Job")
+                            .attr("href", "#")
+                            .append("Remove Job")
+                            .click(function(event) {
+                                _get_task_widget(event).remove_job();
+                            })
+                    );
             }
 
             function _create_share_job() {
@@ -247,9 +266,9 @@ define("genepattern/job", ["base/js/namespace",
                             .attr("href", "#")
                             .append("Share Job")
                             .click(function(event) {
-                                _get_widget_from_event(event).buildSharingPanel();
+                                _get_job_widget(event).buildSharingPanel();
                             })
-                    )
+                    );
             }
 
             function _create_duplicate_analysis() {
@@ -261,12 +280,15 @@ define("genepattern/job", ["base/js/namespace",
                             .attr("href", "#")
                             .append("Duplicate Analysis")
                             .click(function(event) {
-                                _get_widget_from_event(event).reloadJob();
+                                _get_job_widget(event).reloadJob();
                             })
                     );
             }
 
             // Append to gear menu if associated task cell, if necessary
+            if (combined_cell && !!task_gear_menu && !task_gear_menu.find(".gp-widget-job-remove").length) {
+                task_gear_menu.find("li:last").before(_create_remove_job());
+            }
             if (combined_cell && !!task_gear_menu && !task_gear_menu.find(".gp-widget-job-share").length) {
                 task_gear_menu.find("li:last").before(_create_share_job());
             }
@@ -308,7 +330,7 @@ define("genepattern/job", ["base/js/namespace",
                                         .attr("href", "#")
                                         .append("Toggle Code View")
                                         .click(function(event) {
-                                            _get_widget_from_event(event).toggle_code();
+                                            _get_job_widget(event).toggle_code();
                                         })
                                 )
                         )
@@ -1102,8 +1124,8 @@ define("genepattern/job", ["base/js/namespace",
                 );
 
                 // Add the pop out button
-                const gearMenu = this.element.find(".gear-menu");
-                gearMenu.prepend(
+                const toggle_code_option = this.element.closest(".cell").find(".gear-menu:first > li:last");
+                toggle_code_option.before(
                     $("<li></li>")
                         .append(
                             $("<a></a>")

@@ -153,18 +153,6 @@ define("genepattern/task", ["base/js/namespace",
                                                 $("<li></li>")
                                                     .append(
                                                         $("<a></a>")
-                                                            .attr("title", "Remove Job")
-                                                            .attr("href", "#")
-                                                            .append("Remove Job")
-                                                            .click(function() {
-                                                                widget.remove_job();
-                                                            })
-                                                    )
-                                            )
-                                            .append(
-                                                $("<li></li>")
-                                                    .append(
-                                                        $("<a></a>")
                                                             .attr("title", "Toggle Code View")
                                                             .attr("href", "#")
                                                             .append("Toggle Code View")
