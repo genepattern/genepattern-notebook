@@ -596,6 +596,20 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
                                 task._param_groups = response['paramGroups'];
                             }
 
+                            // Add job option params, if supported
+                            if (!!response['config']) {
+                                // Add the job options param group to the list
+                                if(!!response['config']['job.inputParamGroup']) task._param_groups.push(response['config']['job.inputParamGroup']);
+
+                                // Add the job options params to the list
+                                if(!!response['config']['job.inputParams']) {
+                                    for (let i = 0; i < response['config']['job.inputParams'].length; i++) {
+                                        const param = response['config']['job.inputParams'][i];
+                                        task._params.push(new gp.Param(param));
+                                    }
+                                }
+                            }
+
                             // Add updated EULA info to Task Object
                             task._eula = response['eulaInfo'];
 

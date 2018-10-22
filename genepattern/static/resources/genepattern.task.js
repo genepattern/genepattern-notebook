@@ -153,6 +153,18 @@ define("genepattern/task", ["base/js/namespace",
                                                 $("<li></li>")
                                                     .append(
                                                         $("<a></a>")
+                                                            .attr("title", "Toggle Job Options")
+                                                            .attr("href", "#")
+                                                            .append("Toggle Job Options")
+                                                            .click(function() {
+                                                                widget.toggle_job_options();
+                                                            })
+                                                    )
+                                            )
+                                            .append(
+                                                $("<li></li>")
+                                                    .append(
+                                                        $("<a></a>")
                                                             .attr("title", "Toggle Code View")
                                                             .attr("href", "#")
                                                             .append("Toggle Code View")
@@ -845,6 +857,14 @@ define("genepattern/task", ["base/js/namespace",
             // Add the parameter header
             const form = this.element.find(".gp-widget-task-form");
             const groupDiv = this._buildParamGroupHeader(group);
+
+            // Hide job options group by default
+            if (group.name === "Job Options") {
+                groupDiv.addClass("gp-widget-task-job-options");
+                groupDiv.hide();
+            }
+
+            // Append the group to the form
             form.append(groupDiv);
 
             // Add widgets for all parameters in the group
@@ -1321,6 +1341,10 @@ define("genepattern/task", ["base/js/namespace",
          */
         acceptedKinds: function() {
             return this._kinds;
+        },
+
+        toggle_job_options: function() {
+            this.element.find(".gp-widget-task-job-options").slideToggle();
         },
 
         reset_parameters: function() {
