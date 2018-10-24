@@ -9,7 +9,7 @@
 
 define("genepattern/task", ["base/js/namespace",
                             "nbextensions/jupyter-js-widgets/extension",
-                            "jqueryui",
+                            "jquery",
                             "genepattern/navigation",
                             "nbtools/variables",
                             "nbtools/utils",

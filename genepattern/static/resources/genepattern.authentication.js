@@ -26,8 +26,8 @@ define("genepattern/authentication", ["base/js/namespace",
                                       "nbtools",
                                       "genepattern/navigation",
                                       "genepattern",
-                                      "jqueryui",
-                                      "nbtools/utils",], function (Jupyter, widgets, NBToolManager, GPNotebook, gp, $, Utils) {
+                                      "jquery",
+                                      "nbtools/utils"], function (Jupyter, widgets, NBToolManager, GPNotebook, gp, $, Utils) {
 
     $.widget("gp.auth", {
         options: {

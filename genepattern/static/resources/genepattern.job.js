@@ -10,7 +10,7 @@
 define("genepattern/job", ["base/js/namespace",
                   "nbextensions/jupyter-js-widgets/extension",
                   "genepattern/navigation",
-                  "jqueryui",
+                  "jquery",
                   "nbtools/utils",], function (Jupyter, widgets, GPNotebook, $, Utils) {
 
     /**
