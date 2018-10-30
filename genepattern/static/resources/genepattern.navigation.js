@@ -11,7 +11,8 @@ define("genepattern/navigation", ["base/js/namespace",
         "nbextensions/jupyter-js-widgets/extension",
         "nbtools",
         "nbtools/metadata",
-        "genepattern"], function (Jupyter, widgets, NBToolManager, MetadataManager, gp) {
+        "nbtools/utils",
+        "genepattern"], function (Jupyter, widgets, NBToolManager, MetadataManager, Utils, gp) {
 
     const slider = {};
     const menus = {};
@@ -198,13 +199,13 @@ define("genepattern/navigation", ["base/js/namespace",
 
     /**
      * Returns structure containing all task widgets currently in the notebook, which accept the
-     * indicated kind. Structure is a list of pairings with the cell index and the widget object.
+     * indicated file (kind). Structure is a list of pairings with the cell index and the widget object.
      * Ex: [[1, gp.runTask()], [9, gp.runTask()], [12, gp.runTask()]]
      *
      * @param kind
      * @returns {Array}
      */
-    slider.task_widgets_for_kind = function(kind) {
+    slider.task_widgets_for_file = function(file_name) {
         const matches = [];
 
         $(".cell").each(function(index, node) {
@@ -215,10 +216,16 @@ define("genepattern/navigation", ["base/js/namespace",
                 if (widget !== undefined && widget !== null) {
                     const accepted = widget.acceptedKinds();
                     if (accepted !== undefined && accepted !== null) {
-                        if (accepted.indexOf(kind) !== -1) {
-                            // Found a match!
-                            matches.push([index, widget]);
-                        }
+                        accepted.every(function(kind) {
+                            if (Utils.wildcard_match(file_name, kind)) {
+                                // Match found!
+                                matches.push([index, widget]);
+
+                                // Break
+                                return false;
+                            }
+                            else return true;
+                        });
                     }
                 }
             }
@@ -585,7 +592,7 @@ define("genepattern/navigation", ["base/js/namespace",
             }
 
             // Dynamically add options to "Send to Existing GenePattern Cell" dropdown
-            const matching_functions = slider.task_widgets_for_kind(kind);
+            const matching_functions = slider.task_widgets_for_file(name);
             sendToExistingTask
                 .empty()
                 .append(
@@ -615,7 +622,7 @@ define("genepattern/navigation", ["base/js/namespace",
             sendToExistingTask.change(function() {
                 const option = $(this).find(":selected");
                 const the_widget = option.data("widget");
-                the_widget.receiveFile(element.attr("href"), kind);
+                the_widget.receive_file(element.attr("href"), name, kind);
 
                 // Hide the popover
                 $(".popover").popover("hide");
@@ -796,9 +803,9 @@ define("genepattern/navigation", ["base/js/namespace",
                 const option = $(event.target).find(":selected");
                 const lsid = option.attr("data-lsid");
                 if (lsid === undefined || lsid === null) return;
-                const name = option.text();
+                const module_name = option.text();
                 const cell = Jupyter.notebook.insert_cell_at_bottom();
-                slider.build_module_code(cell, widget.options.session_index, {"lsid":lsid, "name": name});
+                slider.build_module_code(cell, widget.options.session_index, {"lsid":lsid, "name": module_name});
 
                 // Execute the cell
                 setTimeout(function() {
@@ -807,9 +814,9 @@ define("genepattern/navigation", ["base/js/namespace",
                         const widget = widgetElement.data("widget");
 
                         // Define what to do to receive the file
-                        const receiveFile = function() {
+                        const receive_from_upstream = function() {
                             setTimeout(function() {
-                                widget.receiveFile(element.attr("href"), fixedKind);
+                                widget.receive_file(element.attr("href"), name, fixedKind);
                             }, 100);
                         };
 
@@ -818,11 +825,11 @@ define("genepattern/navigation", ["base/js/namespace",
 
                         // If already loaded, receive file
                         if (alreadyLoaded) {
-                            receiveFile();
+                            receive_from_upstream();
                         }
 
                         // Otherwise wait until they are loaded.
-                        widgetElement.on("runTask.paramLoad", receiveFile);
+                        widgetElement.on("runTask.paramLoad", receive_from_upstream);
                     });
                     cell.execute();
                 }, 10);
@@ -840,7 +847,7 @@ define("genepattern/navigation", ["base/js/namespace",
             });
 
             // Dynamically add options to "Send to Downstream Task" dropdown
-            const matchingTasks = slider.task_widgets_for_kind(fixedKind);
+            const matchingTasks = slider.task_widgets_for_file(name);
             sendToExistingTask
                 .empty()
                 .append(
@@ -868,7 +875,7 @@ define("genepattern/navigation", ["base/js/namespace",
             sendToExistingTask.change(function() {
                 const option = $(this).find(":selected");
                 const theWidget = option.data("widget");
-                theWidget.receiveFile(element.attr("href"), fixedKind);
+                theWidget.receive_file(element.attr("href"), name, fixedKind);
 
                 // Hide the popover
                 $(".popover").popover("hide");

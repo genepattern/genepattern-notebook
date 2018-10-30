@@ -1376,7 +1376,7 @@ define("genepattern/task", ["base/js/namespace",
          * @param url
          * @param kind
          */
-        receiveFile: function(url, kind) {
+        receive_file: function(url, name, kind) {
             const uiParams = this.element.find(".gp-widget-task-param");
             let matched = false;
             $.each(uiParams, function(i, uiParam) {
@@ -1385,16 +1385,21 @@ define("genepattern/task", ["base/js/namespace",
                 if (param.kinds !== undefined) {
                     const kinds = param.kinds();
                     if (kinds !== undefined && kinds !== null) {
-                        if (kinds.indexOf(kind) !== -1) {
-                            // Found a match!
-                            matched = true;
-                            // Set the value
-                            paramWidget.value(url);
-                            // Update the code
-                            paramWidget._updateCode();
-                            // Return and stop looping
-                            return false;
-                        }
+                        kinds.every(function (k) {
+                            if (Utils.wildcard_match(name, k)) {
+                                // Found a match!
+                                matched = true;
+                                // Set the value
+                                paramWidget.value(url);
+                                // Update the code
+                                paramWidget._updateCode();
+                                // Return and stop looping
+                                return false;
+                            }
+                            else return true;
+                        });
+                        // Break from the $.each loop if a match has been found
+                        if (matched) return false;
                     }
                 }
             });
