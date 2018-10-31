@@ -1251,18 +1251,18 @@ define("genepattern/navigation", ["base/js/namespace",
     slider.apply_colors = function(element, url) {
         let theme = "gp-server-custom";
 
-        // GenePattern Public
-        if (url === GENEPATTERN_SERVERS[0][1]) {
+        // GenePattern Cloud
+        if (url === "https://cloud.genepattern.org/gp") {
             theme = "gp-server-public";
         }
 
         // GenePattern Indiana
-        if (url === GENEPATTERN_SERVERS[1][1]) {
+        if (url === 'https://gp.indiana.edu/gp') {
             theme = "gp-server-indiana";
         }
 
         // GenePattern Broad
-        if (url === GENEPATTERN_SERVERS[2][1]) {
+        if (url === "https://gpbroad.broadinstitute.org/gp") {
             theme = "gp-server-broad";
         }
 

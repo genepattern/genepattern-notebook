@@ -14,9 +14,9 @@
  *  Remove the 'Custom GenePattern Server' option to disallow custom servers
  */
 const GENEPATTERN_SERVERS = [
-    ['Broad Institute', 'https://genepattern.broadinstitute.org/gp'],
     ['GenePattern Cloud', 'https://cloud.genepattern.org/gp'],
     ['Indiana University', 'https://gp.indiana.edu/gp'],
+    ['Broad Institute (Deprecated)', 'https://genepattern.broadinstitute.org/gp'],
     ['Broad Internal', 'https://gpbroad.broadinstitute.org/gp'],
     ['Custom GenePattern Server', 'Custom']
 ];
@@ -300,7 +300,14 @@ define("genepattern/authentication", ["base/js/namespace",
                 widget._setCustomURL(serverURL);
             }
             else {
-                serverSelect.find("option[value='" + serverURL + "']").attr("selected", "selected")
+                // Special case for notebooks that still point to the old production server
+                if (serverURL.endsWith("genepattern.broadinstitute.org/gp")) {
+                    widget.infoMessage("Your server selection has been changed to the GenePattern Cloud. To use the deprecated Broad Institute server, manually change the selection.");
+                    serverSelect.find("option[value='https://cloud.genepattern.org/gp']").attr("selected", "selected");
+                }
+
+                // Set the server dropdown to the last used server
+                else serverSelect.find("option[value='" + serverURL + "']").attr("selected", "selected")
             }
 
             // Call dialog if Custom Server selected
@@ -656,7 +663,7 @@ define("genepattern/authentication", ["base/js/namespace",
         },
 
         /**
-         * Checks to see if the URLis in the server dropdown or not
+         * Checks to see if the URL is in the server dropdown or not
          *
          * @param url
          * @private
