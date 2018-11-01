@@ -107,9 +107,10 @@ define("genepattern/navigation", ["base/js/namespace",
         // Prepare the origin
         let origin = null;
         const gp_url = session.server();
-        if (gp_url === "https://genepattern.broadinstitute.org/gp") origin = "GenePattern Public";
+        if (gp_url === "https://genepattern.broadinstitute.org/gp") origin = "GenePattern Deprecated";
         else if (gp_url === "https://gp.indiana.edu/gp") origin = "GenePattern Indiana";
         else if (gp_url === "https://gpbroad.broadinstitute.org/gp") origin = "GenePattern Broad";
+        else if (gp_url === "https://cloud.genepattern.org/gp") origin = "GenePattern Cloud";
         else origin = util.get_domain(gp_url);
 
         // Prepare tags
@@ -418,7 +419,7 @@ define("genepattern/navigation", ["base/js/namespace",
      */
     slider.create_authentication_cell = function(cell) {
         // Get the auth widget code
-        init.build_code(cell, "https://genepattern.broadinstitute.org/gp", "", "");
+        init.build_code(cell, "https://cloud.genepattern.org/gp", "", "");
 
         function isWidgetPresent() { return cell.element.find(".gp-widget").length > 0; }
         function isRunning() { return cell.element.hasClass("running") }

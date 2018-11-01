@@ -571,7 +571,7 @@ define("genepattern/authentication", ["base/js/namespace",
                 body : $("<div></div>")
                             .append("Enter the URL to your custom GenePattern server below. Please use the full URL, " +
                                     "including http:// as well as any port numbers and the trailing /gp. For example: " +
-                                    "https://genepattern.broadinstitute.org/gp")
+                                    "https://cloud.genepattern.org/gp")
                             .append($("<br/><br/>"))
                             .append($("<label style='font-weight: bold;'>Server URL </label>"))
                             .append(urlTextBox),
