@@ -1638,64 +1638,6 @@ define("genepattern/task", ["base/js/namespace",
         }
     });
 
-    /**
-     * Attempt to parse the code as a module output selector.
-     * Return undefined if parsing is not possible or if specified output is not found.
-     *
-     * Example specification:
-     *     {{ PreprocessDataset[2].gct[1] }}
-     *     Use second PreprocessDataset job and get the first gct output
-     *
-     * Example specification:
-     *     {{ PCA.*[1] }}
-     *     Use first PCA job and get the first output
-     *
-     * @param code
-     * @returns {string|undefined}
-     */
-    function getModuleOutput(code) {
-        // Divide code into an array of parts, separated by a period
-        let [module, output] = code.split(/\./);
-
-        // If parsing did not work, return undefined
-        if (module === undefined || output === undefined) return undefined;
-
-        // Parse the module selector
-        const module_name = module.match(/(?:(?!\[).)*/)[0];
-        const module_index = module.match(/\[(.*?)\]/) ? parseInt(module.match(/\[(.*?)\]/)[1]) : 1;
-
-        // Select the modules by name
-        const matching_modules = $(`.gp-widget-job[data-task-name='${module_name}']`);
-
-        // Select the module with the matching index
-        const selected_module = matching_modules[module_index-1];
-
-        // If no matching modules or invalid index, return undefined
-        if (selected_module === undefined || selected_module === null || selected_module.length === 0) return undefined;
-
-        // Parse the output selector
-        const output_type = output.match(/(?:(?!\[).)*/)[0];
-        const output_index = output.match(/\[(.*?)\]/) ? parseInt(output.match(/\[(.*?)\]/)[1]) : 1;
-
-        // Select matching outputs
-        const all_outputs = $(selected_module).find(".nbtools-widget-job-output-file");
-        let selected_outputs = [];
-        all_outputs.each(function(i, output) {
-            const kind = $(output).attr("data-kind");
-            const name = $(output).text().trim();
-            if (output_type === kind || name.match(output_type + "$" || output_type === "")) selected_outputs.push(output);
-        });
-
-        // Select the output with the matching index
-        const selected_output = selected_outputs[output_index-1];
-
-        // Return undefined if invalid output or index
-        if (selected_output === undefined || selected_output === null) return undefined;
-
-        // Return the selected output's URL
-        return $(selected_output).attr("href");
-    }
-
     const TaskWidgetView = widgets.DOMWidgetView.extend({
         render: function () {
             const widget = this;
@@ -1764,7 +1706,6 @@ define("genepattern/task", ["base/js/namespace",
     });
 
     return {
-        TaskWidgetView: TaskWidgetView,
-        getModuleOutput: getModuleOutput
+        TaskWidgetView: TaskWidgetView
     }
 });
