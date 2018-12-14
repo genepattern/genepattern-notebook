@@ -896,6 +896,146 @@ define("genepattern/navigation", ["base/js/namespace",
     };
 
     /**
+     * Initialize the cell templates
+     */
+    init.cell_templates = function() {
+        // Basic cell template functionality
+        function to_cell_template(cell, prepend, append) {
+            // Get the cell and text
+            if (cell === undefined) cell = Jupyter.notebook.get_selected_cell();
+            let old_text = cell.get_text().trim();
+
+            // Add default message, if blank
+            if (old_text === "") old_text = 'Edit this cell to insert your text here.';
+
+            // Change to a markdown cell, if necessary
+            if (cell.cell_type !== "Markdown") {
+                Jupyter.notebook.cells_to_markdown();
+                cell = Jupyter.notebook.get_selected_cell();
+            }
+
+            // Insert the template in the cell
+            cell.set_text(prepend + old_text + append);
+
+            return cell;
+        }
+
+        // Template functions
+
+        function to_instruction_cell(cell) {
+            return to_cell_template(cell,
+                '<div class="alert alert-info">\n<h3 style="margin-top: 0;"> Instructions <i class="fa fa-info-circle"></i></h3>\n',
+                '\n</div>');
+        }
+
+        function to_warning_cell(cell) {
+            return to_cell_template(cell,
+                '<div class="alert alert-warning">\n<h3 style="margin-top: 0;"> Warning <i class="fa fa-exclamation-triangle"></i></h3>\n',
+                '\n</div>');
+        }
+
+        function to_error_cell(cell) {
+            return to_cell_template(cell,
+                '<div class="alert alert-danger">\n<h3 style="margin-top: 0;"> Error <i class="fa fa-exclamation-circle"></i></h3>\n',
+                '\n</div>');
+        }
+
+        function to_callout_cell(cell) {
+            return to_cell_template(cell,
+                '<div class="well well-sm">\n',
+                '\n</div>');
+        }
+
+        // Add the keyboard shortcuts
+
+        Jupyter.keyboard_manager.command_shortcuts.add_shortcut('i', {
+                help: 'to Instruction Cell',
+                help_index: 'cc',
+                handler: function () {
+                    to_instruction_cell();
+                    return false;
+                }
+            }
+        );
+
+        Jupyter.keyboard_manager.command_shortcuts.add_shortcut('w', {
+                help: 'to Warning Cell',
+                help_index: 'cc',
+                handler: function () {
+                    to_warning_cell();
+                    return false;
+                }
+            }
+        );
+
+        Jupyter.keyboard_manager.command_shortcuts.add_shortcut('e', {
+                help: 'to Error Cell',
+                help_index: 'cc',
+                handler: function () {
+                    to_error_cell();
+                    return false;
+                }
+            }
+        );
+
+        Jupyter.keyboard_manager.command_shortcuts.add_shortcut('c', {
+                help: 'to Callout Cell',
+                help_index: 'cc',
+                handler: function () {
+                    to_callout_cell();
+                    return false;
+                }
+            }
+        );
+
+        // Add the tools
+
+        const instruction_cell_tool = new NBToolManager.NBTool({
+            origin: "Notebook",
+            id: "cell_instruction",
+            name: "Template: Instruction Cell",
+            tags: ["template", "cell"],
+            description: "Create a new instruction cell template.",
+            load: () => true,
+            render: to_instruction_cell
+        });
+        NBToolManager.instance().register(instruction_cell_tool);
+
+        const warning_cell_tool = new NBToolManager.NBTool({
+            origin: "Notebook",
+            id: "cell_warning",
+            name: "Template: Warning Cell",
+            tags: ["template", "cell"],
+            description: "Create a new warning cell template.",
+            load: () => true,
+            render: to_warning_cell
+        });
+        NBToolManager.instance().register(warning_cell_tool);
+
+        const error_cell_tool = new NBToolManager.NBTool({
+            origin: "Notebook",
+            id: "cell_error",
+            name: "Template: Error Cell",
+            tags: ["template", "cell"],
+            description: "Create a new error cell template.",
+            load: () => true,
+            render: to_error_cell
+        });
+        NBToolManager.instance().register(error_cell_tool);
+
+        const callout_cell_tool = new NBToolManager.NBTool({
+            origin: "Notebook",
+            id: "cell_callout",
+            name: "Template: Callout Cell",
+            tags: ["template", "cell"],
+            description: "Create a new callout cell template.",
+            load: () => true,
+            render: to_callout_cell
+        });
+        NBToolManager.instance().register(callout_cell_tool);
+    };
+
+    /**
      * Wait for kernel and then init notebook widgets
      */
     init.wait_for_kernel = function (id) {
@@ -938,6 +1078,9 @@ define("genepattern/navigation", ["base/js/namespace",
                     else setTimeout(add_help_link, 200);
                 }
                 add_help_link();
+
+                // Initialize the cell templates
+                init.cell_templates();
 
                 // Start kernel disconnect detection
                 slider.detect_kernel_disconnect();
