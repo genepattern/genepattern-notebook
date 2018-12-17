@@ -37,7 +37,7 @@ define("genepattern", ["jquery", "jqueryui"], function ($) {
 
         /**
          * Sets or returns the server at which this library is pointed
-         * Example: https://genepattern.broadinstitute.org/gp
+         * Example: https://cloud.genepattern.org/gp
          *
          * @returns {string|null}
          */

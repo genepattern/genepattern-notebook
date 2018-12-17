@@ -107,8 +107,7 @@ define("genepattern/navigation", ["base/js/namespace",
         // Prepare the origin
         let origin = null;
         const gp_url = session.server();
-        if (gp_url === "https://genepattern.broadinstitute.org/gp") origin = "GenePattern Deprecated";
-        else if (gp_url === "https://gp.indiana.edu/gp") origin = "GenePattern Indiana";
+        if (gp_url === "https://gp.indiana.edu/gp") origin = "GenePattern Indiana";
         else if (gp_url === "https://gpbroad.broadinstitute.org/gp") origin = "GenePattern Broad";
         else if (gp_url === "https://cloud.genepattern.org/gp") origin = "GenePattern Cloud";
         else origin = util.get_domain(gp_url);

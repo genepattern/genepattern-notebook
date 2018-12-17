@@ -16,7 +16,6 @@
 const GENEPATTERN_SERVERS = [
     ['GenePattern Cloud', 'https://cloud.genepattern.org/gp'],
     ['Indiana University', 'https://gp.indiana.edu/gp'],
-    ['Broad Institute (Deprecated)', 'https://genepattern.broadinstitute.org/gp'],
     ['Broad Internal', 'https://gpbroad.broadinstitute.org/gp'],
     ['Custom GenePattern Server', 'Custom']
 ];
@@ -302,7 +301,7 @@ define("genepattern/authentication", ["base/js/namespace",
             else {
                 // Special case for notebooks that still point to the old production server
                 if (serverURL.endsWith("genepattern.broadinstitute.org/gp")) {
-                    widget.infoMessage("Your server selection has been changed to the GenePattern Cloud. To use the deprecated Broad Institute server, manually change the selection.");
+                    widget.infoMessage("Your server selection has been changed to the GenePattern Cloud.");
                     serverSelect.find("option[value='https://cloud.genepattern.org/gp']").attr("selected", "selected");
                 }
 
