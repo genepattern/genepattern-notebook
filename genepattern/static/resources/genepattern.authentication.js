@@ -669,7 +669,7 @@ define("genepattern/authentication", ["base/js/namespace",
          */
         _isURLCustom: function(url) {
             // Hack for pointing the old http URL of the public server at the new https URL
-            if (url === "http://genepattern.broadinstitute.org/gp") return false;
+            if (url.endsWith("genepattern.broadinstitute.org/gp")) return false;
 
             const widget = this;
             const serverSelect = widget.element.find("[name=server]");
