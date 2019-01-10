@@ -2,7 +2,7 @@ import os
 from distutils.core import setup
 
 
-__version__ = '0.8.3'
+__version__ = '0.8.4'
 
 
 def get_data_files():

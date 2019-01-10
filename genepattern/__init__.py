@@ -22,7 +22,7 @@ from .jupyter_extensions import (GenePatternMagic, load_ipython_extension, load_
 #     pass
 
 __author__ = 'Thorin Tabor'
-__copyright__ = 'Copyright 2014-2018, Regents of the University of California & Broad Institute'
-__version__ = '0.8.3'
+__copyright__ = 'Copyright 2014-2019, Regents of the University of California & Broad Institute'
+__version__ = '0.8.4'
 __status__ = 'Beta'
 __license__ = 'BSD-3-Clause'
