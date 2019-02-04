@@ -110,20 +110,20 @@
  * Styles for specific GenePattern Public Server
  */
 
-.gp-widget.gp-server-public {
+.nbtools-widget.gp-widget.gp-server-public {
     border-color: rgba(10, 45, 105, 0.80);
 }
 
-.gp-widget.gp-server-public .panel-heading {
+.nbtools-widget.gp-widget.gp-server-public .panel-heading {
     background-color: rgba(10, 45, 105, 0.80);
 }
 
-.gp-widget.gp-server-public .btn-primary {
+.nbtools-widget.gp-widget.gp-server-public .btn-primary {
     border-color: rgba(10, 45, 105, 0.80);
     background-color: rgba(10, 45, 105, 0.80);
 }
 
-.gp-widget.gp-server-public .btn-primary:hover {
+.nbtools-widget.gp-widget.gp-server-public .btn-primary:hover {
     border-color: rgba(10, 45, 105, 1);
     background-color: rgba(10, 45, 105, 1);
 }
@@ -132,20 +132,20 @@
  * Styles for specific GenePattern Indiana Server
  */
 
-.gp-widget.gp-server-indiana {
+.nbtools-widget.gp-widget.gp-server-indiana {
     border-color: rgba(115, 25, 10, 0.80);
 }
 
-.gp-widget.gp-server-indiana .panel-heading {
+.nbtools-widget.gp-widget.gp-server-indiana .panel-heading {
     background-color: rgba(115, 25, 10, 0.80);
 }
 
-.gp-widget.gp-server-indiana .btn-primary {
+.nbtools-widget.gp-widget.gp-server-indiana .btn-primary {
     border-color: rgba(115, 25, 10, 0.80);
     background-color: rgba(115, 25, 10, 0.80);
 }
 
-.gp-widget.gp-server-indiana .btn-primary:hover {
+.nbtools-widget.gp-widget.gp-server-indiana .btn-primary:hover {
     border-color: rgba(115, 25, 10, 1);
     background-color: rgba(115, 25, 10, 1);
 }
@@ -154,20 +154,20 @@
  * Styles for specific GenePattern Broad Server
  */
 
-.gp-widget.gp-server-broad {
+.nbtools-widget.gp-widget.gp-server-broad {
     border-color: rgba(15, 75, 105, 0.80);
 }
 
-.gp-widget.gp-server-broad .panel-heading {
+.nbtools-widget.gp-widget.gp-server-broad .panel-heading {
     background-color: rgba(15, 75, 105, 0.80);
 }
 
-.gp-widget.gp-server-broad .btn-primary {
+.nbtools-widget.gp-widget.gp-server-broad .btn-primary {
     border-color: rgba(15, 75, 105, 0.80);
     background-color: rgba(15, 75, 105, 0.80);
 }
 
-.gp-widget.gp-server-broad .btn-primary:hover {
+.nbtools-widget.gp-widget.gp-server-broad .btn-primary:hover {
     border-color: rgba(15, 75, 105, 1);
     background-color: rgba(15, 75, 105, 1);
 }
@@ -176,20 +176,20 @@
  * Styles for specific GenePattern Custom Server
  */
 
-.gp-widget.gp-server-custom {
+.nbtools-widget.gp-widget.gp-server-custom {
     border-color: rgba(15, 105, 75, 0.80);
 }
 
-.gp-widget.gp-server-custom .panel-heading {
+.nbtools-widget.gp-widget.gp-server-custom .panel-heading {
     background-color: rgba(15, 105, 75, 0.80);
 }
 
-.gp-widget.gp-server-custom .btn-primary {
+.nbtools-widget.gp-widget.gp-server-custom .btn-primary {
     border-color: rgba(15, 105, 75, 0.80);
     background-color: rgba(15, 105, 75, 0.80);
 }
 
-.gp-widget.gp-server-custom .btn-primary:hover {
+.nbtools-widget.gp-widget.gp-server-custom .btn-primary:hover {
     border-color: rgba(15, 105, 75, 1);
     background-color: rgba(15, 105, 75, 1);
 }
@@ -198,20 +198,20 @@
  * Local execution in GenePattern
  */
 
-.gp-widget.gp-server-local {
+.nbtools-widget.gp-widget.gp-server-local {
     border-color: rgba(43, 43, 43, 0.8);
 }
 
-.gp-widget.gp-server-local .panel-heading {
+.nbtools-widget.gp-widget.gp-server-local .panel-heading {
     background-color: rgba(43, 43, 43, 0.8);
 }
 
-.gp-widget.gp-server-local .btn-primary {
+.nbtools-widget.gp-widget.gp-server-local .btn-primary {
     border-color: rgba(43, 43, 43, 0.8);
     background-color: rgba(43, 43, 43, 0.8);
 }
 
-.gp-widget.gp-server-local .btn-primary:hover {
+.nbtools-widget.gp-widget.gp-server-local .btn-primary:hover {
     border-color: rgba(43, 43, 43, 1);
     background-color: rgba(43, 43, 43, 1);
 }
