@@ -248,9 +248,9 @@ define("genepattern/job", ["base/js/namespace",
                     .addClass("gp-widget-job-remove")
                     .append(
                         $("<a></a>")
-                            .attr("title", "Remove Job")
+                            .attr("title", "Clear Job Results")
                             .attr("href", "#")
-                            .append("Remove Job")
+                            .append("Clear Job Results")
                             .click(function(event) {
                                 _get_task_widget(event).remove_job();
                             })
