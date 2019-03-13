@@ -1038,8 +1038,15 @@ define("genepattern/navigation", ["base/js/namespace",
      * Wait for kernel and then init notebook widgets
      */
     init.wait_for_kernel = function (id) {
+        const query_kernel = function() {
+            Jupyter.notebook.kernel.kernel_info(function(reply) {
+                if (reply.content && reply.content.status === "ok") init.notebook_init_wrapper();
+                else setTimeout(query_kernel, 500);
+            });
+        };
+
         if (!init.done_init  && Jupyter.notebook.kernel) {
-            init.notebook_init_wrapper();
+            query_kernel();
         }
         else if (init.done_init) {
             clearInterval(id);
