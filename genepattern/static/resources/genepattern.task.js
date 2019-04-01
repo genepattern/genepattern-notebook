@@ -155,7 +155,7 @@ define("genepattern/task", ["base/js/namespace",
                                                         $("<a></a>")
                                                             .attr("title", "Toggle Job Options")
                                                             .attr("href", "#")
-                                                            .append("Toggle Job Options")
+                                                            .append("Advanced Options")
                                                             .click(function() {
                                                                 widget.toggle_job_options();
                                                             })
@@ -1344,7 +1344,11 @@ define("genepattern/task", ["base/js/namespace",
         },
 
         toggle_job_options: function() {
+            // Show the job options
             this.element.find(".gp-widget-task-job-options").slideToggle();
+
+            // Show custom values in dropdowns
+            this.element.find(".nbtools-custom-value").toggle();
         },
 
         reset_parameters: function() {
