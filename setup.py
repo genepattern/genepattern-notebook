@@ -1,18 +1,12 @@
 import os
-from distutils.core import setup
+from setuptools import setup
 
 
-__version__ = '19.06'
+__version__ = '19.05'
 
 
-def _long_description():
-    """
-    Read long description from markdown
-    :return:
-    """
-    with open("README.md", "r") as fh:
-        long_description = fh.read()
-    return long_description
+with open('README.md') as f:
+    long_description = f.read()
 
 
 def get_data_files():
@@ -38,7 +32,7 @@ setup(name='genepattern-notebook',
       packages=['genepattern'],
       version=__version__,
       description='GenePattern Notebook extension for Jupyter',
-      long_description=_long_description(),
+      long_description=long_description,
       long_description_content_type="text/markdown",
       license='BSD',
       author='Thorin Tabor',

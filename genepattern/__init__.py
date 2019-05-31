@@ -23,6 +23,6 @@ from .jupyter_extensions import (GenePatternMagic, load_ipython_extension, load_
 
 __author__ = 'Thorin Tabor'
 __copyright__ = 'Copyright 2014-2019, Regents of the University of California & Broad Institute'
-__version__ = '19.06'
+__version__ = '19.05'
 __status__ = 'Beta'
 __license__ = 'BSD-3-Clause'
