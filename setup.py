@@ -2,7 +2,7 @@ import os
 from setuptools import setup
 
 
-__version__ = '19.05'
+__version__ = '19.07'
 
 
 with open('README.md') as f:
@@ -59,4 +59,5 @@ setup(name='genepattern-notebook',
       ],
       package_data={'genepattern': ['static/index.js', 'static/resources/*']},
       data_files=get_data_files(),
+      normalize_version=False,
       )
