@@ -501,8 +501,7 @@ div.cell.selected {
 
 .gp-widget-task-run-button {
     float: right;
-    position: relative;
-    top: -10px;
+    margin-bottom: 5px;
 }
 
 .gp-widget-task-param {
