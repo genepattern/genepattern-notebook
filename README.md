@@ -130,3 +130,6 @@ however, have yet to be implemented. GenePattern features that are not yet suppo
 
 * Batch job submission
 * GenomeSpace integration
+
+# [Code of Conduct](https://github.com/genepattern/genepattern-notebook/blob/master/Code_of_Conduct.md)
+
