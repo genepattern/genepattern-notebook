@@ -131,5 +131,9 @@ however, have yet to be implemented. GenePattern features that are not yet suppo
 * Batch job submission
 * GenomeSpace integration
 
-# [Code of Conduct](https://github.com/genepattern/genepattern-notebook/blob/master/Code_of_Conduct.md)
+# Code of Conduct
+
+We are dedicated to providing a harassment-free experience for all members of the GenePattern community, regardless of gender, gender identity and expression, sexual orientation, disability, physical appearance, body size, age, race, or religion. We do not tolerate harassment of participants in any form. This code of conduct applies to all GenePattern spaces, including the Google Group, our Git repositories, and our social media accounts, both online and off. Anyone who violates this code of conduct may be sanctioned or expelled from these spaces at the discretion of the GenePattern team.
+
+For more details, see our [Code of Conduct](https://github.com/genepattern/genepattern-notebook/blob/master/Code_of_Conduct.md).
 
