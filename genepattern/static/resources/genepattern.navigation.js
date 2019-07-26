@@ -923,19 +923,19 @@ define("genepattern/navigation", ["base/js/namespace",
 
         function to_instruction_cell(cell) {
             return to_cell_template(cell,
-                '<div class="alert alert-info">\n<h3 style="margin-top: 0;"> Instructions <i class="fa fa-info-circle"></i></h3>\n',
+                '<div class="alert alert-info">\n<p class="lead"> Instructions <i class="fa fa-info-circle"></i></p>\n',
                 '\n</div>');
         }
 
         function to_warning_cell(cell) {
             return to_cell_template(cell,
-                '<div class="alert alert-warning">\n<h3 style="margin-top: 0;"> Warning <i class="fa fa-exclamation-triangle"></i></h3>\n',
+                '<div class="alert alert-warning">\n<p class="lead"> Warning <i class="fa fa-exclamation-triangle"></i></p>\n',
                 '\n</div>');
         }
 
         function to_error_cell(cell) {
             return to_cell_template(cell,
-                '<div class="alert alert-danger">\n<h3 style="margin-top: 0;"> Error <i class="fa fa-exclamation-circle"></i></h3>\n',
+                '<div class="alert alert-danger">\n<p class="lead"> Error <i class="fa fa-exclamation-circle"></i></p>\n',
                 '\n</div>');
         }
 
