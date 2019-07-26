@@ -385,7 +385,7 @@ define("genepattern/authentication", ["base/js/namespace",
                                     .append(
                                         $("<div></div>")
                                             .addClass("panel-body")
-                                            .append("You have already authenticated with the GenePattern Public Server. Would you like to automatically sign in now?")
+                                            .append("You have already authenticated with GenePattern Cloud. Would you like to automatically sign in now?")
                                             .append(
                                                 $("<div></div>")
                                                     .addClass("widget-auto-login-buttons")
