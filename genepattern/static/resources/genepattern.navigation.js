@@ -1039,6 +1039,9 @@ define("genepattern/navigation", ["base/js/namespace",
      */
     init.wait_for_kernel = function (id) {
         const query_kernel = function() {
+            // If this is not a Python kernel, exit
+            if (!Jupyter.notebook.kernel.name.toLowerCase().includes("python")) return;
+
             Jupyter.notebook.kernel.kernel_info(function(reply) {
                 if (reply.content && reply.content.status === "ok") init.notebook_init_wrapper();
                 else setTimeout(query_kernel, 500);
