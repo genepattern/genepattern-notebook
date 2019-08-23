@@ -990,7 +990,7 @@ define("genepattern/navigation", ["base/js/namespace",
         // Add the tools
 
         const instruction_cell_tool = new NBToolManager.NBTool({
-            origin: "Notebook",
+            origin: "+",
             id: "cell_instruction",
             name: "Template: Instruction Cell",
             tags: ["template", "cell"],
@@ -1001,7 +1001,7 @@ define("genepattern/navigation", ["base/js/namespace",
         NBToolManager.instance().register(instruction_cell_tool);
 
         const warning_cell_tool = new NBToolManager.NBTool({
-            origin: "Notebook",
+            origin: "+",
             id: "cell_warning",
             name: "Template: Warning Cell",
             tags: ["template", "cell"],
@@ -1012,7 +1012,7 @@ define("genepattern/navigation", ["base/js/namespace",
         NBToolManager.instance().register(warning_cell_tool);
 
         const error_cell_tool = new NBToolManager.NBTool({
-            origin: "Notebook",
+            origin: "+",
             id: "cell_error",
             name: "Template: Error Cell",
             tags: ["template", "cell"],
@@ -1023,7 +1023,7 @@ define("genepattern/navigation", ["base/js/namespace",
         NBToolManager.instance().register(error_cell_tool);
 
         const callout_cell_tool = new NBToolManager.NBTool({
-            origin: "Notebook",
+            origin: "+",
             id: "cell_callout",
             name: "Template: Callout Cell",
             tags: ["template", "cell"],
