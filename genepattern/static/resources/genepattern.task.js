@@ -694,7 +694,7 @@ define("genepattern/task", ["base/js/namespace",
                 widget.element.find(".gp-widget-task-name").empty().text(" " + task.name());
                 widget.element.find(".gp-widget-task-version").empty().text("Version " + task.version());
                 widget.element.find(".gp-widget-task-doc").attr("data-href", widget.options.session.server() + task.documentation().substring(3));
-                widget.element.find(".gp-widget-task-desc").empty().text(task.description());
+                widget.element.find(".gp-widget-task-desc").empty().html(task.description());
 
                 // Display error if Java visualizer
                 const categories = task.categories();
@@ -837,7 +837,7 @@ define("genepattern/task", ["base/js/namespace",
                             $("<div></div>")
                                 .addClass("panel-body gp-widget-task-group-description")
                                 .css("display", group.description ? "block" : "none")
-                                .text(group.description)
+                                .html(group.description)
                         )
                 )
 
@@ -1154,7 +1154,7 @@ define("genepattern/task", ["base/js/namespace",
                         .append(
                             $("<div></div>")
                                 .addClass("gp-widget-task-param-desc")
-                                .text(param.description())
+                                .html(param.description())
                         )
                 );
             if (required) paramBox.addClass("gp-widget-task-required");
