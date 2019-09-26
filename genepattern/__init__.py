@@ -11,18 +11,8 @@ from .jupyter_extensions import (GenePatternMagic, load_ipython_extension, load_
                                  _jupyter_server_extension_paths, _jupyter_nbextension_paths)
 
 
-# try:  # Import subpackages, if available
-#     import genepattern.client
-# except Exception:  # Ignore if subpackages are unavailable
-#     pass
-#
-# try:
-#     import genepattern.utils
-# except Exception:
-#     pass
-
 __author__ = 'Thorin Tabor'
 __copyright__ = 'Copyright 2014-2019, Regents of the University of California & Broad Institute'
-__version__ = '19.09'
+__version__ = '19.09.1'
 __status__ = 'Production/Stable'
 __license__ = 'BSD-3-Clause'
