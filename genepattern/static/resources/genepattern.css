@@ -54,6 +54,7 @@
 }
 
 .sidebar-button {
+    cursor: pointer;
     color: white;
     z-index: 5;
     box-shadow: 2px 2px 1px #cecece;
