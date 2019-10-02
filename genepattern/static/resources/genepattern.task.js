@@ -894,6 +894,11 @@ define("genepattern/task", ["base/js/namespace",
                     console.log(exception);
                 }
             }
+
+            // If job options, remove custom values
+            if (group.name === "Job Options") {
+                groupDiv.find(".nbtools-custom-value").remove();
+            }
         },
 
         /**
