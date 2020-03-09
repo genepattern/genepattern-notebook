@@ -1194,7 +1194,7 @@ define("genepattern/task", ["base/js/namespace",
                     type: "number"
                 });
             }
-            else if (param.type() === "password") {
+            else if (param.type().toLowerCase() === "password") {
                 paramBox.find(".gp-widget-task-param-input").textInput({
                     runTask: this,
                     param: param,
