@@ -4,7 +4,7 @@
  * Asynchronous RequireJS-style loader, necessary for bootstrapping the
  * GenePattern Notebook extension in the legacy Jupyter Notebook environment
  *
- * Copyright 2015-2019, Regents of the University of California & Broad Institute
+ * Copyright 2015-2020, Regents of the University of California & Broad Institute
  */
 
 define([

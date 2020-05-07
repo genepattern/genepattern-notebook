@@ -4,7 +4,7 @@
  * @author Thorin Tabor
  * @requires - jQuery, navigation.js
  *
- * Copyright 2019 Regents of the University of California and the Broad Institute
+ * Copyright 2020 Regents of the University of California and the Broad Institute
  */
 
 define("genepattern/modulebundler", ["base/js/namespace",

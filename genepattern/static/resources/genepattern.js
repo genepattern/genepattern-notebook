@@ -3,7 +3,7 @@
  *
  * Library for interfacing with GenePattern REST API from JavaScript.
  *
- * Copyright 2015-2019 Regents of the University of California & The Broad Institute
+ * Copyright 2015-2020 Regents of the University of California & The Broad Institute
  */
 
 define("genepattern", ["jquery", "jqueryui"], function ($) {
