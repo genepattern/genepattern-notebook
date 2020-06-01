@@ -10,7 +10,7 @@
     "jupyter",
     "jupyterlab"
   ],
-  "homepage": "http://genepattern-notebook.org",
+  "homepage": "http://notebook.genepattern.org",
   "bugs": {
     "url": "https://github.com/genepattern/genepattern-notebook/issues"
   },
