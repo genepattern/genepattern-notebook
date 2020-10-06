@@ -14,6 +14,9 @@ GenePattern Notebooks are built on the [Jupyter](https://jupyter.org/) environme
 and extend it so that users can take advantage of its ease of use and ability to encapsulate 
 an entire scientific research narrative, without the need to write code.
 
+> ### **Looking for JupyterLab support?**
+> **JupyterLab support in is currently in beta. You can find it in its own branch. [Just click here!](https://github.com/genepattern/nbtools/tree/lab)**
+
 # Installation
 
 Full installation instructions for casual use are detailed on the 
@@ -29,13 +32,13 @@ project from PIP or GitHub for the purposes of software development.
 ### Install Python
 
 In order to get the GenePattern Notebook working you will first need to install a compatible 
-version of Python. This means you will need Python 3.4+. We recommend using the 
+version of Python. This means you will need Python 3.6+. We recommend using the 
 [Anaconda](https://www.anaconda.com/download/#macos) Python distribution. This is 
 a scientific version of Python that ships with many of the most popular Python packages for 
 science, math and data analysis (ex: NumPy, SciPy, Pandas, Matplotlib, IPython, etc.).
 
-**Note for Mac Users:** Mac comes with Python, but you will need to install a newer version, 
-as OSX ships with Python 2.
+**Note for Mac Users:** Mac comes with Python, but you may need to install a newer version, 
+as older versions of macOS ship with Python 2.
 
 ### Install GenePattern Notebook from GitHub
 
