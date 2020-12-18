@@ -2,36 +2,17 @@ import os
 from setuptools import setup
 
 
-__version__ = '20.05'
+__version__ = '20.12b1'
 
 
 with open('README.md') as f:
     long_description = f.read()
 
 
-def get_data_files():
-    """
-    Get the data files for the package.
-    """
-    return [
-        ('share/jupyter/nbextensions/genepattern', [
-            'genepattern/static/index.js',
-        ]),
-        ('share/jupyter/nbextensions/genepattern/resources',
-         ['genepattern/static/resources/' + f for f in os.listdir('genepattern/static/resources')]
-         ),
-        ('etc/jupyter/nbconfig/notebook.d', ['genepattern.json']),
-        # ('share/jupyter/lab/extensions', [
-        #     'genepattern/static/index.js',
-        #     'genepattern/static/resources',
-        # ])
-    ]
-
-
 setup(name='genepattern-notebook',
       packages=['genepattern'],
       version=__version__,
-      description='GenePattern Notebook extension for Jupyter',
+      description='GenePattern Notebook extension for JupyterLab',
       long_description=long_description,
       long_description_content_type="text/markdown",
       license='BSD',
@@ -52,11 +33,9 @@ setup(name='genepattern-notebook',
       ],
       install_requires=[
           'genepattern-python>=1.4.2',
-          'nbtools>=19',
+          'nbtools>=20',
           'notebook>=5.0.0',
           'ipywidgets>=7.0.0',
       ],
-      package_data={'genepattern': ['static/index.js', 'static/resources/*']},
-      data_files=get_data_files(),
       normalize_version=False,
       )

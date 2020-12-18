@@ -4,7 +4,7 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/genepattern/genepattern-notebook.svg)](https://hub.docker.com/r/genepattern/genepattern-notebook/)
 [![Join the chat at https://gitter.im/genepattern](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/genepattern/genepattern-notebook?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-GenePattern Notebook
+GenePattern Notebook for JupyterLab
 ====================
 
 The [GenePattern Notebook](http://www.genepattern-notebook.org) 
@@ -13,6 +13,20 @@ their GenePattern analyses to create "notebooks" that can be edited, shared, and
 GenePattern Notebooks are built on the [Jupyter](https://jupyter.org/) environment 
 and extend it so that users can take advantage of its ease of use and ability to encapsulate 
 an entire scientific research narrative, without the need to write code.
+
+### **Prerequisites**
+
+* JupyterLab >= 2.0.0
+* ipywidgets >= 7.0.0
+
+# Docker
+
+A Docker image with nbtools and the full JupyterLab stack is available through DockerHub.
+
+```bash
+docker pull genepattern/lab
+docker run --rm -p 8888:8888 genepattern/lab
+```
 
 # Installation
 
@@ -54,45 +68,41 @@ From here go to the "Load the GenePattern extension" step below.
 The easiest way to install GenePattern Notebook is through either PIP or conda. It can be installed by 
 executing one of the following commands:
 
-> pip install genepattern-notebook
+```bash
+pip install genepattern-notebook
+```
 
 *or*
 
-> conda install -c genepattern genepattern-notebook
+```bash
+conda install -c genepattern genepattern-notebook
+```
 
-### Load the GenePattern extension
+### Load the nbtools extension
 
-In Jupyter 5.2 and earlier, before you can use the GenePattern extension for the very first time, 
-you need to enable it by running command lines below. 
+```bash
+# Install ipywidgets, if you haven't already
+jupyter nbextension enable --py widgetsnbextension
+jupyter labextension install @jupyter-widgets/jupyterlab-manager
 
-In Jupyter 5.3 and later this is automatic and there is no need to run these commands.
+# Clone the nbtools repository
+git clone https://github.com/genepattern/nbtools-lab-prototype.git
+cd nbtools-lab-prototype
 
-> jupyter nbextension enable --py widgetsnbextension
->
-> jupyter nbextension install --py nbtools
->
-> jupyter nbextension enable --py nbtools
->
-> jupyter nbextension install --py genepattern
->
-> jupyter nbextension enable --py genepattern
->
-> jupyter serverextension enable --py genepattern
+# Install the nbtools JupyterLab prototype
+pip install .
+jupyter labextension install .
+jupyter nbextension install --py nbtools --sys-prefix
+jupyter nbextension enable --py nbtools --sys-prefix
+```
 
 ### Launch Jupyter
 
-Finally, you may launch Jupyter Notebook by issuing the following command at the terminal:
+Finally, you may launch JupyterLab by issuing the following command at the terminal:
 
-> jupyter notebook
+> jupyter lab
 
 This will start up the notebook kernel and launch your web browser pointing to the Notebook.
-
-### Updating GenePattern Notebook
-
-If you want to update GenePattern Notebook to a more recent version on PIP, run the following 
-command:
-
-> pip install --upgrade --no-deps genepattern-notebook
 
 # Related Repositories
 
@@ -122,14 +132,6 @@ Users using the GenePattern Notebook with an older version of GenePattern (3.9.3
 need to log into the GenePattern UI before making use of the notebook. The server status 
 message and child jobs will also be unavailable. If you are using one of these older versions,
 we recommend that you upgrade to the latest version of GenePattern.
-
-# Feature Support
-
-Most common GenePattern features are supported in the GenePattern Notebook environment. A few, 
-however, have yet to be implemented. GenePattern features that are not yet supported include:
-
-* Batch job submission
-* GenomeSpace integration
 
 # Code of Conduct
 
