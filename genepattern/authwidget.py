@@ -8,7 +8,6 @@ from .taskwidget import TaskTool
 
 GENEPATTERN_SERVERS = {
     'GenePattern Cloud': 'https://cloud.genepattern.org/gp',
-    'Indiana University': 'https://gp.indiana.edu/gp',
     'Broad Internal': 'https://gpbroad.broadinstitute.org/gp',
 }
 
