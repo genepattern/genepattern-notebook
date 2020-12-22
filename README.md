@@ -1,6 +1,6 @@
 [![Version](https://img.shields.io/pypi/v/genepattern-notebook.svg)](https://pypi.python.org/pypi/genepattern-notebook)
 [![Build](https://travis-ci.org/genepattern/genepattern-notebook.svg?branch=master)](https://travis-ci.org/genepattern/genepattern-notebook)
-[![Documentation Status](https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat)](http://genepattern-notebook.org/programmatic/)
+[![Documentation Status](https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat)](https://gpnotebook-website-docs.readthedocs.io/en/latest/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/genepattern/genepattern-notebook.svg)](https://hub.docker.com/r/genepattern/genepattern-notebook/)
 [![Join the chat at https://gitter.im/genepattern](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/genepattern/genepattern-notebook?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -13,6 +13,9 @@ their GenePattern analyses to create "notebooks" that can be edited, shared, and
 GenePattern Notebooks are built on the [Jupyter](https://jupyter.org/) environment 
 and extend it so that users can take advantage of its ease of use and ability to encapsulate 
 an entire scientific research narrative, without the need to write code.
+
+> ### **Looking for JupyterLab support?**
+> **JupyterLab support in is currently in beta. You can find it in its own branch. [Just click here!](https://github.com/genepattern/nbtools/tree/lab)**
 
 # Installation
 
@@ -29,13 +32,13 @@ project from PIP or GitHub for the purposes of software development.
 ### Install Python
 
 In order to get the GenePattern Notebook working you will first need to install a compatible 
-version of Python. This means you will need Python 3.4+. We recommend using the 
+version of Python. This means you will need Python 3.6+. We recommend using the 
 [Anaconda](https://www.anaconda.com/download/#macos) Python distribution. This is 
 a scientific version of Python that ships with many of the most popular Python packages for 
 science, math and data analysis (ex: NumPy, SciPy, Pandas, Matplotlib, IPython, etc.).
 
-**Note for Mac Users:** Mac comes with Python, but you will need to install a newer version, 
-as OSX ships with Python 2.
+**Note for Mac Users:** Mac comes with Python, but you may need to install a newer version, 
+as older versions of macOS ship with Python 2.
 
 ### Install GenePattern Notebook from GitHub
 
