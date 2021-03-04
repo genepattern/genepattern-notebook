@@ -20,7 +20,7 @@ an entire scientific research narrative, without the need to write code.
 # Installation
 
 Full installation instructions for casual use are detailed on the 
-[GenePattern Notebook website](http://www.genepattern-notebook.org/install/). Users should 
+[GenePattern Notebook website](https://gpnotebook-website-docs.readthedocs.io/en/latest/local-installation/). Users should 
 also consider the [GenePattern Notebook Repository](https://notebook.genepattern.org), which 
 provides an install-free cloud deployment of the GenePattern Notebook environment.
 
