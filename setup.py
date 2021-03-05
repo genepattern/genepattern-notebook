@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 from setuptools import setup
 
 
@@ -7,6 +7,10 @@ __version__ = '20.12b1'
 
 with open('README.md') as f:
     long_description = f.read()
+
+
+HERE = Path(__file__).parent.resolve()
+tool_path = (HERE / "schema")
 
 
 setup(name='genepattern-notebook',
@@ -29,6 +33,7 @@ setup(name='genepattern-notebook',
           'License :: OSI Approved :: BSD License',
           'Programming Language :: Python :: 3.6',
           'Programming Language :: Python :: 3.7',
+          'Programming Language :: Python :: 3.8',
           'Framework :: Jupyter',
       ],
       install_requires=[
@@ -36,6 +41,8 @@ setup(name='genepattern-notebook',
           'nbtools>=20',
           'notebook>=5.0.0',
           'ipywidgets>=7.0.0',
+          'pandas',
       ],
+      data_files=[("share/jupyter/nbtools", tool_path, "genepattern.json")],
       normalize_version=False,
       )
