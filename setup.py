@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from setuptools import setup
 
@@ -43,6 +44,6 @@ setup(name='genepattern-notebook',
           'ipywidgets>=7.0.0',
           'pandas',
       ],
-      data_files=[("share/jupyter/nbtools", tool_path, "genepattern.json")],
+      data_files=[("share/jupyter/nbtools", os.path.join(tool_path, "genepattern.json"))],
       normalize_version=False,
       )
