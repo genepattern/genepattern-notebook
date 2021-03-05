@@ -1,5 +1,3 @@
-import os
-from pathlib import Path
 from setuptools import setup
 
 
@@ -8,10 +6,6 @@ __version__ = '20.12b1'
 
 with open('README.md') as f:
     long_description = f.read()
-
-
-HERE = Path(__file__).parent.resolve()
-tool_path = (HERE / "schema")
 
 
 setup(name='genepattern-notebook',
@@ -44,6 +38,6 @@ setup(name='genepattern-notebook',
           'ipywidgets>=7.0.0',
           'pandas',
       ],
-      data_files=[("share/jupyter/nbtools", os.path.join(tool_path, "genepattern.json"))],
+      data_files=[("share/jupyter/nbtools", ["schema/genepattern.json"])],
       normalize_version=False,
       )
