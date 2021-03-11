@@ -1,5 +1,6 @@
 import gp
 from IPython.display import display
+from urllib.error import HTTPError
 from nbtools import UIBuilder, ToolManager, NBTool, EventManager
 from .sessions import session
 from .shim import login, system_message
@@ -107,6 +108,9 @@ class GPAuthWidget(UIBuilder):
             if hasattr(self.session, 'login'): self.token = self.session.login()
             else: self.token = login(self.session)
             return True
+        except HTTPError:
+            self.error = 'Invalid username or password. Please try again.'
+            return False
         except BaseException as e:
             self.error = str(e)
             return False
