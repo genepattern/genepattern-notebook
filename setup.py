@@ -1,7 +1,7 @@
 from setuptools import setup
 
 
-__version__ = '21.03b1'
+__version__ = '21.04b1'
 
 
 with open('README.md') as f:
