@@ -71,8 +71,9 @@ class GPAuthWidget(UIBuilder):
             self.trigger_login()        # Trigger login callbacks of job and task widgets
 
             # Display the widget with the system message and no form
-            UIBuilder.__init__(self, lambda: None, name=self.session.url, display_header=False, display_footer=False,
-                               color=self.default_color, collapsed=True, **kwargs)
+            UIBuilder.__init__(self, lambda: None, name=self.session.username, subtitle=self.session.url,
+                               display_header=False, display_footer=False, color=self.default_color, collapsed=True,
+                               **kwargs)
 
         # If not, prompt the user to login
         else:

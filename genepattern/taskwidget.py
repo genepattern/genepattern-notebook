@@ -122,7 +122,8 @@ class GPTaskWidget(UIBuilder):
             self.parameter_spec = self.create_param_spec(self.task)
             UIBuilder.__init__(self, self.function_wrapper, parameters=self.parameter_spec, color=self.default_color,
                                parameter_groups=GPTaskWidget.extract_parameter_groups(self.task),
-                               upload_callback=self.generate_upload_callback(), **kwargs)
+                               upload_callback=self.generate_upload_callback(), subtitle=f'Version {task.version}',
+                               **kwargs)
 
         # Register the event handler for GP login
         EventManager.instance().register("gp.login", self.login_callback)
