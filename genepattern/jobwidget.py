@@ -85,9 +85,9 @@ class GPJobWidget(UIOutput):
         for f in self.files:
             if f.endswith('/index.html'):
                 return f
-            elif f.endswith('.html') and single_html is None:
+            elif f.endswith('.html') and single_html is None and not f.endswith('pipeline_execution_log.html'):
                 single_html = f
-            elif f.endswith('.html') and single_html is not None:
+            elif f.endswith('.html') and single_html is not None and not f.endswith('pipeline_execution_log.html'):
                 single_html = False
         if single_html: return f'{single_html}#{token}'
 
