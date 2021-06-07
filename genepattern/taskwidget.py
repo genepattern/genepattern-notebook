@@ -108,7 +108,7 @@ class GPTaskWidget(UIBuilder):
         self.display_footer = False
         self.error = error_message
 
-    def __init__(self, task=None, **kwargs):
+    def __init__(self, task=None, origin=None, id=None, **kwargs):
         """Initialize the task widget"""
         self.task = task
 
@@ -123,10 +123,24 @@ class GPTaskWidget(UIBuilder):
             UIBuilder.__init__(self, self.function_wrapper, parameters=self.parameter_spec, color=self.default_color,
                                parameter_groups=GPTaskWidget.extract_parameter_groups(self.task),
                                upload_callback=self.generate_upload_callback(), subtitle=f'Version {task.version}',
-                               **kwargs)
+                               origin=origin, _id=id, **kwargs)
+            self.attach_menu_items()
 
         # Register the event handler for GP login
         EventManager.instance().register("gp.login", self.login_callback)
+
+    def attach_menu_items(self):
+        """Attach the menu items needed for GenePattern tasks"""
+        self.extra_menu_items = {
+            'Documentation': {          # Add the documentation link
+                'action': 'javascript',
+                'code': f'window.open("{self.task.server_data.url[:-3]}{self.task.documentation}")'
+            },
+            'Duplicate Analysis': {     # Add the duplicate analysis option
+                'action': 'cell',
+                'code': f"nbtools.tool(id='{self._id}', origin='{self.origin}')"
+            }
+        }
 
     @staticmethod
     def form_value(raw_value):
@@ -159,5 +173,5 @@ class TaskTool(NBTool):
         self.id = task.lsid
         self.name = task.name
         self.description = task.description
-        self.load = lambda: GPTaskWidget(task)
+        self.load = lambda: GPTaskWidget(task, id=self.id, origin=self.origin)
 
