@@ -134,13 +134,20 @@ class GPTaskWidget(UIBuilder):
         self.extra_menu_items = {
             'Documentation': {          # Add the documentation link
                 'action': 'javascript',
-                'code': f'window.open("{self.task.server_data.url[:-3]}{self.task.documentation}")'
+                'code': f'window.open("{self._generate_doc_link()}")'
             },
             'Duplicate Analysis': {     # Add the duplicate analysis option
                 'action': 'cell',
                 'code': f"nbtools.tool(id='{self._id}', origin='{self.origin}')"
             }
         }
+
+    def _generate_doc_link(self):
+        """Return the documentation URL if absolute; if relative, attach to server URL"""
+        if self.task.documentation and self.task.documentation.startswith('/'):
+            return f'{self.task.server_data.url[:-3]}{self.task.documentation}'
+        else:
+            return {self.task.documentation}
 
     @staticmethod
     def form_value(raw_value):
