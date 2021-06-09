@@ -20,6 +20,34 @@ REGISTER_EVENT = """
     else console.warn('Cannot obtain GenePattern Server URL');"""
 
 
+AUTO_LOGIN_CHECK = """
+    const nameEQ = "GenePattern=";
+    const ca = document.cookie.split(';');
+    let cmatch = null;
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0) cmatch = c.substring(nameEQ.length, c.length)
+    }
+    if (cmatch === null) return;
+    const parts = cmatch.split("|");
+    if (parts.length <= 1) return;
+    let [u, p] = [parts[0], atob(decodeURIComponent(parts[1]))];
+    this.widget_dialog({
+        'title': 'Log into GenePattern Server',
+        'body': 'You have already authenticated with GenePattern Cloud. Would you like to automatically sign in now?',
+        'button_label': 'Login',
+        'callback': () => {
+            this.model.get('form').get('children')[1].get('children')[1].set('value', u);
+            this.model.get('form').get('children')[1].get('children')[1].save();
+            this.model.get('form').get('children')[2].get('children')[1].set('value', p);
+            this.model.get('form').get('children')[2].get('children')[1].save();
+            this.element.querySelector("button.nbtools-run").click();
+        }
+    });
+"""
+
+
 class GPAuthWidget(UIBuilder):
     """A widget for authenticating with a GenePattern server"""
     default_color = 'rgba(10, 45, 105, 0.80)'
@@ -31,6 +59,9 @@ class GPAuthWidget(UIBuilder):
         'run_label': 'Log into GenePattern',
         'buttons': {
             'Register an Account': REGISTER_EVENT
+        },
+        'events': {
+            'load': AUTO_LOGIN_CHECK
         },
         'parameters': {
             'server': {
