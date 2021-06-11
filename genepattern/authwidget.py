@@ -44,8 +44,7 @@ AUTO_LOGIN_CHECK = """
             this.model.get('form').get('children')[2].get('children')[1].save();
             this.element.querySelector("button.nbtools-run").click();
         }
-    });
-"""
+    });"""
 
 
 class GPAuthWidget(UIBuilder):
