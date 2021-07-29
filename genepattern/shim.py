@@ -119,3 +119,16 @@ def ensure_safe_url(url):
     if not url.endswith('/gp'):
         url += '/gp'
     return url
+
+
+def get_eula(task):
+    """Return a dict containing the module's EULA information"""
+    return json.loads(task.json)['eulaInfo']
+
+
+def accept_eula(task):
+    """Call the EULA accept endpoint"""
+    eula = get_eula(task)
+    requests.put(eula['acceptUrl'], data=eula['acceptData'],
+                 auth=(task.server_data.username, task.server_data.password))
+    task.param_load()

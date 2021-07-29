@@ -4,7 +4,7 @@ import tempfile
 from IPython.display import display
 from .jobwidget import GPJobWidget
 from nbtools import NBTool, UIBuilder, python_safe, EventManager
-from .shim import get_task, get_kinds
+from .shim import get_task, get_kinds, get_eula, accept_eula
 
 
 class GPTaskWidget(UIBuilder):
@@ -123,11 +123,27 @@ class GPTaskWidget(UIBuilder):
             UIBuilder.__init__(self, self.function_wrapper, parameters=self.parameter_spec, color=self.default_color,
                                parameter_groups=GPTaskWidget.extract_parameter_groups(self.task),
                                upload_callback=self.generate_upload_callback(), subtitle=f'Version {task.version}',
+                               license=self.add_license(), license_callback=self.generate_license_callback(),
                                origin=origin, _id=id, **kwargs)
             self.attach_menu_items()
 
         # Register the event handler for GP login
         EventManager.instance().register("gp.login", self.login_callback)
+
+    def add_license(self):
+        if not self.task or not self.task.json: return {}   # Skip if there is no task json to parse
+        eula = self.task.get_eula() if hasattr(self.task, 'get_eula') else get_eula(self.task)
+        if len(eula['pendingEulas']) == 0: return {}        # No licenses to add
+
+        return {
+            'name': f'You must agree to the following end-user license agreement before you can run {self.task.name}.',
+            'text': eula['pendingEulas'][0]['content'],
+            'callback': False
+        }
+
+    def generate_license_callback(self):
+        """Function to call when a license is agreed to"""
+        return (lambda: self.task.accept_eula()) if hasattr(self.task, 'accept_eula') else (lambda: accept_eula(self.task))
 
     def attach_menu_items(self):
         """Attach the menu items needed for GenePattern tasks"""
