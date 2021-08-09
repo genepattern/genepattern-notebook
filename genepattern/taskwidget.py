@@ -4,7 +4,7 @@ import tempfile
 from IPython.display import display
 from .jobwidget import GPJobWidget
 from nbtools import NBTool, UIBuilder, python_safe, EventManager
-from .shim import get_task, get_kinds, get_eula, accept_eula
+from .shim import get_task, get_kinds, get_eula, accept_eula, job_params, param_groups, job_group
 
 
 class GPTaskWidget(UIBuilder):
@@ -24,20 +24,24 @@ class GPTaskWidget(UIBuilder):
         def submit_job(**kwargs):
             spec = task.make_job_spec()
             for name, value in kwargs.items():
-                if value is None: value = ''  # Handle the case of blank optional parameters
+                if value is None: value = ''    # Handle the case of blank optional parameters
                 spec.set_parameter(name_map[name], value)
             job = task.server_data.run_job(spec, wait_until_done=False)
             display(GPJobWidget(job))
+
+        # Function for adding a parameter with a safe name
+        def add_param(param_list, p):
+            safe_name = python_safe(p.name)
+            name_map[safe_name] = p.name
+            param = inspect.Parameter(safe_name, inspect.Parameter.POSITIONAL_OR_KEYWORD)
+            param_list.append(param)
 
         # Generate function signature programmatically
         submit_job.__qualname__ = task.name
         submit_job.__doc__ = task.description
         params = []
-        for p in task.params:
-            safe_name = python_safe(p.name)
-            name_map[safe_name] = p.name
-            param = inspect.Parameter(safe_name, inspect.Parameter.POSITIONAL_OR_KEYWORD)
-            params.append(param)
+        params_for_job = task.job_params if hasattr(task, 'job_params') else job_params(task)
+        for p in task.params + params_for_job: add_param(params, p)  # Loop over all parameters
         submit_job.__signature__ = inspect.Signature(params)
 
         return submit_job
@@ -62,7 +66,8 @@ class GPTaskWidget(UIBuilder):
         """Create the display spec for each parameter"""
         if task is None: return {}  # Dummy function for null task
         spec = {}
-        for p in task.params:
+        params_for_job = task.job_params if hasattr(task, 'job_params') else job_params(task)
+        for p in task.params + params_for_job:
             safe_name = python_safe(p.name)
             spec[safe_name] = {}
             spec[safe_name]['default'] = p.name
@@ -75,15 +80,16 @@ class GPTaskWidget(UIBuilder):
 
     @staticmethod
     def extract_parameter_groups(task):
-        if 'paramGroups' in task.dto and (len(task.dto['paramGroups']) > 1 or 'name' in task.dto['paramGroups'][0]):
-            groups = task.dto['paramGroups']
-            for group in groups:
-                if 'parameters' in group:
-                    for i in range(len(group['parameters'])):
-                        group['parameters'][i] = python_safe(group['parameters'][i])
-            return groups
-        else:
-            return []
+        groups = task.param_groups if hasattr(task, 'param_groups') else param_groups(task)     # Get param groups
+        job_options_group = task.job_group if hasattr(task, 'job_group') else job_group(task)   # Get job options
+        job_options_group['hidden'] = True                                                      # Collapse by default
+        groups.append(job_options_group)                                                        # Append job options
+        for group in groups:                                                                    # Escape param names
+            if 'parameters' in group:
+                for i in range(len(group['parameters'])):
+                    group['parameters'][i] = python_safe(group['parameters'][i])
+        return groups
+
 
     def generate_upload_callback(self):
         """Create an upload callback to pass to file input widgets"""

@@ -1,11 +1,10 @@
 from io import StringIO
 from html.parser import HTMLParser
+from gp import GPTask, GPTaskParam
 import json
 import requests
 import urllib.parse
 import urllib.request
-
-from gp import GPTask
 
 
 def get_token(session):
@@ -123,7 +122,7 @@ def ensure_safe_url(url):
 
 def get_eula(task):
     """Return a dict containing the module's EULA information"""
-    return json.loads(task.json)['eulaInfo']
+    return task.dto['eulaInfo']
 
 
 def accept_eula(task):
@@ -132,3 +131,22 @@ def accept_eula(task):
     requests.put(eula['acceptUrl'], data=eula['acceptData'],
                  auth=(task.server_data.username, task.server_data.password))
     task.param_load()
+
+
+def job_params(task):
+    if 'config' in task.dto and 'job.inputParams' in task.dto['config']:
+        return [GPTaskParam(task, p) for p in task.dto['config']['job.inputParams']]
+    else:
+        return []
+
+
+def param_groups(task):
+    if 'paramGroups' in task.dto: return task.dto['paramGroups']
+    else: return []
+
+
+def job_group(task):
+    if 'config' in task.dto and 'job.inputParamGroup' in task.dto['config']:
+        return task.dto['config']['job.inputParamGroup']
+    else:
+        return []
