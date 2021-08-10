@@ -5,11 +5,12 @@ from IPython.display import display
 from .jobwidget import GPJobWidget
 from nbtools import NBTool, UIBuilder, python_safe, EventManager
 from .shim import get_task, get_kinds, get_eula, accept_eula, job_params, param_groups, job_group
+from .utils import session_color
 
 
 class GPTaskWidget(UIBuilder):
     """A widget for representing the status of a GenePattern job"""
-    default_color = 'rgba(10, 45, 105, 0.80)'
+    session_color = None
     task = None
     function_wrapper = None
     parameter_spec = None
@@ -107,7 +108,7 @@ class GPTaskWidget(UIBuilder):
 
     def handle_error_task(self, error_message, name='GenePattern Module', **kwargs):
         """Display an error message if the task is None"""
-        UIBuilder.__init__(self, lambda: None, color=self.default_color, **kwargs)
+        UIBuilder.__init__(self, lambda: None, color=session_color(), **kwargs)
 
         self.name = name
         self.display_header = False
@@ -123,10 +124,11 @@ class GPTaskWidget(UIBuilder):
         elif self.is_java_visualizer():  # Checks if deprecated visualizer and displays an error message
             self.handle_error_task('Java-based visualizers are deprecated in GenePattern and will not function in Jupyter', name=task.name, **kwargs)
         else:
-            if self.task.params is None: self.task.param_load()  # Load params from GP server
-            self.function_wrapper = self.create_function_wrapper(self.task)  # Create run task function
+            if self.task.params is None: self.task.param_load()                 # Load params from GP server
+            self.function_wrapper = self.create_function_wrapper(self.task)     # Create run task function
             self.parameter_spec = self.create_param_spec(self.task)
-            UIBuilder.__init__(self, self.function_wrapper, parameters=self.parameter_spec, color=self.default_color,
+            self.session_color = session_color(self.task.server_data.url)       # Set the session color
+            UIBuilder.__init__(self, self.function_wrapper, parameters=self.parameter_spec, color=self.session_color,
                                parameter_groups=GPTaskWidget.extract_parameter_groups(self.task),
                                upload_callback=self.generate_upload_callback(), subtitle=f'Version {task.version}',
                                license=self.add_license(), license_callback=self.generate_license_callback(),

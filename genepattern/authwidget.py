@@ -5,11 +5,7 @@ from nbtools import UIBuilder, ToolManager, NBTool, EventManager
 from .sessions import session
 from .shim import login, system_message
 from .taskwidget import TaskTool
-
-
-GENEPATTERN_SERVERS = {
-    'GenePattern Cloud': 'https://cloud.genepattern.org/gp',
-}
+from .utils import GENEPATTERN_SERVERS, session_color
 
 
 REGISTER_EVENT = """
@@ -49,12 +45,11 @@ AUTO_LOGIN_CHECK = """
 
 class GPAuthWidget(UIBuilder):
     """A widget for authenticating with a GenePattern server"""
-    default_color = 'rgba(10, 45, 105, 0.80)'
     login_spec = {  # The display values for building the login UI
         'name': 'Login',
         'collapse': False,
         'display_header': False,
-        'color': default_color,
+        'color': session_color(),
         'run_label': 'Log into GenePattern',
         'buttons': {
             'Register an Account': REGISTER_EVENT
@@ -102,8 +97,8 @@ class GPAuthWidget(UIBuilder):
 
             # Display the widget with the system message and no form
             UIBuilder.__init__(self, lambda: None, name=self.session.username, subtitle=self.session.url,
-                               display_header=False, display_footer=False, color=self.default_color, collapsed=True,
-                               **kwargs)
+                               display_header=False, display_footer=False, color=session_color(self.session.url),
+                               collapsed=True, **kwargs)
 
         # If not, prompt the user to login
         else:

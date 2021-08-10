@@ -1,28 +1,30 @@
 from threading import Timer
 from urllib.error import HTTPError
-
 from ipywidgets import Dropdown, Button, VBox, HBox
-
-from genepattern.shim import get_permissions, set_permissions, get_token
 from nbtools import UIOutput, EventManager, ToolManager
+from .shim import get_permissions, set_permissions, get_token
+from .utils import session_color
 
 
 class GPJobWidget(UIOutput):
     """A widget for representing the status of a GenePattern job"""
-    default_color = 'rgba(10, 45, 105, 0.80)'
     sharing_displayed = False
     job = None
 
     def __init__(self, job=None, **kwargs):
         """Initialize the job widget"""
-        UIOutput.__init__(self, color=self.default_color, **kwargs)
         self.job = job
+        UIOutput.__init__(self, color=self.set_color(), **kwargs)
         self.poll()  # Query the GP server and begin polling, if needed
         self.attach_detach()
         self.attach_sharing()
 
         # Register the event handler for GP login
         EventManager.instance().register("gp.login", self.login_callback)
+
+    def set_color(self):
+        if self.job and self.job.server_data: return session_color(self.job.server_data.url)
+        else: return session_color()
 
     def poll(self):
         """Poll the GenePattern server for the job info and display it in the widget"""
@@ -214,4 +216,5 @@ class GPJobWidget(UIOutput):
         if self.job is not None and self.job.server_data is None:
             self.job.server_data = data
             self.error = ''
+            self.color = self.set_color()
             self.poll()
