@@ -3,7 +3,7 @@ from urllib.error import HTTPError
 from ipywidgets import Dropdown, Button, VBox, HBox
 from nbtools import UIOutput, EventManager, ToolManager
 from .shim import get_permissions, set_permissions, get_token
-from .utils import session_color
+from .utils import server_name, session_color
 
 
 class GPJobWidget(UIOutput):
@@ -14,7 +14,7 @@ class GPJobWidget(UIOutput):
     def __init__(self, job=None, **kwargs):
         """Initialize the job widget"""
         self.job = job
-        UIOutput.__init__(self, color=self.set_color(), **kwargs)
+        UIOutput.__init__(self, origin=self.job_origin(), color=self.set_color(), **kwargs)
         self.poll()  # Query the GP server and begin polling, if needed
         self.attach_detach()
         self.attach_sharing()
@@ -22,13 +22,17 @@ class GPJobWidget(UIOutput):
         # Register the event handler for GP login
         EventManager.instance().register("gp.login", self.login_callback)
 
+    def job_origin(self):
+        if self.job and self.job.server_data: return server_name(self.job.server_data.url)
+        else: return ''
+
     def set_color(self):
         if self.job and self.job.server_data: return session_color(self.job.server_data.url)
         else: return session_color()
 
     def poll(self):
         """Poll the GenePattern server for the job info and display it in the widget"""
-        if self.job is not None and self.job.server_data is not None:
+        if self.initialized():
             try:  # Attempt to load the job info from the GP server
                 self.job.get_info()
             except HTTPError:  # Handle HTTP errors contacting the server
@@ -70,7 +74,7 @@ class GPJobWidget(UIOutput):
             self.error = 'You must be authenticated before the job can be displayed. After you authenticate it may take a few seconds for the information to appear.'
 
     def visualizer(self):
-        if self.job is None: return  # Ensure the job has been set
+        if not self.initialized(): return  # Ensure the job has been set
 
         # Get the token, using the shim if necessary
         if hasattr(self.job.server_data, 'get_token'): token = self.job.server_data.get_token()
@@ -104,12 +108,12 @@ class GPJobWidget(UIOutput):
 
     def submitted_text(self):
         """Return pretty job submission text"""
-        if self.job is None: return  # Ensure the job has been set
+        if not self.initialized(): return  # Ensure the job has been set
         return f'Submitted by {self.job.info["userId"]} on {self.job.date_submitted}'
 
     def files_list(self):
         """Return the list of output and log files in the format the widget can handle"""
-        if self.job is None: return  # Ensure the job has been set
+        if not self.initialized(): return  # Ensure the job has been set
         return [f['link']['href'] for f in (self.job.output_files + self.job.log_files)]
 
     def handle_notification(self):
@@ -120,7 +124,7 @@ class GPJobWidget(UIOutput):
 
     def status_text(self):
         """Return concise status text"""
-        if self.job is None: return ''  # Ensure the job has been set
+        if not self.initialized(): return ''  # Ensure the job has been set
         if 'hasError' in self.job.info['status'] and self.job.info['status']['hasError']:
             return 'Error'
         elif 'completedInGp' in self.job.info['status'] and self.job.info['status']['completedInGp']:
@@ -135,7 +139,7 @@ class GPJobWidget(UIOutput):
         session_index = f'"{self.job.server_data.url}"' if self.job.server_data else 0
         self.extra_menu_items = {**self.extra_menu_items, **{'Detach Job': {
                 'action': 'cell',
-                'code': f'import gp\n\ngenepattern.display(gp.GPJob(genepattern.session.get({session_index}), {self.job.job_number}))'
+                'code': f'import gp\n\ngenepattern.display(gp.GPJob(genepattern.session.make({session_index}), {self.job.job_number}))'
             }}}
 
     def attach_sharing(self):
@@ -196,8 +200,7 @@ class GPJobWidget(UIOutput):
     def toggle_job_sharing(self):
         """Toggle displaying the job sharing controls off and on"""
         # Handle None's
-        if self.job is None or self.job.server_data is None:
-            return  # Ignore this call if the job has not been properly initialized
+        if not self.initialized(): return  # Ignore this call if the job has not been properly initialized
 
         if self.sharing_displayed:
             # Add the old appendix children back to the widget if any exist, else simply remove the sharing box
@@ -211,9 +214,14 @@ class GPJobWidget(UIOutput):
             # Attach to the job widget
             self.appendix.children = [permissions_box]
 
+    def initialized(self):
+        """Has the widget been initialized with session credentials"""
+        return self.job and self.job.server_data and self.job.server_data.username
+
     def login_callback(self, data):
         """Callback for after a user authenticates"""
-        if self.job is not None and self.job.server_data is None:
+        if not self.job: return
+        if not self.job.server_data or (not self.initialized() and data.url == self.job.server_data.url):
             self.job.server_data = data
             self.error = ''
             self.color = self.set_color()

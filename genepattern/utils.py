@@ -15,6 +15,13 @@ GENEPATTERN_COLORS = ['rgba(10, 45, 105, 0.80)',
                       'rgba(15, 105, 75, 0.80)']
 
 
+def server_name(search_url):
+    """Search the GENEPATTERN_SERVERS dict for the server with the matching URL"""
+    for name, url in GENEPATTERN_SERVERS.items():
+        if url == search_url: return name
+    return search_url
+
+
 def session_color(index=0):
     if type(index) == int:
         return GENEPATTERN_COLORS[index % len(GENEPATTERN_COLORS)]

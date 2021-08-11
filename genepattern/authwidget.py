@@ -5,7 +5,7 @@ from nbtools import UIBuilder, ToolManager, NBTool, EventManager
 from .sessions import session
 from .shim import login, system_message
 from .taskwidget import TaskTool
-from .utils import GENEPATTERN_SERVERS, session_color
+from .utils import GENEPATTERN_SERVERS, server_name, session_color
 
 
 REGISTER_EVENT = """
@@ -165,13 +165,6 @@ class GPAuthWidget(UIBuilder):
     def trigger_login(self):
         """Dispatch a login event after authentication"""
         EventManager.instance().dispatch("gp.login", self.session)
-
-
-def server_name(search_url):
-    """Search the GENEPATTERN_SERVERS dict for the server with the matching URL"""
-    for name, url in GENEPATTERN_SERVERS.items():
-        if url == search_url: return name
-    return search_url
 
 
 class AuthenticationTool(NBTool):

@@ -60,6 +60,18 @@ class SessionList:
         else:
             return self.sessions[index]
 
+    def make(self, server):
+        """
+        Returns the registered session, if one exists.
+        Otherwise, returns a placeholder session with the URL but no credentials
+        :param server:
+        :return:
+        """
+        session = self.get(server)
+        if session: return session
+        elif isinstance(server, int): raise RuntimeError('make() does not support session indexes')
+        else: return gp.GPServer(server, None, None)
+
     def clean(self):
         """
         Clear all GenePattern sessions from the sessions list
