@@ -150,3 +150,12 @@ def job_group(task):
         return task.dto['config']['job.inputParamGroup']
     else:
         return []
+
+
+def terminate_job(job):
+    url = f'{job.server_data.url}/rest/v1/jobs/{job.job_number}/terminate'
+    request = urllib.request.Request(url, method='DELETE')
+    if job.server_data.authorization_header() is not None:
+        request.add_header('Authorization', job.server_data.authorization_header())
+    request.add_header('User-Agent', 'GenePatternRest')
+    return urllib.request.urlopen(request).code == 200

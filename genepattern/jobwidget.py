@@ -2,7 +2,7 @@ from threading import Timer
 from urllib.error import HTTPError
 from ipywidgets import Dropdown, Button, VBox, HBox
 from nbtools import UIOutput, EventManager, ToolManager
-from .shim import get_permissions, set_permissions, get_token
+from .shim import get_permissions, set_permissions, get_token, terminate_job
 from .utils import server_name, session_color
 
 
@@ -18,6 +18,7 @@ class GPJobWidget(UIOutput):
         self.poll()  # Query the GP server and begin polling, if needed
         self.attach_detach()
         self.attach_sharing()
+        self.attach_terminate()
 
         # Register the event handler for GP login
         EventManager.instance().register("gp.login", self.login_callback)
@@ -50,6 +51,8 @@ class GPJobWidget(UIOutput):
             # Send notification if completed
             self.handle_notification()
 
+            # Update the menu items
+            self.attach_terminate()
             self.extra_file_menu_items = {
                 'Send to Code': {
                     'action': 'cell',
@@ -149,6 +152,17 @@ class GPJobWidget(UIOutput):
                 'code': 'toggle_job_sharing'
             }}}
 
+    def attach_terminate(self):
+        # Add the Terminate Job menu option, if necessaru
+        if self.status == 'Pending' or self.status == 'Running' and 'Terminate Job' not in self.extra_menu_items:
+            self.extra_menu_items = {**self.extra_menu_items, **{'Terminate Job': {
+                    'action': 'method',
+                    'code': 'terminate_job'
+                }}}
+        # Remove the Terminate Job menu option id no longer running or pending
+        if self.status != 'Pending' and self.status != 'Running' and 'Terminate Job' in self.extra_menu_items:
+            self.extra_menu_items = { key:value for key, value in self.extra_menu_items.items() if key != 'Terminate Job'}
+
     def build_sharing_controls(self):
         """Create and return a VBox with the job sharing controls"""
         # Query job permissions, using the shim if necessary
@@ -213,6 +227,12 @@ class GPJobWidget(UIOutput):
             self.sharing_displayed = self.appendix.children if self.appendix.children else True
             # Attach to the job widget
             self.appendix.children = [permissions_box]
+
+    def terminate_job(self):
+        if self.initialized():
+            # Terminate using the shim if necessary
+            self.job.terminate() if hasattr(self.job, 'terminate') else terminate_job(self.job)
+            self.poll()
 
     def initialized(self):
         """Has the widget been initialized with session credentials"""
