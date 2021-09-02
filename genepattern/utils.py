@@ -9,10 +9,10 @@ GENEPATTERN_SERVERS = {
 }
 
 
-GENEPATTERN_COLORS = ['rgba(10, 45, 105, 0.80)',
-                      'rgba(15, 75, 105, 0.80)',
-                      'rgba(115, 25, 10, 0.80)',
-                      'rgba(15, 105, 75, 0.80)']
+GENEPATTERN_COLORS = [(10, 45, 105, 0.80),
+                      (15, 75, 105, 0.80),
+                      (115, 25, 10, 0.80),
+                      (15, 105, 75, 0.80),]
 
 
 def server_name(search_url):
@@ -22,14 +22,18 @@ def server_name(search_url):
     return search_url
 
 
-def session_color(index=0):
+def color_string(r, g, b, a, secondary_color=False):
+    return f'rgba({r}, {g}, {b}, {0.50 if secondary_color else a})'
+
+
+def session_color(index=0, secondary_color=False):
     if type(index) == int:
-        return GENEPATTERN_COLORS[index % len(GENEPATTERN_COLORS)]
+        return color_string(*GENEPATTERN_COLORS[index % len(GENEPATTERN_COLORS)], secondary_color)
     else:
         servers = list(GENEPATTERN_SERVERS.values())
         for i in range(len(servers)):
-            if index == servers[i]: return GENEPATTERN_COLORS[i]
-        return GENEPATTERN_COLORS[-1]
+            if index == servers[i]: return color_string(*GENEPATTERN_COLORS[i], secondary_color)
+        return color_string(*GENEPATTERN_COLORS[-1], secondary_color)
 
 
 def filelike(file_url, session_index=None):

@@ -28,7 +28,7 @@ class GPTaskWidget(UIBuilder):
                 if value is None: value = ''    # Handle the case of blank optional parameters
                 spec.set_parameter(name_map[name], value)
             job = task.server_data.run_job(spec, wait_until_done=False)
-            display(GPJobWidget(job))
+            display(GPJobWidget(job, logo='none', color=session_color(self.task.server_data.url, secondary_color=True)))
 
         # Function for adding a parameter with a safe name
         def add_param(param_list, p):

@@ -14,7 +14,8 @@ class GPJobWidget(UIOutput):
     def __init__(self, job=None, **kwargs):
         """Initialize the job widget"""
         self.job = job
-        UIOutput.__init__(self, origin=self.job_origin(), color=self.set_color(), **kwargs)
+        self.set_color(kwargs)
+        UIOutput.__init__(self, origin=self.job_origin(), **kwargs)
         self.poll()  # Query the GP server and begin polling, if needed
         self.attach_detach()
         self.attach_sharing()
@@ -27,9 +28,13 @@ class GPJobWidget(UIOutput):
         if self.job and self.job.server_data: return server_name(self.job.server_data.url)
         else: return ''
 
-    def set_color(self):
-        if self.job and self.job.server_data: return session_color(self.job.server_data.url)
-        else: return session_color()
+    def set_color(self, kwargs):
+        # If color is already set, keep that color
+        if 'color' in kwargs: return
+
+        # Otherwise, set the color based on the session
+        if self.job and self.job.server_data: kwargs['color'] = session_color(self.job.server_data.url)
+        else: kwargs['color'] = session_color()
 
     def poll(self):
         """Poll the GenePattern server for the job info and display it in the widget"""
@@ -42,7 +47,7 @@ class GPJobWidget(UIOutput):
                 return
 
             # Add the job information to the widget
-            self.name = f'{self.job.job_number}'
+            self.name = f'Job #{self.job.job_number}'
             self.status = self.status_text()
             self.description = self.submitted_text()
             self.files = self.files_list()
@@ -121,9 +126,9 @@ class GPJobWidget(UIOutput):
 
     def handle_notification(self):
         if self.status == 'Error':
-            ToolManager.instance().send('notification', {'message': f'Job #{self.name} has an error!', 'sender': 'GenePattern Notebook'})
+            ToolManager.instance().send('notification', {'message': f'{self.name} has an error!', 'sender': 'GenePattern Notebook'})
         elif self.status == 'Completed':
-            ToolManager.instance().send('notification', {'message': f'Job #{self.name} is complete!', 'sender': 'GenePattern Notebook'})
+            ToolManager.instance().send('notification', {'message': f'{self.name} is complete!', 'sender': 'GenePattern Notebook'})
 
     def status_text(self):
         """Return concise status text"""
