@@ -83,7 +83,7 @@ class GPTaskWidget(UIBuilder):
     def extract_parameter_groups(task):
         groups = task.param_groups if hasattr(task, 'param_groups') else param_groups(task)     # Get param groups
         job_options_group = task.job_group if hasattr(task, 'job_group') else job_group(task)   # Get job options
-        job_options_group['hidden'] = True                                                      # Collapse by default
+        job_options_group['advanced'] = True                                                    # Hide by default
         all_groups = groups + [job_options_group]                                               # Join groups
         for group in all_groups:                                                                # Escape param names
             if 'parameters' in group:
