@@ -91,7 +91,6 @@ class GPTaskWidget(UIBuilder):
                     group['parameters'][i] = python_safe(group['parameters'][i])
         return all_groups
 
-
     def generate_upload_callback(self):
         """Create an upload callback to pass to file input widgets"""
         def genepattern_upload_callback(values):
