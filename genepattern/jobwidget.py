@@ -28,13 +28,15 @@ class GPJobWidget(UIOutput):
         if self.job and self.job.server_data: return server_name(self.job.server_data.url)
         else: return ''
 
-    def set_color(self, kwargs):
+    def set_color(self, kwargs={}):
         # If color is already set, keep that color
         if 'color' in kwargs: return
 
         # Otherwise, set the color based on the session
         if self.job and self.job.server_data: kwargs['color'] = session_color(self.job.server_data.url)
         else: kwargs['color'] = session_color()
+
+        return kwargs['color']
 
     def poll(self):
         """Poll the GenePattern server for the job info and display it in the widget"""

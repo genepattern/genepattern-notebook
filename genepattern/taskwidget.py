@@ -71,7 +71,6 @@ class GPTaskWidget(UIBuilder):
         for p in task.params + params_for_job:
             safe_name = python_safe(p.name)
             spec[safe_name] = {}
-            spec[safe_name]['default'] = p.name
             spec[safe_name]['default'] = GPTaskWidget.form_value(p.get_default_value())
             spec[safe_name]['description'] = GPTaskWidget.form_value(p.description)
             spec[safe_name]['optional'] = p.is_optional()
@@ -114,9 +113,11 @@ class GPTaskWidget(UIBuilder):
         self.display_footer = False
         self.error = error_message
 
-    def __init__(self, task=None, origin=None, id=None, **kwargs):
+    def __init__(self, task=None, origin='', id='', **kwargs):
         """Initialize the task widget"""
         self.task = task
+        if task and origin is None: origin = task.server_data.url
+        if task and id is None: id = task.lsid
 
         if self.task is None or self.task.server_data is None:  # Set the right look and error message if task is None
             self.handle_error_task('No GenePattern module specified.', **kwargs)
