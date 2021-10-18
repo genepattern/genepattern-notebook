@@ -251,5 +251,5 @@ class GPJobWidget(UIOutput):
         if not self.job.server_data or (not self.initialized() and data.url == self.job.server_data.url):
             self.job.server_data = data
             self.error = ''
-            self.color = self.set_color()
+            self.set_color()
             self.poll()
