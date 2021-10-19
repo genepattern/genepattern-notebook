@@ -69,7 +69,12 @@ class GPJobWidget(UIOutput):
                     'action': 'cell',
                     'kinds': ['gct', 'odf'],
                     'code': f'import genepattern\nfrom gp.data import GCT as gct, ODF as odf\n\nfile_{self.job.job_number} = {{{{type}}}}(genepattern.session.get("{self.job.server_data.url}").get_job({self.job.job_number}).get_file("{{{{file_name}}}}"))\nfile_{self.job.job_number}'
-                }
+                },
+                'Download to Workspace': {
+                    'action': 'method',
+                    'code': 'workspace_download',
+                    'params': '{"file_name": "{{file_name}}"}'
+                },
             }
 
             # Handle child jobs
@@ -240,6 +245,11 @@ class GPJobWidget(UIOutput):
             # Terminate using the shim if necessary
             self.job.terminate() if hasattr(self.job, 'terminate') else terminate_job(self.job)
             self.poll()
+
+    def workspace_download(self, file_name="AG.chip.cvt.chip"):
+        with open(file_name, 'wb') as f:
+            with self.job.get_file(file_name).open() as g:
+                f.write(g.read())
 
     def initialized(self):
         """Has the widget been initialized with session credentials"""
