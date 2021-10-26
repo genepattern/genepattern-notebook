@@ -149,7 +149,7 @@ def job_group(task):
     if 'config' in task.dto and 'job.inputParamGroup' in task.dto['config']:
         return task.dto['config']['job.inputParamGroup']
     else:
-        return []
+        return {}
 
 
 def terminate_job(job):

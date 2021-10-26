@@ -1,11 +1,15 @@
 import inspect
+import json
 import os
 import tempfile
+from urllib.request import Request, urlopen
+from gp import GPTask
 from IPython.display import display
+from ipywidgets import Output
 from .jobwidget import GPJobWidget
-from nbtools import NBTool, UIBuilder, python_safe, EventManager
+from nbtools import NBTool, UIBuilder, UIOutput, python_safe, EventManager
 from .shim import get_task, get_kinds, get_eula, accept_eula, job_params, param_groups, job_group
-from .utils import session_color
+from .utils import session_color, server_name
 
 
 class GPTaskWidget(UIBuilder):
@@ -159,10 +163,6 @@ class GPTaskWidget(UIBuilder):
             'Documentation': {          # Add the documentation link
                 'action': 'javascript',
                 'code': f'window.open("{self._generate_doc_link()}")'
-            },
-            'Duplicate Analysis': {     # Add the duplicate analysis option
-                'action': 'cell',
-                'code': f"nbtools.tool(id='{self._id}', origin='{self.origin}')"
             }
         }
 
@@ -206,3 +206,45 @@ class TaskTool(NBTool):
         self.description = task.description
         self.load = lambda: GPTaskWidget(task, id=self.id, origin=self.origin)
 
+
+def reproduce_job(sessions, session_index, job_number):
+    session = sessions.make(session_index)
+    origin = server_name(session.url)
+    needs_rendered = True
+
+    # Create the task widget, either immediately or upon login callback
+    def create_task():
+        session = sessions.make(session_index)          # Retrieve session again, necessary if run from login callback
+        request = Request(session.url + "/rest/v1/jobs/" + str(job_number) + "?includeInputParams=true")
+        if session.authorization_header() is not None:  # Make authorized call to GenePattern REST API
+            request.add_header('Authorization', session.authorization_header())
+        request.add_header('User-Agent', 'GenePatternRest')
+        response = urlopen(request)                     # Get the response
+        json_str = response.read().decode('utf-8')      # Deal with the JSON payload
+        json_dict = json.loads(json_str)
+        task = GPTask(session, json_dict['taskLsid'])
+        task.param_load()                               # Retrieve task parameters
+        params = task.get_parameters()
+        for i in range(len(params)):
+            task_param = params[i]
+            custom_value = json_dict['inputParams'][i]  # Set the values to reproduce the original job
+            task_param.attributes['default_value'] = custom_value[list(custom_value)[0]]
+        return GPTaskWidget(task)                       # Return widget for display
+
+    # Render the widget upon callback from 'nbtools.register'
+    def render_task(data):
+        nonlocal needs_rendered
+        if needs_rendered and 'origin' in data and data['origin'] == origin:
+            task_widget = create_task()             # Create the task widget
+            placeholder.close()                     # Remove the placeholder widget
+            with output: display(task_widget)       # Display the task widget
+            needs_rendered = False                  # Only display once
+
+    if not session.username:                        # If not logged in, display placeholder widget
+        output = Output()  # Output widget and placeholder
+        placeholder = UIOutput(name='Cannot find module', error=f'Cannot find module: {origin} | {job_number}')
+        output.append_display_data(placeholder)
+        EventManager.instance().register("nbtools.register", render_task)  # Register the callback with event manager
+        return output                               # Return widget for display
+    else:
+        return create_task()

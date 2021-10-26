@@ -20,6 +20,7 @@ class GPJobWidget(UIOutput):
         self.attach_detach()
         self.attach_sharing()
         self.attach_terminate()
+        self.attach_duplicate()
 
         # Register the event handler for GP login
         EventManager.instance().register("gp.login", self.login_callback)
@@ -174,6 +175,13 @@ class GPJobWidget(UIOutput):
         # Remove the Terminate Job menu option id no longer running or pending
         if self.status != 'Pending' and self.status != 'Running' and 'Terminate Job' in self.extra_menu_items:
             self.extra_menu_items = { key:value for key, value in self.extra_menu_items.items() if key != 'Terminate Job'}
+
+    def attach_duplicate(self):
+        session_index = f'"{self.job.server_data.url}"' if self.job.server_data else 0
+        self.extra_menu_items = {**self.extra_menu_items, **{'Duplicate Analysis': {
+            'action': 'cell',
+            'code': f"genepattern.display(genepattern.reproduce_job(genepattern.session, {session_index}, {self.job.job_number}))"
+        }}}
 
     def build_sharing_controls(self):
         """Create and return a VBox with the job sharing controls"""
