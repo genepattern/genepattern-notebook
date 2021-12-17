@@ -9,6 +9,7 @@ from nbtools import UIBuilder as GPUIBuilder, UIOutput as GPUIOutput, build_ui, 
 from .local_widgets import GPModuleWidget
 from .jupyter_extensions import (GenePatternMagic, load_ipython_extension, load_jupyter_server_extension,
                                  _jupyter_server_extension_paths, _jupyter_nbextension_paths)
+from .demo_mode import activate_demo_mode, set_demo_jobs
 
 
 __author__ = 'Thorin Tabor'
