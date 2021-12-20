@@ -1,7 +1,7 @@
 """
 GenePattern Notebook extension for Jupyter
 
-Copyright 2015-2020 Regents of the University of California & Broad Institute
+Copyright 2015-2021 Regents of the University of California & Broad Institute
 """
 
 from .remote_widgets import GPAuthWidget, GPTaskWidget, GPJobWidget, session, register_session, get_session, display
@@ -14,6 +14,6 @@ from .demo_mode import activate_demo_mode, set_demo_jobs
 
 __author__ = 'Thorin Tabor'
 __copyright__ = 'Copyright 2014-2021, Regents of the University of California & Broad Institute'
-__version__ = '21.02'
+__version__ = '21.12'
 __status__ = 'Production/Stable'
 __license__ = 'BSD-3-Clause'
