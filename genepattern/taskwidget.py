@@ -3,6 +3,7 @@ import json
 import os
 import tempfile
 from urllib.request import Request, urlopen
+from urllib.error import HTTPError
 from gp import GPTask
 from IPython.display import display
 from ipywidgets import Output
@@ -248,3 +249,17 @@ def reproduce_job(sessions, session_index, job_number):
         return output                               # Return widget for display
     else:
         return create_task()
+
+
+def load_task(sessions, session_index, name_or_lsid):
+    """Return a task widget for the specified module name or lsid,
+       regardless of whether's its been registered with the ToolManager or not.
+       Useful for loading old versions of modules."""
+
+    session = sessions.make(session_index)          # Get the GenePattern session
+    task = GPTask(session, name_or_lsid)            # Initialize a task object
+
+    try: task.param_load()                          # Query the GenePattern server for the module's metadata
+    except HTTPError: return None                   # Return None if no module available
+
+    return GPTaskWidget(task)                       # Return the task widget
