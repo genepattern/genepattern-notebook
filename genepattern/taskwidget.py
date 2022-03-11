@@ -253,7 +253,7 @@ def reproduce_job(sessions, session_index, job_number):
 
 def load_task(sessions, session_index, name_or_lsid):
     """Return a task widget for the specified module name or lsid,
-       regardless of whether's its been registered with the ToolManager or not.
+       regardless of whether it's been registered with the ToolManager or not.
        Useful for loading old versions of modules."""
 
     session = sessions.make(session_index)          # Get the GenePattern session
