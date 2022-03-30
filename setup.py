@@ -1,7 +1,7 @@
 from setuptools import setup
 
 
-__version__ = '21.9.0b1'
+__version__ = '22.3.0b1'
 
 
 with open('README.md') as f:
@@ -29,6 +29,7 @@ setup(name='genepattern-notebook',
           'Programming Language :: Python :: 3.6',
           'Programming Language :: Python :: 3.7',
           'Programming Language :: Python :: 3.8',
+          'Programming Language :: Python :: 3.9',
           'Framework :: Jupyter',
       ],
       install_requires=[
