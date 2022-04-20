@@ -15,7 +15,7 @@ and extend it so that users can take advantage of its ease of use and ability to
 an entire scientific research narrative, without the need to write code.
 
 > ### **Looking for JupyterLab support?**
-> **JupyterLab support in is currently in beta. You can find it in its own branch. [Just click here!](https://github.com/genepattern/nbtools/tree/lab)**
+> **JupyterLab support in is available. You can find it in its own branch. [Just click here!](https://github.com/genepattern/genepattern-notebook/tree/lab)**
 
 # Installation
 
