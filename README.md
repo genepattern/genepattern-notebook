@@ -16,7 +16,7 @@ and extend it so that users can take advantage of its ease of use and ability to
 an entire scientific research narrative, without the need to write code. They are a core 
 component of the [g2nb](https://github.com/g2nb) project.
 
-> ### **Looking for class Jupyter Notebook support?**
+> ### **Looking for classic Jupyter Notebook support?**
 > **Jupyter Notebook support in is available, albeit no longer in active development. You can 
 > find it in its own branch. [Just click here!](https://github.com/genepattern/genepattern-notebook/tree/notebook)**
 
