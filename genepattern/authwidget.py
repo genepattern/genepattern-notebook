@@ -1,5 +1,6 @@
 import gp
 from IPython.display import display
+from threading import Thread
 from urllib.error import HTTPError
 from nbtools import UIBuilder, ToolManager, NBTool, EventManager
 from .sessions import session
@@ -153,9 +154,13 @@ class GPAuthWidget(UIBuilder):
 
     def register_modules(self):
         """Get the list available modules and register widgets for them with the tool manager"""
-        for task in self.session.get_task_list():
-            tool = TaskTool(server_name(self.session.url), task)
-            ToolManager.instance().register(tool)
+        def register_modules_callback():
+            for task in self.session.get_task_list():
+                tool = TaskTool(server_name(self.session.url), task)
+                ToolManager.instance().register(tool)
+        # Register modules in their own thread so as not to block the kernel
+        registration_thread = Thread(target=register_modules_callback)
+        registration_thread.start()
 
     def system_message(self):
         if hasattr(self.session, 'system_message'): message = self.session.system_message()
