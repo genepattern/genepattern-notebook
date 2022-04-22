@@ -10,7 +10,7 @@ from ipywidgets import Output
 from .jobwidget import GPJobWidget
 from nbtools import NBTool, UIBuilder, UIOutput, python_safe, EventManager
 from .shim import get_task, get_kinds, get_eula, accept_eula, job_params, param_groups, job_group
-from .utils import session_color, server_name
+from .utils import GENEPATTERN_LOGO, session_color, server_name
 
 
 class GPTaskWidget(UIBuilder):
@@ -137,7 +137,7 @@ class GPTaskWidget(UIBuilder):
                                parameter_groups=GPTaskWidget.extract_parameter_groups(self.task),
                                upload_callback=self.generate_upload_callback(), subtitle=f'Version {task.version}',
                                license=self.add_license(), license_callback=self.generate_license_callback(),
-                               origin=origin, _id=id, **kwargs)
+                               origin=origin, _id=id, logo=GENEPATTERN_LOGO, **kwargs)
             self.attach_menu_items()
 
         # Register the event handler for GP login

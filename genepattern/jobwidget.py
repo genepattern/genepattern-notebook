@@ -3,7 +3,7 @@ from urllib.error import HTTPError
 from ipywidgets import Dropdown, Button, VBox, HBox
 from nbtools import UIOutput, EventManager, ToolManager
 from .shim import get_permissions, set_permissions, get_token, terminate_job
-from .utils import server_name, session_color
+from .utils import GENEPATTERN_LOGO, server_name, session_color
 
 
 class GPJobWidget(UIOutput):
@@ -15,6 +15,7 @@ class GPJobWidget(UIOutput):
         """Initialize the job widget"""
         self.job = job
         self.set_color(kwargs)
+        self.set_logo(kwargs)
         UIOutput.__init__(self, origin=self.job_origin(), **kwargs)
         self.poll()  # Query the GP server and begin polling, if needed
         self.attach_detach()
@@ -38,6 +39,15 @@ class GPJobWidget(UIOutput):
         else: kwargs['color'] = session_color()
 
         return kwargs['color']
+
+    @staticmethod
+    def set_logo(kwargs={}):
+        # If logo is already set, keep that logo
+        if 'logo' in kwargs: return
+
+        # Otherwise, set the logo
+        kwargs['logo'] = GENEPATTERN_LOGO
+        return kwargs['logo']
 
     def poll(self):
         """Poll the GenePattern server for the job info and display it in the widget"""
