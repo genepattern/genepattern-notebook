@@ -1,6 +1,6 @@
 from threading import Timer
 from urllib.error import HTTPError
-from ipywidgets import Dropdown, Button, HTML, Layout, VBox, HBox
+from ipywidgets import Dropdown, Button, HTML, VBox, HBox
 from nbtools import UIOutput, EventManager, ToolManager
 from .shim import get_permissions, set_permissions, get_token, terminate_job
 from .utils import GENEPATTERN_LOGO, server_name, session_color
