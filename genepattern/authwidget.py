@@ -135,6 +135,7 @@ class GPAuthWidget(UIBuilder):
             # Check to see if gp library supports login, otherwise call login shim
             if hasattr(self.session, 'login'): self.token = self.session.login()
             else: self.token = login(self.session)
+            gp.core.GP_JOB_TAG = 'GenePattern Notebook'  # Set tag for jobs
             return True
         except HTTPError:
             self.error = 'Invalid username or password. Please try again.'
