@@ -1,6 +1,6 @@
 from threading import Timer
 from urllib.error import HTTPError
-from ipywidgets import Dropdown, Button, VBox, HBox
+from ipywidgets import Dropdown, Button, HTML, Layout, VBox, HBox
 from nbtools import UIOutput, EventManager, ToolManager
 from .shim import get_permissions, set_permissions, get_token, terminate_job
 from .utils import GENEPATTERN_LOGO, server_name, session_color
@@ -204,12 +204,19 @@ class GPJobWidget(UIOutput):
 
         # Build the job sharing form by iterating over groups
         for g in perms['groups']:
-            d = Dropdown(description=g['id'], options=['Private', 'Read', 'Read & Write'])
+            # Special case for * group
+            group_label = g['id']
+            if group_label == "*": group_label = 'All Users'
+
+            d = Dropdown(description=group_label, options=['Private', 'Read', 'Read & Write'])
             if g['read'] and g['write']:
                 d.value = 'Read & Write'
             elif g['read']:
                 d.value = 'Read'
             group_widgets.append(d)
+
+        # Sharing box title
+        title = HTML('<hr/><h3>GenePattern Job Sharing</h3>')
 
         # Cancel / Close the sharing form functionality
         cancel_button = Button(description='Cancel')
@@ -239,7 +246,7 @@ class GPJobWidget(UIOutput):
         button_box = HBox(children=[cancel_button, save_button])
 
         # Create the job sharing box and attach to the job widget
-        return VBox(children=group_widgets + [button_box])
+        return VBox(children=[title] + group_widgets + [button_box])
 
     def toggle_job_sharing(self):
         """Toggle displaying the job sharing controls off and on"""
