@@ -100,6 +100,12 @@ session = SessionList()
 
 
 def get_session(index):
-    """genepattern.get_session shim added for the purposes of backward compatibility"""
+    """Deprecated: genepattern.get_session shim added for the purposes of backward compatibility"""
     warnings.warn("genepattern.get_session() has been deprecated. Please use genepattern.session.get() instead.", UserWarning)
     return session.get(index)
+
+
+def register_session(server, username, password):
+    """Deprecated call for backward compatibility"""
+    warnings.warn("register_session will be deprecated, use sessions.register instead", UserWarning)
+    return session.register(server, username, password)
