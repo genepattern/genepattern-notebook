@@ -1,7 +1,6 @@
 import inspect
 import json
 import os
-import tempfile
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 from gp import GPTask
@@ -100,11 +99,10 @@ class GPTaskWidget(UIBuilder):
         def genepattern_upload_callback(values):
             try:
                 for k in values:
-                    with tempfile.NamedTemporaryFile() as f:
-                        f.write(values[k]['content'])
-                        f.flush()
-                        gpfile = self.task.server_data.upload_file(k, os.path.realpath(f.name))
-                        return gpfile.get_url()
+                    path = os.path.realpath(k)
+                    gpfile = self.task.server_data.upload_file(k, path)
+                    os.remove(path)
+                    return gpfile.get_url()
             except Exception as e:
                 self.error = f"Error encountered uploading file: {e}"
         return genepattern_upload_callback
