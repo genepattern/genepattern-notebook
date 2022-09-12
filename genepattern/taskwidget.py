@@ -19,6 +19,7 @@ class GPTaskWidget(UIBuilder):
     function_wrapper = None
     parameter_spec = None
     upload_callback = None
+    kwargs = {}
 
     def create_function_wrapper(self, task):
         """Create a function that accepts the expected input and submits a GenePattern job"""
@@ -67,18 +68,31 @@ class GPTaskWidget(UIBuilder):
         elif task_param.attributes['type'].lower() == 'password': param_spec['type'] = 'password'
         else: param_spec['type'] = 'text'
 
-    def create_param_spec(self, task):
+    @staticmethod
+    def override_if_set(safe_name, attr, param_overrides, param_val):
+        if param_overrides and safe_name in param_overrides and attr in param_overrides[safe_name]:
+            return param_overrides[safe_name][attr]
+        else: return param_val
+
+    def create_param_spec(self, task, kwargs):
         """Create the display spec for each parameter"""
         if task is None: return {}  # Dummy function for null task
         spec = {}
         params_for_job = task.job_params if hasattr(task, 'job_params') else job_params(task)
+        param_overrides = kwargs.pop('parameters', None)
         for p in task.params + params_for_job:
             safe_name = python_safe(p.name)
             spec[safe_name] = {}
-            spec[safe_name]['default'] = GPTaskWidget.form_value(p.get_default_value())
-            spec[safe_name]['description'] = GPTaskWidget.form_value(p.description)
-            spec[safe_name]['optional'] = p.is_optional()
-            spec[safe_name]['kinds'] = p.get_kinds() if hasattr(p, 'get_kinds') else get_kinds(p)
+            spec[safe_name]['default'] = GPTaskWidget.form_value(
+                GPTaskWidget.override_if_set(safe_name, 'default', param_overrides, p.get_default_value())
+            )
+            spec[safe_name]['description'] = GPTaskWidget.form_value(
+                GPTaskWidget.override_if_set(safe_name, 'description', param_overrides, p.description)
+            )
+            spec[safe_name]['optional'] = GPTaskWidget.override_if_set(safe_name, 'optional', param_overrides,
+                                                                       p.is_optional())
+            spec[safe_name]['kinds'] = GPTaskWidget.override_if_set(safe_name, 'kinds', param_overrides,
+                                                                    p.get_kinds() if hasattr(p, 'get_kinds') else get_kinds(p))
             self.add_type_spec(p, spec[safe_name])
         return spec
 
@@ -109,7 +123,8 @@ class GPTaskWidget(UIBuilder):
 
     def handle_error_task(self, error_message, name='GenePattern Module', **kwargs):
         """Display an error message if the task is None"""
-        UIBuilder.__init__(self, lambda: None, color=session_color(), **kwargs)
+        ui_args = {'color': session_color(), **kwargs}
+        UIBuilder.__init__(self, lambda: None, **ui_args)
 
         self.name = name
         self.display_header = False
@@ -119,6 +134,7 @@ class GPTaskWidget(UIBuilder):
     def __init__(self, task=None, origin='', id='', **kwargs):
         """Initialize the task widget"""
         self.task = task
+        self.kwargs = kwargs
         if task and origin is None: origin = task.server_data.url
         if task and id is None: id = task.lsid
 
@@ -129,13 +145,22 @@ class GPTaskWidget(UIBuilder):
         else:
             if self.task.params is None: self.task.param_load()                 # Load params from GP server
             self.function_wrapper = self.create_function_wrapper(self.task)     # Create run task function
-            self.parameter_spec = self.create_param_spec(self.task)
+            self.parameter_spec = self.create_param_spec(self.task, kwargs)     # Create the parameter spec
             self.session_color = session_color(self.task.server_data.url)       # Set the session color
-            UIBuilder.__init__(self, self.function_wrapper, parameters=self.parameter_spec, color=self.session_color,
-                               parameter_groups=GPTaskWidget.extract_parameter_groups(self.task),
-                               upload_callback=self.generate_upload_callback(), subtitle=f'Version {task.version}',
-                               license=self.add_license(), license_callback=self.generate_license_callback(),
-                               origin=origin, _id=id, logo=GENEPATTERN_LOGO, **kwargs)
+            ui_args = {                                                         # Assemble keyword arguments
+                'color': self.session_color,
+                'id': id,
+                'license': self.add_license(),
+                'license_callback': self.generate_license_callback(),
+                'logo': GENEPATTERN_LOGO,
+                'origin': origin,
+                'parameter_groups': GPTaskWidget.extract_parameter_groups(self.task),
+                'parameters': self.parameter_spec,
+                'subtitle': f'Version {task.version}',
+                'upload_callback': self.generate_upload_callback(),
+            }
+            ui_args = { **ui_args, **kwargs }                                   # Merge kwargs (allows overrides)
+            UIBuilder.__init__(self, self.function_wrapper, **ui_args)          # Initiate the widget
             self.attach_menu_items()
 
         # Register the event handler for GP login
@@ -190,7 +215,7 @@ class GPTaskWidget(UIBuilder):
 
             # Create a new task widget and close the old unauthenticated one
             with self.output:
-                display(GPTaskWidget(task))
+                display(GPTaskWidget(task, **self.kwargs))
                 self.close()
 
 
@@ -203,7 +228,7 @@ class TaskTool(NBTool):
         self.id = task.lsid
         self.name = task.name
         self.description = task.description
-        self.load = lambda: GPTaskWidget(task, id=self.id, origin=self.origin)
+        self.load = lambda **kwargs: GPTaskWidget(task, id=self.id, origin=self.origin, **kwargs)
 
 
 def reproduce_job(sessions, session_index, job_number):
@@ -247,6 +272,19 @@ def reproduce_job(sessions, session_index, job_number):
         return output                               # Return widget for display
     else:
         return create_task()
+
+
+def spec_to_kwargs(kwargs):
+    """If a GPJobSpec is included in the kwargs, merge it into the parameters kwarg"""
+    if 'spec' in kwargs:
+        base_parameters = kwargs['parameters'] if 'parameters' in kwargs else {}
+        for p in kwargs['spec'].params:
+            if p['name'] not in base_parameters:
+                base_parameters[python_safe(p['name'])] = {
+                    'default': p['values'] if len(p['values']) > 1 else p['values'][0]
+                }
+        kwargs['parameters'] = base_parameters  # Update parameters kwarg
+        kwargs.pop('spec')                      # Remove spec kwarg
 
 
 def load_task(sessions, session_index, name_or_lsid):
