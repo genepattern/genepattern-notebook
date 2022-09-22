@@ -156,13 +156,9 @@ class GPAuthWidget(UIBuilder):
 
     def register_modules(self):
         """Get the list available modules and register widgets for them with the tool manager"""
-        def register_modules_callback():
-            for task in self.session.get_task_list():
-                tool = TaskTool(server_name(self.session.url), task)
-                ToolManager.instance().register(tool)
-        # Register modules in their own thread so as not to block the kernel
-        registration_thread = Thread(target=register_modules_callback)
-        registration_thread.start()
+        for task in self.session.get_task_list():
+            tool = TaskTool(server_name(self.session.url), task)
+            ToolManager.instance().register(tool)
 
     def system_message(self):
         if hasattr(self.session, 'system_message'): message = self.session.system_message()
