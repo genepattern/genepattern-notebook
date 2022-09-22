@@ -208,8 +208,11 @@ class GPTaskWidget(UIBuilder):
         return 'Visualizer' in self.task.dto['categories']
 
     def login_callback(self, data):
-        """Callback upon authentication for unauthenticated task widgets"""
-        if self.task is not None and self.task.server_data is None:
+        """Callback upon authentication for unauthenticated task widgets.
+           Normally this is handled in the `nbtools.register` callback, but for older notebooks with programmatically
+               defined GPTaskWidget cells, this additional callback is necessary to ensure that they render
+               appropriately upon login. This is why we check for self.error, as we can safely skip all other cells."""
+        if self.task is not None and self.task.server_data is None and self.error is not None:
             task = data.get_task(self.task.uri) if hasattr(data, 'get_task') else get_task(data, self.task.uri)
             task.param_load()  # Get the GPTask object and load its data
 
