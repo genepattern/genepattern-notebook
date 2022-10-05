@@ -1,6 +1,5 @@
 import gp
 from IPython.display import display
-from threading import Thread
 from urllib.error import HTTPError
 from nbtools import UIBuilder, ToolManager, NBTool, EventManager
 from .sessions import session
