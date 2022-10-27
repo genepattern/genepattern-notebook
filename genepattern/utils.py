@@ -1,6 +1,6 @@
 from gp import GPFile
 from .sessions import session as sessions
-import base64
+import requests
 from urllib.request import urlopen
 from urllib.parse import urlparse
 
@@ -52,3 +52,18 @@ def filelike(file_url, session_index=None):
     if session is None:                    # If no session, assume this isn't a GenePattern URL
         return urlopen(file_url)           # Return a generic file-like pointing to the response
     return GPFile(session, file_url)       # Otherwise, return a GPFile object
+
+
+def is_url(url_str):
+    """Check whether the string is a valid URL"""
+    result = urlparse(url_str)
+    return bool(result.scheme and result.netloc)
+
+
+def redirect_url(url, token=None):
+    """Get the end URL of an HTTP redirect, or return initial URL if no redirect"""
+    headers = {'User-Agent': 'GenePatternRest'}
+    if token: headers['Authorization'] = f'Bearer {token}'
+    response = requests.head(url, headers=headers, allow_redirects=False)
+    if 'Location' in response.headers: return response.headers['Location']
+    else: return url

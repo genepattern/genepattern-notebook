@@ -1,9 +1,10 @@
 from threading import Timer
 from urllib.error import HTTPError
+from urllib.parse import urlparse, parse_qs, urlencode
 from ipywidgets import Dropdown, Button, HTML, VBox, HBox
 from nbtools import UIOutput, EventManager, ToolManager
 from .shim import get_permissions, set_permissions, get_token, terminate_job
-from .utils import GENEPATTERN_LOGO, server_name, session_color
+from .utils import GENEPATTERN_LOGO, server_name, session_color, is_url, redirect_url
 
 
 class GPJobWidget(UIOutput):
@@ -110,7 +111,17 @@ class GPJobWidget(UIOutput):
         if 'launchUrl' in self.job.info:
             launch_url = self.job.info["launchUrl"]
             if launch_url[0] == '/': launch_url = launch_url[3:]
-            return f'{self.job.server_data.url}{launch_url}#{token}'
+            launch_url = f'{self.job.server_data.url}{launch_url}#{token}'
+
+            # Handle URLs with S3-redirects in the GET parameters
+            parsed_url = urlparse(launch_url)
+            params = parse_qs(parsed_url.query)
+            for key in params.keys():
+                if is_url(params[key][0]):
+                    params[key][0] = redirect_url(params[key][0], token=token)
+            parsed_url = parsed_url._replace(query=urlencode(params, doseq=True))
+
+            return parsed_url.geturl()
 
         # Handle index.html or single HTML returns
         single_html = None
