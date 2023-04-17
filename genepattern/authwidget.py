@@ -91,10 +91,7 @@ class GPAuthWidget(UIBuilder):
 
         # Check to see if the provided session has valid credentials
         if self.has_credentials() and self.validate_credentials():
-            self.register_session()     # Register the session with the SessionList
-            self.register_modules()     # Register the modules with the ToolManager
-            self.system_message()       # Display the system message
-            self.trigger_login()        # Trigger login callbacks of job and task widgets
+            self.prepare_session()
 
             # Display the widget with the system message and no form
             UIBuilder.__init__(self, lambda: None, name=self.session.username, subtitle=self.session.url,
@@ -109,6 +106,13 @@ class GPAuthWidget(UIBuilder):
             # Call the superclass constructor with the spec
             UIBuilder.__init__(self, self.login, **kwargs)
 
+    def prepare_session(self):
+        """Prepare a valid session by registering the session and modules"""
+        self.register_session()     # Register the session with the SessionList
+        self.register_modules()     # Register the modules with the ToolManager
+        self.system_message()       # Display the system message
+        self.trigger_login()        # Trigger login callbacks of job and task widgets
+
     def login(self, server, username, password):
         """Login to the GenePattern server"""
         # Assign login values to session
@@ -119,6 +123,7 @@ class GPAuthWidget(UIBuilder):
         # Validate the provided credentials
         if self.validate_credentials():
             self.replace_widget()
+            self.prepare_session()
 
     def has_credentials(self):
         """Test whether the session object is instantiated and whether a username and password have been provided"""
@@ -144,10 +149,14 @@ class GPAuthWidget(UIBuilder):
             return False
 
     def replace_widget(self):
-        """Replace the unauthenticated widget with the authenticated widget"""
-        self.form.children[2].value = ''        # Blank password so it doesn't get serialized
-        display(GPAuthWidget(self.session))     # Display the authenticated widget
-        self.close()                            # Close the unauthenticated widget
+        """Replace the unauthenticated widget with the authenticated mode"""
+        self.form.form.children[2].value = ''        # Blank password so it doesn't get serialized
+        self.form.collapsed = True
+        self.form.name = self.session.username
+        self.form.subtitle = self.session.url
+        self.form.display_header=False
+        self.form.display_footer=False
+        self.form.form.children = []
 
     def register_session(self):
         """Register the validated credentials with the SessionList"""

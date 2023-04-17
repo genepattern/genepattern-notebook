@@ -1,7 +1,7 @@
 from setuptools import setup
 
 
-__version__ = '23.1.0'
+__version__ = '23.4'
 
 
 with open('README.md') as f:
@@ -34,7 +34,7 @@ setup(name='genepattern-notebook',
       ],
       install_requires=[
           'genepattern-python>=1.4.2',
-          'nbtools>=20',
+          'nbtools>=23.04',
           'notebook>=5.0.0',
           'ipywidgets>=7.0.0',
           'pandas',
