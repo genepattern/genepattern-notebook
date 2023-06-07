@@ -2,7 +2,7 @@ import os
 from setuptools import setup
 
 
-__version__ = '21.12'
+__version__ = '21.12.1'
 
 
 with open('README.md') as f:
