@@ -1462,6 +1462,11 @@ define("genepattern/task", ["base/js/namespace",
                                     }
                                 }
 
+                                // Call usage stats
+                                const origin = widget.options.session.server() === "https://cloud.genepattern.org/gp" ? 'GenePattern Cloud' : widget.options.session.server();
+                                usage_tracker('tool_run', `${origin}|${widget.options.task.name()}|${widget.options.task.name()}`);
+
+
                                 // Submit the job input
                                 jobInput.submit({
                                     success: function(response, jobNumber) {
@@ -1646,6 +1651,13 @@ define("genepattern/task", ["base/js/namespace",
             grabNextUpload();
         }
     });
+
+    function usage_tracker(event_token, description='', endpoint='https://workspace.g2nb.org/services/usage/') {
+        fetch(`${endpoint}${event_token}/`, {
+            method: "POST",
+            body: description
+        }).then(r => r.text()).then(b => console.log(`usage response: ${b}`));
+    }
 
     const TaskWidgetView = widgets.DOMWidgetView.extend({
         render: function () {
