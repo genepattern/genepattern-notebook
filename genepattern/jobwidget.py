@@ -237,12 +237,15 @@ class GPJobWidget(UIOutput):
         def save_permissions(button):
             save_perms = []
             for g in group_widgets:
+                # Special case for public jobs
+                group_name = '*' if g.description == 'All Users' else g.description
+
                 if g.value == 'Read & Write':
-                    save_perms.append({'id': g.description, 'read': True, 'write': True})
+                    save_perms.append({'id': group_name, 'read': True, 'write': True})
                 elif g.value == 'Read':
-                    save_perms.append({'id': g.description, 'read': True, 'write': False})
+                    save_perms.append({'id': group_name, 'read': True, 'write': False})
                 else:
-                    save_perms.append({'id': g.description, 'read': False, 'write': False})
+                    save_perms.append({'id': group_name, 'read': False, 'write': False})
             # Save the permissions, using the shim if necessary
             if hasattr(self.job, 'set_permissions'):
                 self.job.set_permissions(save_perms)
