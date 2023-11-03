@@ -7,6 +7,6 @@ from nbtools import UIBuilder as GPUIBuilder, UIOutput as GPUIOutput, build_ui, 
 
 __author__ = 'Thorin Tabor'
 __copyright__ = 'Copyright 2014-2023, Regents of the University of California & Broad Institute'
-__version__ = '23.04'
+__version__ = '23.11'
 __status__ = 'Production'
 __license__ = 'BSD-3-Clause'
