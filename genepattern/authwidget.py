@@ -111,9 +111,9 @@ class GPAuthWidget(UIBuilder):
         """Prepare a valid session by registering the session and modules"""
         self.register_session()     # Register the session with the SessionList
         self.register_modules()     # Register the modules with the ToolManager
+        self.register_jobs()        # Add recent jobs to the data panel
         self.system_message()       # Display the system message
         self.trigger_login()        # Trigger login callbacks of job and task widgets
-        self.register_jobs()        # Add recent jobs to the data panel
 
     def login(self, server, username, password):
         """Login to the GenePattern server"""
