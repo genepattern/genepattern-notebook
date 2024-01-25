@@ -1,9 +1,10 @@
 import gp
 from IPython.display import display
 from urllib.error import HTTPError
-from nbtools import UIBuilder, ToolManager, NBTool, EventManager
+from nbtools import UIBuilder, ToolManager, NBTool, EventManager, DataManager, Data
 from .sessions import session
 from .shim import login, system_message
+from .jobwidget import GPJobWidget
 from .taskwidget import TaskTool
 from .utils import GENEPATTERN_LOGO, GENEPATTERN_SERVERS, server_name, session_color
 
@@ -112,6 +113,7 @@ class GPAuthWidget(UIBuilder):
         self.register_modules()     # Register the modules with the ToolManager
         self.system_message()       # Display the system message
         self.trigger_login()        # Trigger login callbacks of job and task widgets
+        self.register_jobs()        # Add recent jobs to the data panel
 
     def login(self, server, username, password):
         """Login to the GenePattern server"""
@@ -176,6 +178,20 @@ class GPAuthWidget(UIBuilder):
     def trigger_login(self):
         """Dispatch a login event after authentication"""
         EventManager.instance().dispatch("gp.login", self.session)
+
+    def register_jobs(self):
+        data_list = []
+        for job in self.session.get_recent_jobs():
+            origin = server_name(self.session.url)
+            group = f"{job.job_number}. {job.task_name}"
+
+            # Register a custom data group widget (GPJobWidget) with the manager
+            DataManager.instance().group_widget(origin=origin, group=group, widget=GPJobWidget(job))
+
+            # Add data entries for all output files
+            for file in job.get_output_files():
+                data_list.append(Data(origin=origin, group=group, uri=file.get_url()))
+        DataManager.instance().register_all(data_list)
 
 
 class AuthenticationTool(NBTool):
