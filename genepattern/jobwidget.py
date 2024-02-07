@@ -61,7 +61,7 @@ class GPJobWidget(UIOutput):
                 return
 
             # Add the job information to the widget
-            self.name = f'Job #{self.job.job_number}'
+            self.name = f'{self.job.job_number}. {self.job.task_name}'
             self.origin = server_name(self.job.server_data.url)
             self.status = self.status_text()
             self.description = self.submitted_text()
