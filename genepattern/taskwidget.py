@@ -1,6 +1,7 @@
 import inspect
 import json
 import os
+from decimal import Decimal
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 from gp import GPTask
@@ -31,6 +32,7 @@ class GPTaskWidget(UIBuilder):
             spec = task.make_job_spec()
             for name, value in kwargs.items():
                 if value is None: value = ''    # Handle the case of blank optional parameters
+                if isinstance(value, float): value = Decimal(str(value)).__format__('f')  # Handle scientific notation
                 spec.set_parameter(name_map[name], value)
             job = task.server_data.run_job(spec, wait_until_done=False)
             display(GPJobWidget(job, logo='none', color=session_color(self.task.server_data.url, secondary_color=True)))
