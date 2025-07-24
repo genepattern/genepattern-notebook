@@ -122,10 +122,11 @@ class GPJobWidget(UIOutput):
             # Handle URLs with S3-redirects in the GET parameters
             parsed_url = urlparse(launch_url)
             params = parse_qs(parsed_url.query)
-            params['__original__'] = [json.dumps(deepcopy(params))]  # Special case: Pass original URLs for Javascript launchers
+            original = json.dumps(deepcopy(params))
             for key in params.keys():
                 if is_url(params[key][0]):
                     params[key][0] = redirect_url(params[key][0], token=token)
+            params['__original__'] = [original]  # Special case: Pass original URLs for Javascript launchers
             parsed_url = parsed_url._replace(query=urlencode(params, doseq=True))
 
             return parsed_url.geturl()
