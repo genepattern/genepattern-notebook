@@ -1,20 +1,19 @@
 [![Version](https://img.shields.io/pypi/v/genepattern-notebook.svg)](https://pypi.python.org/pypi/genepattern-notebook)
-[![Build](https://travis-ci.org/genepattern/genepattern-notebook.svg?branch=master)](https://travis-ci.org/genepattern/genepattern-notebook)
-[![Documentation Status](https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat)](http://genepattern-notebook.org/programmatic/)
+[![Documentation Status](https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat)](https://www.g2nb.org/basic-features/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/genepattern/genepattern-notebook.svg)](https://hub.docker.com/r/genepattern/genepattern-notebook/)
 [![Join the chat at https://gitter.im/genepattern](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/genepattern/genepattern-notebook?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 GenePattern Notebook for JupyterLab
 ====================
 
-The [GenePattern Notebook](http://www.genepattern-notebook.org) 
+The [GenePattern Notebook](https://www.g2nb.org/) 
 environment gives GenePattern users the ability to interleave text, graphics, and code with 
 their GenePattern analyses to create "notebooks" that can be edited, shared, and published. 
 
 GenePattern Notebooks are built on the [Jupyter](https://jupyter.org/) environment 
 and extend it so that users can take advantage of its ease of use and ability to encapsulate 
 an entire scientific research narrative, without the need to write code. They are a core 
-component of the [g2nb](https://github.com/g2nb) project.
+component of the [g2nb](https://www.g2nb.org/) project.
 
 > ### **Looking for classic Jupyter Notebook support?**
 > **Jupyter Notebook support in is available, albeit no longer in active development. You can 
@@ -23,23 +22,23 @@ component of the [g2nb](https://github.com/g2nb) project.
 
 ### **Prerequisites**
 
-* JupyterLab >= 3.0.0
-* ipywidgets >= 7.0.0
+* JupyterLab >= 3.6.0
+* ipywidgets >= 8.0.0
 
 # Docker
 
 A Docker image with nbtools and the full JupyterLab stack is available through DockerHub.
 
 ```bash
-docker pull genepattern/lab
-docker run --rm -p 8888:8888 genepattern/lab
+docker pull g2nb/lab
+docker run --rm -p 8888:8888 g2nb/lab
 ```
 
 # Installation
 
 Full installation instructions for casual use are detailed on the 
-[GenePattern Notebook website](http://www.genepattern-notebook.org/install/). Users should 
-also consider the [g2nb Notebook Repository](https://notebook.genepattern.org), which 
+[GenePattern Notebook website](https://docs.g2nb.org/en/latest/local-installation/). Users should 
+also consider the [g2nb Workspace](https://workspace.g2nb.org), which 
 provides an install-free cloud deployment of the full suite of g2nb tools, including GenePattern Notebook.
 
 ## Development Install
@@ -54,9 +53,6 @@ version of Python. This means you will need Python 3.6+. We recommend using the
 [Anaconda](https://www.anaconda.com/download/#macos) Python distribution. This is 
 a scientific version of Python that ships with many of the most popular Python packages for 
 science, math and data analysis (ex: NumPy, SciPy, Pandas, Matplotlib, IPython, etc.).
-
-**Note for Mac Users:** Mac comes with Python, but if you have an older version of the OS 
-you will need to install a newer version, as many older versions of MacOS ship with Python 2.
 
 ### Install GenePattern Notebook from GitHub
 
@@ -88,19 +84,13 @@ conda install -c genepattern genepattern-notebook
 ### Load the nbtools extension
 
 ```bash
-# Install ipywidgets, if you haven't already
-jupyter nbextension enable --py widgetsnbextension
-jupyter labextension install @jupyter-widgets/jupyterlab-manager
-
 # Clone the nbtools repository
-git clone https://github.com/genepattern/nbtools-lab-prototype.git
-cd nbtools-lab-prototype
+git clone https://github.com/g2nb/nbtools.git
+cd nbtools
 
 # Install the nbtools JupyterLab prototype
 pip install .
 jupyter labextension install .
-jupyter nbextension install --py nbtools --sys-prefix
-jupyter nbextension enable --py nbtools --sys-prefix
 ```
 
 ### Launch Jupyter
@@ -129,15 +119,6 @@ Notebook environment.
     demonstrate functionality or analysis techniques in the GenePattern Notebook environment.
 * [workspace](https://github.com/g2nb/workspace): Scripts, services 
     and other infrastructure used in the operation of the GenePattern Notebook Repository.
-
-# Known Issues
-
-**The current version of the code only works with GenePattern 3.9.3 and up!**
-
-Users using the GenePattern Notebook with an older version of GenePattern (3.9.3 or 3.9.4) may
-need to log into the GenePattern UI before making use of the notebook. The server status 
-message and child jobs will also be unavailable. If you are using one of these older versions,
-we recommend that you upgrade to the latest version of GenePattern.
 
 # Code of Conduct
 
