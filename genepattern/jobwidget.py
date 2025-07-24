@@ -1,3 +1,5 @@
+import json
+from copy import deepcopy
 from threading import Timer
 from urllib.error import HTTPError
 from urllib.parse import urlparse, parse_qs, urlencode
@@ -120,6 +122,7 @@ class GPJobWidget(UIOutput):
             # Handle URLs with S3-redirects in the GET parameters
             parsed_url = urlparse(launch_url)
             params = parse_qs(parsed_url.query)
+            params['__original__'] = [json.dumps(deepcopy(params))]  # Special case: Pass original URLs for Javascript launchers
             for key in params.keys():
                 if is_url(params[key][0]):
                     params[key][0] = redirect_url(params[key][0], token=token)
